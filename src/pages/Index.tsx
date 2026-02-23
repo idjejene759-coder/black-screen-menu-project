@@ -11,7 +11,7 @@ const navItems = [
 
 const menuItems = [
   { icon: "Spade", label: "Казино", fallback: "Clover" },
-  { icon: "Trophy", label: "Спорт" },
+  { icon: "Briefcase", label: "Кейсы" },
   { icon: "Gift", label: "Бонусы" },
 ];
 

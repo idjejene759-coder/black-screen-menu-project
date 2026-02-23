@@ -31,7 +31,7 @@ const Index = () => {
             <img
               src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/521d6370-ca4b-47aa-9be0-a7e2edc0027f.jpg"
               alt="USDT"
-              className="w-6 h-6 rounded-full shrink-0 object-cover"
+              className="w-6 h-6 rounded-full shrink-0 object-cover scale-[1.8]"
             />
             <span className="text-white text-xs font-medium">0</span>
             <Icon name="ChevronDown" size={12} className="text-white/30" />

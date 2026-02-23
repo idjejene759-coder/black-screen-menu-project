@@ -76,7 +76,7 @@ def handler(event, context):
             "body": json.dumps({"error": "Токен CryptoBot не настроен"}),
         }
 
-    api_url = os.environ.get("CRYPTOBOT_API_URL", "https://testnet-pay.crypt.bot/api")
+    api_url = "https://pay.crypt.bot/api"
 
     payload = json.dumps({
         "currency_type": "crypto",

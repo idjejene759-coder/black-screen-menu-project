@@ -1,8 +1,20 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 const copyId = (id: string | number) => {
   navigator.clipboard.writeText(String(id));
 };
+
+const bannerSlides = [
+  {
+    image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/119e1251-5c5f-4c3d-9acd-794f1155e812.png",
+  },
+  {
+    image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/69dd2a08-18b8-4b2a-a6ed-c437a5509da5.png",
+  },
+  {
+    image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/c220b146-ce33-46d9-b69f-81937c0b7eaf.png",
+  },
+];
 import Icon from "@/components/ui/icon";
 import AuthScreen from "@/components/AuthScreen";
 import { useAuth } from "@/components/extensions/auth-email/useAuth";
@@ -52,6 +64,14 @@ const Index = () => {
   const [active, setActive] = useState(1);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   const auth = useAuth({
     apiUrls: {
@@ -273,6 +293,28 @@ const Index = () => {
           </button>
         </div>
       </header>
+
+      <div className="px-3 pt-3">
+        <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: "16/7" }}>
+          {bannerSlides.map((slide, idx) => (
+            <img
+              key={idx}
+              src={slide.image}
+              alt=""
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${idx === currentSlide ? "opacity-100" : "opacity-0"}`}
+            />
+          ))}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {bannerSlides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentSlide ? "bg-[#4ade80] w-4" : "bg-white/30"}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
 
       <div className="flex-1" />
 

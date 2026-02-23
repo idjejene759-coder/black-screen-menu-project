@@ -21,6 +21,7 @@ import { useTelegramAuth } from "@/components/extensions/telegram-bot/useTelegra
 const AUTH_URL = "https://functions.poehali.dev/92e35473-1c53-44e8-b2d8-d769976a894c";
 const TG_AUTH_URL = "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617";
 const CRYPTO_PAY_URL = "https://functions.poehali.dev/892f6456-5e1e-4974-9df1-9e4ce3603ae9";
+const BALANCE_URL = "https://functions.poehali.dev/9b313374-9637-4e08-aacd-2659b84a6074";
 const TG_BOT_USERNAME = "Jaguar_Official_bot";
 
 const navItems = [
@@ -68,6 +69,7 @@ const Index = () => {
   const [depositAmount, setDepositAmount] = useState("5");
   const [depositError, setDepositError] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
+  const [userBalance, setUserBalance] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -100,6 +102,21 @@ const Index = () => {
   const isAuthed = auth.isAuthenticated || tgAuth.isAuthenticated;
   const isLoadingAuth = auth.isLoading || tgAuth.isLoading;
   const currentUser = auth.user || tgAuth.user;
+
+  const userId = currentUser?.id || currentUser?.display_id || "";
+
+  const fetchBalance = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const res = await fetch(BALANCE_URL, { headers: { "X-User-Id": String(userId) } });
+      const data = await res.json();
+      if (res.ok) setUserBalance(data.balance || 0);
+    } catch { /* ignore */ }
+  }, [userId]);
+
+  useEffect(() => {
+    if (isAuthed && userId) fetchBalance();
+  }, [isAuthed, userId, fetchBalance]);
 
   const handleLogout = useCallback(async () => {
     if (auth.isAuthenticated) await auth.logout();
@@ -212,7 +229,7 @@ const Index = () => {
           <div className="px-4 pb-3">
             <div className="bg-white/5 border border-white/10 rounded-xl p-4">
               <span className="text-[12px] text-white/40">Счет</span>
-              <div className="text-[22px] font-bold text-white mt-0.5 tracking-tight">0.00 USDT</div>
+              <div className="text-[22px] font-bold text-white mt-0.5 tracking-tight">{userBalance.toFixed(2)} USDT</div>
               <div className="flex gap-2.5 mt-3">
                 <button
                   onClick={() => { setProfileOpen(false); setDepositOpen(true); }}
@@ -395,7 +412,7 @@ const Index = () => {
                 try {
                   const res = await fetch(CRYPTO_PAY_URL, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json", "X-User-Id": String(userId) },
                     body: JSON.stringify({ amount }),
                   });
                   const data = await res.json();
@@ -405,6 +422,10 @@ const Index = () => {
                   }
                   if (data.pay_url) {
                     window.open(data.pay_url, "_blank");
+                    const pollBalance = setInterval(async () => {
+                      await fetchBalance();
+                    }, 5000);
+                    setTimeout(() => clearInterval(pollBalance), 300000);
                   }
                 } catch {
                   setDepositError("Ошибка соединения с сервером");
@@ -441,7 +462,7 @@ const Index = () => {
                 className="w-full h-full object-cover scale-[1.8]"
               />
             </div>
-            <span className="text-white text-xs font-medium">0</span>
+            <span className="text-white text-xs font-medium">{userBalance.toFixed(2)}</span>
           </div>
           <button
             onClick={() => setDepositOpen(true)}

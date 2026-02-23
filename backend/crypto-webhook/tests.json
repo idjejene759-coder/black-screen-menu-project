@@ -13,20 +13,12 @@
       "expectedStatus": 405
     },
     {
-      "name": "POST without user",
+      "name": "POST skip non-payment",
       "method": "POST",
       "path": "/",
       "headers": {"Content-Type": "application/json"},
-      "body": "{\"amount\": 10}",
-      "expectedStatus": 401
-    },
-    {
-      "name": "POST with low amount",
-      "method": "POST",
-      "path": "/",
-      "headers": {"Content-Type": "application/json", "X-User-Id": "test123"},
-      "body": "{\"amount\": 2}",
-      "expectedStatus": 400
+      "body": "{\"update_type\": \"other\"}",
+      "expectedStatus": 200
     }
   ]
 }

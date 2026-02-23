@@ -2,8 +2,11 @@ import { useState, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 import AuthScreen from "@/components/AuthScreen";
 import { useAuth } from "@/components/extensions/auth-email/useAuth";
+import { useTelegramAuth } from "@/components/extensions/telegram-bot/useTelegramAuth";
 
 const AUTH_URL = "https://functions.poehali.dev/92e35473-1c53-44e8-b2d8-d769976a894c";
+const TG_AUTH_URL = "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617";
+const TG_BOT_USERNAME = "Jaguar_Official_bot";
 
 const navItems = [
   { icon: "Menu", label: "Меню" },
@@ -57,11 +60,25 @@ const Index = () => {
     },
   });
 
+  const tgAuth = useTelegramAuth({
+    apiUrls: {
+      callback: `${TG_AUTH_URL}?action=callback`,
+      refresh: `${TG_AUTH_URL}?action=refresh`,
+      logout: `${TG_AUTH_URL}?action=logout`,
+    },
+    botUsername: TG_BOT_USERNAME,
+  });
+
+  const isAuthed = auth.isAuthenticated || tgAuth.isAuthenticated;
+  const isLoadingAuth = auth.isLoading || tgAuth.isLoading;
+  const currentUser = auth.user || tgAuth.user;
+
   const handleLogout = useCallback(async () => {
-    await auth.logout();
+    if (auth.isAuthenticated) await auth.logout();
+    if (tgAuth.isAuthenticated) await tgAuth.logout();
     setProfileOpen(false);
     setMenuOpen(false);
-  }, [auth]);
+  }, [auth, tgAuth]);
 
   const handleNavClick = (index: number) => {
     if (index === 0) {
@@ -76,7 +93,7 @@ const Index = () => {
     setProfileOpen(true);
   };
 
-  if (auth.isLoading) {
+  if (isLoadingAuth) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-[#4ade80] font-extrabold text-2xl tracking-wide uppercase animate-pulse">
@@ -86,7 +103,7 @@ const Index = () => {
     );
   }
 
-  if (!auth.isAuthenticated) {
+  if (!isAuthed) {
     return <AuthScreen onAuth={() => {}} />;
   }
 
@@ -107,8 +124,8 @@ const Index = () => {
                 <Icon name="User" size={24} className="text-[#4ade80]/70" />
               </div>
               <div className="flex flex-col items-start">
-                <span className="text-white font-bold text-base">{auth.user?.name || auth.user?.email || "Игрок"}</span>
-                <span className="text-white/40 text-xs">ID {auth.user?.id || "—"}</span>
+                <span className="text-white font-bold text-base">{currentUser?.name || currentUser?.email || "Игрок"}</span>
+                <span className="text-white/40 text-xs">ID {currentUser?.id || "—"}</span>
               </div>
               <Icon name="ChevronRight" size={18} className="text-white/30 ml-auto" />
             </button>
@@ -154,10 +171,10 @@ const Index = () => {
           </div>
 
           <div className="flex flex-col items-center pt-3 pb-4">
-            <span className="text-lg font-bold text-white">{auth.user?.name || auth.user?.email || "Игрок"}</span>
+            <span className="text-lg font-bold text-white">{currentUser?.name || currentUser?.email || "Игрок"}</span>
             <div className="flex items-center gap-1.5 mt-0.5">
               <Icon name="Copy" size={12} className="text-white/30" />
-              <span className="text-[12px] text-white/40">ID {auth.user?.id || "—"}</span>
+              <span className="text-[12px] text-white/40">ID {currentUser?.id || "—"}</span>
             </div>
           </div>
 

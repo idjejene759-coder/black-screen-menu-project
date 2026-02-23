@@ -23,7 +23,7 @@ const Index = () => {
           />
           <div className="flex flex-col leading-none">
             <span className="text-[#4ade80] font-extrabold text-base tracking-wide uppercase">Jaguar</span>
-            <span className="text-white font-extrabold text-[10px] tracking-widest uppercase pl-[1.05em]">casino</span>
+            <span className="text-white font-extrabold text-[10px] tracking-[0.35em] uppercase pl-[1.85em]">casino</span>
           </div>
         </div>
         <div className="flex items-center gap-2">

@@ -117,24 +117,24 @@ const Index = () => {
             </button>
           </div>
 
-          <div className="flex flex-col items-center pt-4 pb-6">
-            <span className="text-[22px] font-bold text-white">Серия</span>
-            <div className="flex items-center gap-1.5 mt-1">
-              <Icon name="Copy" size={14} className="text-white/30" />
-              <span className="text-[13px] text-white/40">ID 334654318</span>
+          <div className="flex flex-col items-center pt-3 pb-4">
+            <span className="text-lg font-bold text-white">Серия</span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <Icon name="Copy" size={12} className="text-white/30" />
+              <span className="text-[12px] text-white/40">ID 334654318</span>
             </div>
           </div>
 
-          <div className="px-4 pb-4">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-              <span className="text-[13px] text-white/40">Счет</span>
-              <div className="text-[26px] font-bold text-white mt-1 tracking-tight">0.00 USDT</div>
-              <div className="flex gap-3 mt-4">
-                <button className="flex-1 flex items-center justify-center gap-2 bg-[#4ade80] text-black font-semibold text-[15px] rounded-xl py-3.5">
-                  <Icon name="Plus" size={18} />
+          <div className="px-4 pb-3">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <span className="text-[12px] text-white/40">Счет</span>
+              <div className="text-[22px] font-bold text-white mt-0.5 tracking-tight">0.00 USDT</div>
+              <div className="flex gap-2.5 mt-3">
+                <button className="flex-1 flex items-center justify-center gap-1.5 bg-[#4ade80] text-black font-semibold text-[13px] rounded-lg py-2.5">
+                  <Icon name="Plus" size={15} />
                   Пополнить
                 </button>
-                <button className="flex-1 flex items-center justify-center bg-white/10 text-white font-semibold text-[15px] rounded-xl py-3.5">
+                <button className="flex-1 flex items-center justify-center bg-white/10 text-white font-semibold text-[13px] rounded-lg py-2.5">
                   Вывести
                 </button>
               </div>
@@ -142,29 +142,29 @@ const Index = () => {
           </div>
 
           {profileSections.map((section, sIdx) => (
-            <div key={sIdx} className="px-4 pb-3">
-              <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+            <div key={sIdx} className="px-4 pb-2">
+              <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
                 {section.items.map((item, iIdx) => (
                   <div key={item.label}>
-                    <button className="w-full flex items-center gap-4 px-5 py-4">
-                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center relative shrink-0">
+                    <button className="w-full flex items-center gap-3 px-4 py-3">
+                      <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative shrink-0">
                         <Icon
                           name={item.icon}
                           fallback={item.fallback || item.icon}
-                          size={20}
+                          size={16}
                           className="text-white/40"
                         />
                         {item.badge && (
-                          <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
                         )}
                       </div>
                       <div className="flex flex-col items-start">
-                        <span className="text-[15px] font-semibold text-white">{item.label}</span>
-                        <span className="text-[13px] text-white/40">{item.desc}</span>
+                        <span className="text-[13px] font-semibold text-white">{item.label}</span>
+                        <span className="text-[11px] text-white/35">{item.desc}</span>
                       </div>
                     </button>
                     {iIdx < section.items.length - 1 && (
-                      <div className="h-px bg-white/5 ml-[72px] mr-5" />
+                      <div className="h-px bg-white/5 ml-[60px] mr-4" />
                     )}
                   </div>
                 ))}

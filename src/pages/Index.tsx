@@ -6,7 +6,7 @@ const navItems = [
   { icon: "Home", label: "Главная" },
   { icon: "Spade", label: "Казино", fallback: "Clover" },
   { icon: "BadgeDollarSign", label: "Free money" },
-  { icon: "Goal", label: "Спорт", fallback: "Circle" },
+  { icon: "Briefcase", label: "Кейсы" },
 ];
 
 const Index = () => {

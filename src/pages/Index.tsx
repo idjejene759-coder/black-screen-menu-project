@@ -65,6 +65,7 @@ const Index = () => {
   const [depositOpen, setDepositOpen] = useState(false);
   const [cryptoPayOpen, setCryptoPayOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState("5");
+  const [depositError, setDepositError] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -359,19 +360,34 @@ const Index = () => {
                 type="number"
                 inputMode="decimal"
                 value={depositAmount}
-                onChange={(e) => setDepositAmount(e.target.value)}
+                onChange={(e) => { setDepositAmount(e.target.value); setDepositError(""); }}
                 className="ml-auto bg-transparent text-white text-right text-[20px] font-bold w-[120px] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 min="5"
                 max="5000"
               />
             </div>
+            {depositError && (
+              <div className="mt-2 text-red-400 text-[13px] font-medium">{depositError}</div>
+            )}
           </div>
 
           <div className="px-4 pt-6">
             <button
               onClick={() => {
                 const amount = parseFloat(depositAmount);
-                if (isNaN(amount) || amount < 5 || amount > 5000) return;
+                if (!depositAmount || isNaN(amount)) {
+                  setDepositError("Введите сумму");
+                  return;
+                }
+                if (amount < 5) {
+                  setDepositError("Минимальная сумма пополнения — 5 USDT");
+                  return;
+                }
+                if (amount > 5000) {
+                  setDepositError("Максимальная сумма пополнения — 5000 USDT");
+                  return;
+                }
+                setDepositError("");
               }}
               className="w-full bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#3ecb6e] transition-colors"
             >

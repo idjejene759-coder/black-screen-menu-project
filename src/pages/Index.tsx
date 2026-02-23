@@ -46,12 +46,9 @@ const Index = () => {
                   <span className="text-white/40 text-xs">ID 000000</span>
                 </div>
               </div>
-              <button
-                onClick={() => setMenuOpen(false)}
-                className="w-9 h-9 rounded-full border border-[#4ade80]/20 bg-white/5 flex items-center justify-center ml-auto mr-0"
-              >
+              <div className="w-9 h-9 rounded-full border border-[#4ade80]/20 bg-white/5 flex items-center justify-center ml-auto mr-0">
                 <Icon name="ChevronLeft" size={18} className="text-white/70" />
-              </button>
+              </div>
             </div>
 
             <div className="h-px bg-[#4ade80]/15 mx-5" />
@@ -73,6 +70,12 @@ const Index = () => {
               ))}
             </div>
           </div>
+          <button
+            onClick={() => setMenuOpen(false)}
+            className="absolute right-3 top-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center z-10"
+          >
+            <Icon name="X" size={20} className="text-white/80" />
+          </button>
         </div>
       )}
 

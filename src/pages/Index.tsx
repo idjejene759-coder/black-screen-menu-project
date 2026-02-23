@@ -15,11 +15,17 @@ const Index = () => {
   return (
     <div className="w-full flex flex-col touch-manipulation" style={{ minHeight: "100svh" }}>
       <header className="w-full px-4 py-3 flex items-center justify-between border-b border-white/5">
-        <img
-          src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/e726b3e3-32de-440a-ba25-e16781598615.jpg"
-          alt="Logo"
-          className="h-12 w-auto object-contain"
-        />
+        <div className="flex items-center gap-2.5">
+          <img
+            src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/e726b3e3-32de-440a-ba25-e16781598615.jpg"
+            alt="Logo"
+            className="h-12 w-auto object-contain"
+          />
+          <div className="flex flex-col leading-none">
+            <span className="text-[#4ade80] font-extrabold text-base tracking-wide uppercase">Jaguar</span>
+            <span className="text-white font-extrabold text-[10px] tracking-widest uppercase pl-[1.05em]">casino</span>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
             <img

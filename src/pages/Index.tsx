@@ -48,9 +48,9 @@ const Index = () => {
               </div>
               <button
                 onClick={() => setMenuOpen(false)}
-                className="w-9 h-9 rounded-full border border-[#4ade80]/20 bg-white/5 flex items-center justify-center"
+                className="w-9 h-9 rounded-full border border-[#4ade80]/20 bg-white/5 flex items-center justify-center ml-auto mr-0"
               >
-                <Icon name="X" size={18} className="text-white/70" />
+                <Icon name="ChevronLeft" size={18} className="text-white/70" />
               </button>
             </div>
 

@@ -9,6 +9,12 @@ const navItems = [
   { icon: "Briefcase", label: "Кейсы" },
 ];
 
+const menuItems = [
+  { icon: "Spade", label: "Казино", fallback: "Clover" },
+  { icon: "Briefcase", label: "Кейсы" },
+  { icon: "Gift", label: "Бонусы" },
+];
+
 const profileSections = [
   {
     items: [
@@ -32,18 +38,73 @@ const profileSections = [
 
 const Index = () => {
   const [active, setActive] = useState(1);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const handleNavClick = (index: number) => {
     if (index === 0) {
-      setProfileOpen(true);
+      setMenuOpen(true);
     } else {
       setActive(index);
     }
   };
 
+  const openProfile = () => {
+    setMenuOpen(false);
+    setProfileOpen(true);
+  };
+
   return (
     <div className="w-full flex flex-col touch-manipulation relative" style={{ minHeight: "100svh" }}>
+      {menuOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setMenuOpen(false)}
+          />
+          <div className="relative w-[85%] max-w-[360px] h-full bg-black border-r border-[#4ade80]/30 flex flex-col animate-slide-in overflow-y-auto">
+            <button
+              onClick={openProfile}
+              className="flex items-center gap-3 px-5 pt-5 pb-4 active:bg-white/5 transition-colors"
+            >
+              <div className="w-12 h-12 rounded-full border border-[#4ade80]/30 bg-white/5 flex items-center justify-center">
+                <Icon name="User" size={24} className="text-[#4ade80]/70" />
+              </div>
+              <div className="flex flex-col items-start">
+                <span className="text-white font-bold text-base">Игрок</span>
+                <span className="text-white/40 text-xs">ID 000000</span>
+              </div>
+              <Icon name="ChevronRight" size={18} className="text-white/30 ml-auto" />
+            </button>
+
+            <div className="h-px bg-[#4ade80]/15 mx-5" />
+
+            <div className="flex flex-col py-3 px-2">
+              {menuItems.map((item) => (
+                <button
+                  key={item.label}
+                  className="flex items-center gap-4 px-3 py-3.5 rounded-xl hover:bg-[#4ade80]/5 active:bg-[#4ade80]/10 transition-colors"
+                >
+                  <Icon
+                    name={item.icon}
+                    fallback={item.fallback || item.icon}
+                    size={22}
+                    className="text-[#4ade80]/60"
+                  />
+                  <span className="text-white text-sm font-medium">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={() => setMenuOpen(false)}
+            className="absolute right-3 top-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center z-10"
+          >
+            <Icon name="X" size={20} className="text-white/80" />
+          </button>
+        </div>
+      )}
+
       {profileOpen && (
         <div className="fixed inset-0 z-50 bg-[#f2f2f7] flex flex-col overflow-y-auto">
           <div className="flex items-center justify-between px-5 pt-4 pb-2">

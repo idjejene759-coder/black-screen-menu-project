@@ -11,9 +11,7 @@ const bannerSlides = [
   {
     image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/69dd2a08-18b8-4b2a-a6ed-c437a5509da5.png",
   },
-  {
-    image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/c220b146-ce33-46d9-b69f-81937c0b7eaf.png",
-  },
+
 ];
 import Icon from "@/components/ui/icon";
 import AuthScreen from "@/components/AuthScreen";

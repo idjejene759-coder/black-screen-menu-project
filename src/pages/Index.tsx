@@ -14,31 +14,29 @@ const Index = () => {
 
   return (
     <div className="w-full flex flex-col touch-manipulation" style={{ minHeight: "100svh" }}>
-      <div className="flex-1 bg-background">
-        <div className="w-full bg-[#1a1a2e] px-4 py-3 flex items-center justify-between">
-          <div className="text-white font-bold text-lg tracking-wide">LOGO</div>
-          <div className="flex items-center bg-[#2a2a3e] rounded-full pl-1 pr-1 py-1 gap-1">
-            <div className="flex items-center gap-1.5 pl-1 pr-2">
-              <img
-                src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/205c3f8a-d2ba-450b-a973-b1dd08565edd.jpg"
-                alt="USDT"
-                className="w-6 h-6 rounded-full shrink-0 object-cover"
-              />
-              <span className="text-white font-semibold text-xs">0</span>
-              <Icon name="ChevronDown" size={12} className="text-gray-400" />
-            </div>
-            <button className="flex items-center gap-2 bg-[#2196F3] hover:bg-[#1e88e5] active:bg-[#1976d2] transition-colors text-white font-semibold text-sm rounded-full px-4 py-2">
-              <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                <Icon name="WalletCards" size={14} className="text-white" />
-              </div>
-              Пополнить
-            </button>
+      <header className="w-full px-4 py-3 flex items-center justify-between border-b border-white/5">
+        <span className="text-white/40 text-sm font-medium tracking-widest uppercase">Logo</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
+            <img
+              src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/205c3f8a-d2ba-450b-a973-b1dd08565edd.jpg"
+              alt="USDT"
+              className="w-5 h-5 rounded-full shrink-0 object-cover"
+            />
+            <span className="text-white text-xs font-medium">0</span>
+            <Icon name="ChevronDown" size={12} className="text-white/30" />
           </div>
+          <button className="flex items-center gap-1.5 bg-white text-black text-xs font-semibold rounded-full px-4 py-2 hover:bg-white/90 active:bg-white/80 transition-colors">
+            <Icon name="Plus" size={14} />
+            Пополнить
+          </button>
         </div>
-      </div>
+      </header>
 
-      <nav className="w-full bg-background px-3 pb-6 pt-3">
-        <div className="flex items-center justify-around gap-2">
+      <div className="flex-1" />
+
+      <nav className="w-full px-4 pb-6 pt-3">
+        <div className="flex items-center justify-around">
           {navItems.map((item, index) => (
             <button
               key={item.label}
@@ -46,22 +44,19 @@ const Index = () => {
               className="flex flex-col items-center gap-1.5 min-w-0 flex-1"
             >
               <div
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
-                  active === index
-                    ? "bg-blue-600"
-                    : "bg-[#2a2a3e]"
+                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
+                  active === index ? "bg-white text-black" : "bg-white/5 text-white/30"
                 }`}
               >
                 <Icon
                   name={item.icon}
                   fallback={item.fallback || item.icon}
-                  size={22}
-                  className={active === index ? "text-white" : "text-gray-400"}
+                  size={20}
                 />
               </div>
               <span
-                className={`text-[11px] leading-tight truncate ${
-                  active === index ? "text-blue-400 font-medium" : "text-gray-500"
+                className={`text-[10px] leading-tight truncate transition-colors ${
+                  active === index ? "text-white" : "text-white/25"
                 }`}
               >
                 {item.label}

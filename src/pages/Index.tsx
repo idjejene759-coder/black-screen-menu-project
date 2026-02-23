@@ -30,7 +30,7 @@ const profileSections = [
   },
   {
     items: [
-      { icon: "Settings", label: "Настройки", desc: "Редактирование личных данных", badge: true },
+      { icon: "Settings", label: "Настройки", desc: "Редактирование личных данных" },
       { icon: "Headphones", label: "Поддержка 24/7", desc: "Все способы связи" },
     ],
   },

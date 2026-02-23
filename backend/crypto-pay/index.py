@@ -92,6 +92,7 @@ def handler(event, context):
         headers={
             "Crypto-Pay-API-Token": token,
             "Content-Type": "application/json",
+            "User-Agent": "JaguarCasino/1.0",
         },
         method="POST",
     )

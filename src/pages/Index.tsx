@@ -27,8 +27,10 @@ const Index = () => {
               <span className="text-white font-semibold text-xs">0</span>
               <Icon name="ChevronDown" size={12} className="text-gray-400" />
             </div>
-            <button className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors text-white font-semibold text-xs rounded-full px-3 py-1.5">
-              <Icon name="PlusSquare" size={13} className="text-white" />
+            <button className="flex items-center gap-2 bg-[#2196F3] hover:bg-[#1e88e5] active:bg-[#1976d2] transition-colors text-white font-semibold text-sm rounded-full px-4 py-2">
+              <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                <Icon name="WalletCards" size={14} className="text-white" />
+              </div>
               Пополнить
             </button>
           </div>

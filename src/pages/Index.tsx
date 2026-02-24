@@ -20,6 +20,7 @@ import { useTelegramAuth } from "@/components/extensions/telegram-bot/useTelegra
 const TG_AUTH_URL = "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617";
 const CRYPTO_PAY_URL = "https://functions.poehali.dev/892f6456-5e1e-4974-9df1-9e4ce3603ae9";
 const BALANCE_URL = "https://functions.poehali.dev/9b313374-9637-4e08-aacd-2659b84a6074";
+const PAYMENTS_URL = "https://functions.poehali.dev/6f062055-7c07-4741-9e3a-0ae795f0c0df";
 const TG_BOT_USERNAME = "Jaguar_Official_bot";
 
 const navItems = [
@@ -69,6 +70,8 @@ const Index = () => {
   const [voucherCode, setVoucherCode] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyTab, setHistoryTab] = useState<"all" | "deposits" | "withdrawals">("all");
+  const [payments, setPayments] = useState<Array<{id:number;amount:number;status:string;type:string;created_at:string|null;paid_at:string|null}>>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [depositAmount, setDepositAmount] = useState("5");
   const [depositError, setDepositError] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
@@ -109,6 +112,17 @@ const Index = () => {
   useEffect(() => {
     if (isAuthed && userId) fetchBalance();
   }, [isAuthed, userId, fetchBalance]);
+
+  const fetchPayments = useCallback(async (type: string) => {
+    if (!userId) return;
+    setPaymentsLoading(true);
+    try {
+      const res = await fetch(`${PAYMENTS_URL}?user_id=${encodeURIComponent(userId)}&type=${type}`);
+      const data = await res.json();
+      if (res.ok) setPayments(data.payments || []);
+    } catch { /* ignore */ }
+    setPaymentsLoading(false);
+  }, [userId]);
 
   const handleLogout = useCallback(async () => {
     await tgAuth.logout();
@@ -245,7 +259,7 @@ const Index = () => {
                       onClick={() => {
                         if (item.label === "Бонусы") { setProfileOpen(false); setBonusOpen(true); }
                         if (item.label === "Ваучеры") { setProfileOpen(false); setVoucherOpen(true); setVoucherCode(""); }
-                        if (item.label === "История платежей") { setProfileOpen(false); setHistoryOpen(true); setHistoryTab("all"); }
+                        if (item.label === "История платежей") { setProfileOpen(false); setHistoryOpen(true); setHistoryTab("all"); fetchPayments("all"); }
                       }}
                     >
                       <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative shrink-0">
@@ -469,7 +483,7 @@ const Index = () => {
                 return (
                   <button
                     key={tab}
-                    onClick={() => setHistoryTab(tab)}
+                    onClick={() => { setHistoryTab(tab); fetchPayments(tab === "withdrawals" ? "withdrawals" : tab === "deposits" ? "deposits" : "all"); }}
                     className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-colors ${
                       historyTab === tab
                         ? "bg-[#4ade80] text-black"
@@ -483,12 +497,47 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col items-center justify-center pb-20">
-            <Icon name="ReceiptText" size={56} className="text-white/15 mb-4" fallback="FileText" />
-            <span className="text-white/50 font-semibold text-[16px] mb-1">Операций пока нет</span>
-            <span className="text-white/25 text-[13px] text-center px-8">
-              Здесь будет отображаться история ваших платежей
-            </span>
+          <div className="flex-1 overflow-y-auto pb-20">
+            {paymentsLoading ? (
+              <div className="flex items-center justify-center h-40">
+                <Icon name="Loader2" size={32} className="text-[#4ade80] animate-spin" />
+              </div>
+            ) : payments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-40">
+                <Icon name="ReceiptText" size={56} className="text-white/15 mb-4" fallback="FileText" />
+                <span className="text-white/50 font-semibold text-[16px] mb-1">Операций пока нет</span>
+                <span className="text-white/25 text-[13px] text-center px-8">
+                  Здесь будет отображаться история ваших платежей
+                </span>
+              </div>
+            ) : (
+              <div className="px-5 flex flex-col gap-2">
+                {payments.map((p) => {
+                  const date = p.paid_at || p.created_at;
+                  const dateStr = date ? new Date(date).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+                  const isPaid = p.status === "paid";
+                  return (
+                    <div key={p.id} className="flex items-center justify-between bg-white/[0.05] rounded-xl px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isPaid ? "bg-[#4ade80]/15" : "bg-white/10"}`}>
+                          <Icon name="ArrowDownLeft" size={18} className={isPaid ? "text-[#4ade80]" : "text-white/40"} />
+                        </div>
+                        <div>
+                          <div className="text-white text-[14px] font-semibold">Депозит</div>
+                          <div className="text-white/40 text-[12px]">{dateStr}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-[15px] font-bold ${isPaid ? "text-[#4ade80]" : "text-white/50"}`}>+{p.amount} USDT</div>
+                        <div className={`text-[11px] font-medium ${isPaid ? "text-[#4ade80]/70" : "text-yellow-400/70"}`}>
+                          {isPaid ? "Оплачен" : "Ожидание"}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}

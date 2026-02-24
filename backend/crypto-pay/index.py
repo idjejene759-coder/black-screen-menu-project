@@ -68,6 +68,7 @@ def handler(event, context):
         "asset": "USDT",
         "amount": str(amount),
         "description": f"Пополнение баланса на {amount} USDT",
+        "payload": json.dumps({"user_id": user_id}),
         "expires_in": 3600,
     }).encode("utf-8")
 

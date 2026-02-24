@@ -181,6 +181,12 @@ const Index = () => {
                 <button
                   key={item.label}
                   className="flex items-center gap-4 px-3 py-3.5 rounded-xl hover:bg-[#4ade80]/5 active:bg-[#4ade80]/10 transition-colors"
+                  onClick={() => {
+                    if (item.label === "Казино") { setMenuOpen(false); setActive(2); }
+                    if (item.label === "Кейсы") { setMenuOpen(false); setActive(4); }
+                    if (item.label === "Бонусы") { setMenuOpen(false); setActive(3); }
+                    if (item.label === "Поддержка 24/7") { window.open("https://t.me/Jaguar_helpi_bot", "_blank"); }
+                  }}
                 >
                   <Icon
                     name={item.icon}

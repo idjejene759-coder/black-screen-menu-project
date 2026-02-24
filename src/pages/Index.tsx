@@ -177,25 +177,29 @@ const Index = () => {
             <div className="h-px bg-[#4ade80]/15 mx-5" />
 
             <div className="flex flex-col py-3 px-2">
-              {menuItems.map((item) => (
-                <button
-                  key={item.label}
-                  className="flex items-center gap-4 px-3 py-3.5 rounded-xl hover:bg-[#4ade80]/5 active:bg-[#4ade80]/10 transition-colors"
-                  onClick={() => {
-                    if (item.label === "Казино") { setMenuOpen(false); setActive(2); }
-                    if (item.label === "Кейсы") { setMenuOpen(false); setActive(4); }
-                    if (item.label === "Бонусы") { setMenuOpen(false); setActive(3); }
-                    if (item.label === "Поддержка 24/7") { window.open("https://t.me/Jaguar_helpi_bot", "_blank"); }
-                  }}
-                >
-                  <Icon
-                    name={item.icon}
-                    fallback={item.fallback || item.icon}
-                    size={22}
-                    className="text-[#4ade80]/60"
-                  />
-                  <span className="text-white text-sm font-medium">{item.label}</span>
-                </button>
+              {menuItems.map((item, idx) => (
+                <div key={item.label}>
+                  <button
+                    className="w-full flex items-center gap-4 px-3 py-3.5 rounded-xl hover:bg-[#4ade80]/5 active:bg-[#4ade80]/10 transition-colors"
+                    onClick={() => {
+                      if (item.label === "Казино") { setMenuOpen(false); setActive(2); }
+                      if (item.label === "Кейсы") { setMenuOpen(false); setActive(4); }
+                      if (item.label === "Бонусы") { setMenuOpen(false); setActive(3); }
+                      if (item.label === "Поддержка 24/7") { window.open("https://t.me/Jaguar_helpi_bot", "_blank"); }
+                    }}
+                  >
+                    <Icon
+                      name={item.icon}
+                      fallback={item.fallback || item.icon}
+                      size={22}
+                      className="text-[#4ade80]/60"
+                    />
+                    <span className="text-white text-sm font-medium">{item.label}</span>
+                  </button>
+                  {idx < menuItems.length - 1 && (
+                    <div className="h-px bg-[#4ade80]/20 mx-3" />
+                  )}
+                </div>
               ))}
             </div>
           </div>

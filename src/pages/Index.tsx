@@ -64,6 +64,7 @@ const Index = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [cryptoPayOpen, setCryptoPayOpen] = useState(false);
+  const [bonusOpen, setBonusOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState("5");
   const [depositError, setDepositError] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
@@ -235,7 +236,12 @@ const Index = () => {
               <div className="bg-white/5 border border-[#4ade80]/20 rounded-xl overflow-hidden">
                 {section.items.map((item, iIdx) => (
                   <div key={item.label}>
-                    <button className="w-full flex items-center gap-3 px-4 py-3">
+                    <button
+                      className="w-full flex items-center gap-3 px-4 py-3"
+                      onClick={() => {
+                        if (item.label === "Бонусы") { setProfileOpen(false); setBonusOpen(true); }
+                      }}
+                    >
                       <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative shrink-0">
                         <Icon
                           name={item.icon}
@@ -427,6 +433,27 @@ const Index = () => {
             >
               {depositLoading ? "Создаём платёж..." : `Пополнить ${depositAmount || "0"} USDT`}
             </button>
+          </div>
+        </div>
+      )}
+
+      {bonusOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col overflow-y-auto">
+          <div className="flex items-center justify-between px-5 pt-4 pb-2">
+            <h1 className="text-[22px] font-bold text-white">Бонусы</h1>
+            <button
+              onClick={() => setBonusOpen(false)}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+            >
+              <Icon name="X" size={16} className="text-white/60" />
+            </button>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
+            <Icon name="Gift" size={64} className="text-white/20 mb-5" />
+            <span className="text-white font-bold text-[18px] mb-2">Бонусов пока нет</span>
+            <span className="text-white/40 text-[14px] text-center leading-relaxed">
+              Как только они появятся, вы увидите их в этом разделе
+            </span>
           </div>
         </div>
       )}

@@ -24,8 +24,8 @@
       "name": "POST with low amount",
       "method": "POST",
       "path": "/",
-      "headers": {"Content-Type": "application/json", "X-User-Id": "test123"},
-      "body": "{\"amount\": 2}",
+      "headers": {"Content-Type": "application/json"},
+      "body": "{\"amount\": 2, \"user_id\": \"test123\"}",
       "expectedStatus": 400
     }
   ]

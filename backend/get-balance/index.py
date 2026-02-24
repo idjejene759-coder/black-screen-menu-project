@@ -26,8 +26,8 @@ def handler(event, context):
     if event.get("httpMethod") != "GET":
         return {"statusCode": 405, "headers": cors, "body": json.dumps({"error": "Method not allowed"})}
 
-    headers = event.get("headers", {})
-    user_id = headers.get("X-User-Id") or headers.get("x-user-id") or ""
+    qs = event.get("queryStringParameters") or {}
+    user_id = str(qs.get("user_id", "")).strip()
     if not user_id:
         return {"statusCode": 401, "headers": cors, "body": json.dumps({"error": "Не указан пользователь"})}
 

@@ -108,7 +108,7 @@ const Index = () => {
   const fetchBalance = useCallback(async () => {
     if (!userId) return;
     try {
-      const res = await fetch(BALANCE_URL, { headers: { "X-User-Id": String(userId) } });
+      const res = await fetch(`${BALANCE_URL}?user_id=${encodeURIComponent(String(userId))}`);
       const data = await res.json();
       if (res.ok) setUserBalance(data.balance || 0);
     } catch { /* ignore */ }
@@ -412,8 +412,8 @@ const Index = () => {
                 try {
                   const res = await fetch(CRYPTO_PAY_URL, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "X-User-Id": String(userId) },
-                    body: JSON.stringify({ amount }),
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount, user_id: String(userId) }),
                   });
                   const data = await res.json();
                   if (!res.ok) {

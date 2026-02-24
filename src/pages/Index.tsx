@@ -255,6 +255,7 @@ const Index = () => {
                         if (item.label === "Бонусы") { setProfileOpen(false); setBonusOpen(true); }
                         if (item.label === "Ваучеры") { setProfileOpen(false); setVoucherOpen(true); setVoucherCode(""); }
                         if (item.label === "История платежей") { setProfileOpen(false); setHistoryOpen(true); setHistoryTab("all"); fetchPayments("all"); }
+                        if (item.label === "Поддержка 24/7") { window.open("https://t.me/Jaguar_helpi_bot", "_blank"); }
                       }}
                     >
                       <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative shrink-0">

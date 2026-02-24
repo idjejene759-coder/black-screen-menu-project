@@ -107,8 +107,7 @@ const Index = () => {
 
   const handleLogout = useCallback(async () => {
     await tgAuth.logout();
-    setProfileOpen(false);
-    setMenuOpen(false);
+    window.location.reload();
   }, [tgAuth]);
 
   const handleNavClick = (index: number) => {
@@ -393,7 +392,8 @@ const Index = () => {
                   setDepositError("Максимальная сумма пополнения — 5000 USDT");
                   return;
                 }
-                if (!userId) {
+                const currentUserId = tgAuth.user?.id;
+                if (!currentUserId) {
                   setDepositError("Ошибка идентификации. Перезайдите в аккаунт");
                   return;
                 }
@@ -403,7 +403,7 @@ const Index = () => {
                   const res = await fetch(CRYPTO_PAY_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ amount, user_id: String(userId) }),
+                    body: JSON.stringify({ amount, user_id: String(currentUserId) }),
                   });
                   const data = await res.json();
                   if (!res.ok) {

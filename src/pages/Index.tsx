@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 const copyId = (id: string | number) => {
   navigator.clipboard.writeText(String(id));
@@ -53,6 +53,246 @@ const profileSections = [
     ],
   },
 ];
+
+const USDT_LOGO = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/b6a2ce09-578d-4bdb-8f07-93555b97233b.jpg";
+
+const WHEEL_SEGMENTS = [
+  { label: "1000 USDT", color: "#e53e3e", textColor: "#fff" },
+  { label: "10 USDT",   color: "#3b82f6", textColor: "#fff" },
+  { label: "1$",        color: "#f59e0b", textColor: "#fff" },
+  { label: "500 USDT",  color: "#3b82f6", textColor: "#fff" },
+  { label: "1$",        color: "#f97316", textColor: "#fff" },
+  { label: "100 USDT",  color: "#3b82f6", textColor: "#fff" },
+  { label: "50 USDT",   color: "#f59e0b", textColor: "#fff" },
+  { label: "—",         color: "#e5e7eb", textColor: "#888" },
+  { label: "30 USDT",   color: "#3b82f6", textColor: "#fff" },
+  { label: "1$",        color: "#f97316", textColor: "#fff" },
+  { label: "1$",        color: "#f59e0b", textColor: "#fff" },
+  { label: "1$",        color: "#3b82f6", textColor: "#fff" },
+  { label: "1$",        color: "#f97316", textColor: "#fff" },
+  { label: "1$",        color: "#f59e0b", textColor: "#fff" },
+  { label: "1$",        color: "#3b82f6", textColor: "#fff" },
+  { label: "1$",        color: "#f97316", textColor: "#fff" },
+];
+
+const N = WHEEL_SEGMENTS.length;
+const ARC = (2 * Math.PI) / N;
+
+function FortuneWheel() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [spinning, setSpinning] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const angleRef = useRef(0);
+  const rafRef = useRef<number>(0);
+  const usdtImgRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = USDT_LOGO;
+    img.onload = () => { usdtImgRef.current = img; drawWheel(angleRef.current); };
+    img.onerror = () => { drawWheel(angleRef.current); };
+  }, []);
+
+  const drawWheel = (angle: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const W = canvas.width;
+    const cx = W / 2;
+    const cy = W / 2;
+    const R = W / 2 - 8;
+    const innerR = R * 0.32;
+
+    ctx.clearRect(0, 0, W, W);
+
+    // Outer gold ring glow
+    const glow = ctx.createRadialGradient(cx, cy, R - 12, cx, cy, R + 8);
+    glow.addColorStop(0, "rgba(255,215,0,0.9)");
+    glow.addColorStop(1, "rgba(255,160,0,0)");
+    ctx.beginPath();
+    ctx.arc(cx, cy, R + 4, 0, 2 * Math.PI);
+    ctx.fillStyle = glow;
+    ctx.fill();
+
+    // Gold border
+    ctx.beginPath();
+    ctx.arc(cx, cy, R + 2, 0, 2 * Math.PI);
+    ctx.lineWidth = 10;
+    const goldGrad = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
+    goldGrad.addColorStop(0, "#FFD700");
+    goldGrad.addColorStop(0.5, "#FFA500");
+    goldGrad.addColorStop(1, "#FFD700");
+    ctx.strokeStyle = goldGrad;
+    ctx.stroke();
+
+    // Segments
+    for (let i = 0; i < N; i++) {
+      const start = angle + i * ARC - Math.PI / 2;
+      const end = start + ARC;
+      const seg = WHEEL_SEGMENTS[i];
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, start, end);
+      ctx.closePath();
+      ctx.fillStyle = seg.color;
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Text + USDT icon
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(start + ARC / 2);
+      const textR = R * 0.62;
+      ctx.translate(textR, 0);
+      ctx.rotate(Math.PI / 2);
+
+      if (seg.label !== "—") {
+        // USDT icon
+        const iconSize = W * 0.045;
+        if (usdtImgRef.current) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(-iconSize * 0.6, -W * 0.07, iconSize * 0.55, 0, 2 * Math.PI);
+          ctx.clip();
+          ctx.drawImage(usdtImgRef.current, -iconSize * 1.15, -W * 0.07 - iconSize * 0.55, iconSize * 1.1, iconSize * 1.1);
+          ctx.restore();
+        }
+
+        ctx.fillStyle = seg.textColor;
+        ctx.font = `bold ${Math.max(W * 0.028, 9)}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(seg.label, 0, 0);
+      }
+
+      ctx.restore();
+    }
+
+    // Small white dots on outer ring
+    for (let i = 0; i < N * 2; i++) {
+      const dotAngle = angle + (i * Math.PI) / N;
+      const dotR = R + 1;
+      const dx = cx + dotR * Math.cos(dotAngle);
+      const dy = cy + dotR * Math.sin(dotAngle);
+      ctx.beginPath();
+      ctx.arc(dx, dy, 3, 0, 2 * Math.PI);
+      ctx.fillStyle = i % 2 === 0 ? "#fff" : "#FFD700";
+      ctx.fill();
+    }
+
+    // Center gold circle
+    const cGrad = ctx.createRadialGradient(cx - innerR * 0.3, cy - innerR * 0.3, innerR * 0.1, cx, cy, innerR);
+    cGrad.addColorStop(0, "#FFE566");
+    cGrad.addColorStop(0.5, "#FFB700");
+    cGrad.addColorStop(1, "#CC8800");
+    ctx.beginPath();
+    ctx.arc(cx, cy, innerR, 0, 2 * Math.PI);
+    ctx.fillStyle = cGrad;
+    ctx.fill();
+    ctx.strokeStyle = "#FFD700";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Gift icon (emoji)
+    ctx.font = `${innerR * 0.85}px serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🎁", cx, cy + innerR * 0.06);
+  };
+
+  useEffect(() => {
+    drawWheel(angleRef.current);
+  }, []);
+
+  const spin = () => {
+    if (spinning) return;
+    setResult(null);
+    setSpinning(true);
+
+    const totalRotation = (5 + Math.random() * 5) * 2 * Math.PI;
+    const startAngle = angleRef.current;
+    const targetAngle = startAngle + totalRotation;
+    const duration = 4000;
+    const startTime = performance.now();
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      const current = startAngle + (targetAngle - startAngle) * ease;
+      angleRef.current = current;
+      drawWheel(current);
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      } else {
+        angleRef.current = targetAngle;
+        setSpinning(false);
+        // Find winning segment (top = -π/2)
+        const normalized = ((targetAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const pointer = ((2 * Math.PI - normalized) % (2 * Math.PI) + Math.PI / 2) % (2 * Math.PI);
+        const idx = Math.floor((pointer / (2 * Math.PI)) * N) % N;
+        setResult(WHEEL_SEGMENTS[idx].label);
+      }
+    };
+    rafRef.current = requestAnimationFrame(animate);
+  };
+
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
+
+  const size = Math.min(typeof window !== "undefined" ? window.innerWidth - 32 : 340, 380);
+
+  return (
+    <div className="flex flex-col items-center pb-8 pt-4 px-4 min-h-full">
+      <h2 className="text-white font-extrabold text-xl mb-1 tracking-wide">Free Money</h2>
+      <p className="text-white/40 text-xs mb-5">Нажми на центр колеса, чтобы крутить</p>
+
+      <div className="relative" style={{ width: size, height: size }}>
+        {/* Pointer */}
+        <div className="absolute left-1/2 -translate-x-1/2 -top-1 z-10 flex flex-col items-center" style={{ top: -2 }}>
+          <div style={{
+            width: 0, height: 0,
+            borderLeft: "10px solid transparent",
+            borderRight: "10px solid transparent",
+            borderTop: "28px solid #4169e1",
+          }} />
+          <div className="w-3 h-3 rounded-full bg-[#4169e1] -mt-1" />
+        </div>
+
+        <canvas
+          ref={canvasRef}
+          width={size}
+          height={size}
+          style={{ borderRadius: "50%", cursor: spinning ? "default" : "pointer" }}
+          onClick={spin}
+        />
+      </div>
+
+      {result && (
+        <div className="mt-6 px-6 py-4 bg-white/5 border border-[#4ade80]/30 rounded-2xl flex flex-col items-center gap-1 animate-pulse-once">
+          <span className="text-white/50 text-xs">Вы выиграли</span>
+          <div className="flex items-center gap-2">
+            {result !== "—" && (
+              <img src={USDT_LOGO} alt="USDT" className="w-6 h-6 rounded-full object-cover" />
+            )}
+            <span className="text-[#4ade80] font-extrabold text-2xl">{result === "—" ? "Ничего 😔" : result}</span>
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={spin}
+        disabled={spinning}
+        className="mt-6 bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 px-10 active:bg-[#3ecb6e] transition-colors disabled:opacity-50"
+      >
+        {spinning ? "Крутится..." : "Крутить!"}
+      </button>
+    </div>
+  );
+}
 
 const Index = () => {
   const [active, setActive] = useState(1);
@@ -685,10 +925,7 @@ const Index = () => {
         )}
 
         {active === 3 && (
-          <div className="flex flex-col items-center justify-center py-16 px-6">
-            <Icon name="BadgeDollarSign" size={48} className="text-[#4ade80]/30 mb-4" />
-            <span className="text-white/40 text-sm">Free money — скоро</span>
-          </div>
+          <FortuneWheel />
         )}
 
         {active === 4 && (

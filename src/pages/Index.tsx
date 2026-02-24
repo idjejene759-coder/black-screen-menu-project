@@ -101,9 +101,9 @@ const Index = () => {
 
   const isAuthed = auth.isAuthenticated || tgAuth.isAuthenticated;
   const isLoadingAuth = auth.isLoading || tgAuth.isLoading;
-  const currentUser = auth.user || tgAuth.user;
+  const currentUser = tgAuth.user || auth.user;
 
-  const userId = currentUser?.id || currentUser?.display_id || "";
+  const userId = currentUser?.id != null ? String(currentUser.id) : "";
 
   const fetchBalance = useCallback(async () => {
     if (!userId) return;
@@ -405,6 +405,10 @@ const Index = () => {
                 }
                 if (amount > 5000) {
                   setDepositError("Максимальная сумма пополнения — 5000 USDT");
+                  return;
+                }
+                if (!userId) {
+                  setDepositError("Ошибка идентификации. Перезайдите в аккаунт");
                   return;
                 }
                 setDepositError("");

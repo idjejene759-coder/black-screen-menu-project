@@ -44,7 +44,12 @@ const profileSections = [
     items: [
       { icon: "Gift", label: "Бонусы", desc: "Фриспины и другие предложения" },
       { icon: "Ticket", label: "Ваучеры", desc: "Активация кода" },
+    ],
+  },
+  {
+    items: [
       { icon: "Coins", label: "История платежей", desc: "Статусы депозитов и выводов", fallback: "Wallet" },
+      { icon: "Headphones", label: "Поддержка 24/7", desc: "Все способы связи" },
     ],
   },
 ];

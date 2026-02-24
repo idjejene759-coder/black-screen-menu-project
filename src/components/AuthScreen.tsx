@@ -48,7 +48,7 @@ const AuthScreen = ({ onAuth }: AuthScreenProps) => {
         )}
 
         <button
-          onClick={() => tgAuth.startLogin()}
+          onClick={() => tgAuth.login()}
           disabled={tgAuth.isLoading}
           className="w-full flex items-center justify-center gap-3 bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-4 hover:bg-[#4ade80]/90 active:bg-[#4ade80]/80 transition-colors disabled:opacity-40"
         >

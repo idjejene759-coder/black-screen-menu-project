@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 
 const ADMIN_URL = "https://functions.poehali.dev/6eb840f4-abc2-453e-a7d9-5f9a989722bf";
+const WITHDRAWAL_URL = "https://functions.poehali.dev/9cfe3eb3-a1dd-4e28-806b-4476909e4725";
 
 const ROLE_CHIEF = 1;
 const ROLE_ADMIN = 2;
@@ -47,6 +48,19 @@ interface AdminUser {
   telegram_id: string;
 }
 
+interface Withdrawal {
+  id: number;
+  user_id: number;
+  display_id: number;
+  user_name: string;
+  network: string;
+  address: string;
+  amount: number;
+  status: string;
+  created_at: string | null;
+  processed_at: string | null;
+}
+
 interface AdminPanelProps {
   adminDisplayId: string | number;
   adminRole: number;
@@ -62,7 +76,7 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [newBalance, setNewBalance] = useState("");
   const [actionLoading, setActionLoading] = useState<number | null>(null);
-  const [tab, setTab] = useState<"players" | "stats" | "admins">(adminRole <= ROLE_ADMIN ? "players" : "stats");
+  const [tab, setTab] = useState<"players" | "stats" | "admins" | "withdrawals">(adminRole <= ROLE_ADMIN ? "players" : "stats");
   const [addAdminOpen, setAddAdminOpen] = useState(false);
   const [addAdminId, setAddAdminId] = useState("");
   const [addAdminRole, setAddAdminRole] = useState(ROLE_ADMIN);
@@ -70,6 +84,9 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
   const [addAdminLoading, setAddAdminLoading] = useState(false);
   const [changeRoleAdmin, setChangeRoleAdmin] = useState<AdminUser | null>(null);
   const [changeRoleValue, setChangeRoleValue] = useState(ROLE_ADMIN);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
+  const [wdFilter, setWdFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
 
   const canManagePlayers = adminRole <= ROLE_ADMIN;
   const canManageAdmins = adminRole === ROLE_CHIEF;
@@ -104,15 +121,27 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
     } catch { /* */ }
   }, [adminDisplayId, canManagePlayers]);
 
+  const fetchWithdrawals = useCallback(async (status = "pending") => {
+    if (!canManagePlayers) return;
+    setWithdrawalsLoading(true);
+    try {
+      const res = await fetch(`${WITHDRAWAL_URL}?action=list&status=${status}`);
+      const data = await res.json();
+      if (res.ok) setWithdrawals(data.withdrawals || []);
+    } catch { /* */ }
+    setWithdrawalsLoading(false);
+  }, [canManagePlayers]);
+
   useEffect(() => {
     fetchStats();
     if (canManagePlayers) {
       fetchPlayers();
       fetchAdmins();
+      fetchWithdrawals("pending");
     } else {
       setLoading(false);
     }
-  }, [fetchPlayers, fetchStats, fetchAdmins, canManagePlayers]);
+  }, [fetchPlayers, fetchStats, fetchAdmins, fetchWithdrawals, canManagePlayers]);
 
   const handleSearch = () => fetchPlayers(search);
 
@@ -223,6 +252,32 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
     setActionLoading(null);
   };
 
+  const handleApproveWithdrawal = async (w: Withdrawal) => {
+    setActionLoading(w.id);
+    try {
+      await fetch(`${WITHDRAWAL_URL}?action=approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: w.id }),
+      });
+      await fetchWithdrawals(wdFilter);
+    } catch { /* */ }
+    setActionLoading(null);
+  };
+
+  const handleRejectWithdrawal = async (w: Withdrawal) => {
+    setActionLoading(w.id);
+    try {
+      await fetch(`${WITHDRAWAL_URL}?action=reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: w.id }),
+      });
+      await fetchWithdrawals(wdFilter);
+    } catch { /* */ }
+    setActionLoading(null);
+  };
+
   const formatDate = (d: string | null) => {
     if (!d) return "—";
     return new Date(d).toLocaleString("ru-RU", {
@@ -299,6 +354,22 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
           >
             <Icon name="ShieldCheck" size={13} className="inline mr-1" />
             Админы
+          </button>
+        )}
+        {canManagePlayers && (
+          <button
+            onClick={() => { setTab("withdrawals"); fetchWithdrawals(wdFilter); }}
+            className={`flex-1 py-2 rounded-lg text-[12px] font-semibold transition-colors relative ${
+              tab === "withdrawals" ? "bg-[#4ade80] text-black" : "bg-white/5 text-white/50"
+            }`}
+          >
+            <Icon name="ArrowUpRight" size={13} className="inline mr-1" />
+            Выводы
+            {withdrawals.filter(w => w.status === "pending").length > 0 && tab !== "withdrawals" && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center">
+                {withdrawals.filter(w => w.status === "pending").length}
+              </span>
+            )}
           </button>
         )}
       </div>
@@ -499,6 +570,101 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
                         >
                           <Icon name="UserMinus" size={12} />
                           Убрать
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "withdrawals" && canManagePlayers && (
+        <div className="flex-1 overflow-y-auto px-4 pt-2 pb-20">
+          <div className="flex gap-1 mb-3">
+            {(["pending", "approved", "rejected", "all"] as const).map((f) => {
+              const labels = { pending: "Ожидание", approved: "Одобрено", rejected: "Отклонено", all: "Все" };
+              return (
+                <button
+                  key={f}
+                  onClick={() => { setWdFilter(f); fetchWithdrawals(f); }}
+                  className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
+                    wdFilter === f ? "bg-white/10 text-white" : "bg-white/[0.03] text-white/30"
+                  }`}
+                >
+                  {labels[f]}
+                </button>
+              );
+            })}
+          </div>
+
+          {withdrawalsLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <Icon name="Loader2" size={28} className="text-[#4ade80] animate-spin" />
+            </div>
+          ) : withdrawals.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32">
+              <Icon name="ArrowUpRight" size={40} className="text-white/15 mb-3" />
+              <span className="text-white/40 text-[13px]">Заявок нет</span>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {withdrawals.map((w) => {
+                const isPending = w.status === "pending";
+                const isApproved = w.status === "approved";
+                const statusColor = isPending ? "text-yellow-400" : isApproved ? "text-[#4ade80]" : "text-red-400";
+                const statusBg = isPending ? "bg-yellow-400/10" : isApproved ? "bg-[#4ade80]/10" : "bg-red-400/10";
+                const statusLabel = isPending ? "Ожидание" : isApproved ? "Одобрено" : "Отклонено";
+                return (
+                  <div key={w.id} className={`bg-white/[0.04] border ${isPending ? "border-yellow-500/30" : "border-white/10"} rounded-xl px-3.5 py-3`}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${statusBg}`}>
+                          <Icon name="ArrowUpRight" size={16} className={statusColor} />
+                        </div>
+                        <div>
+                          <div className="text-white font-semibold text-[13px]">{w.user_name || "Игрок"}</div>
+                          <div className="text-white/30 text-[11px]">ID: {w.display_id}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-red-400 font-bold text-[14px]">−{w.amount.toFixed(2)}</div>
+                        <div className="text-white/20 text-[10px]">USDT</div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/[0.03] rounded-lg px-3 py-2 mb-2">
+                      <div className="text-white/40 text-[10px] mb-0.5">Сеть: <span className="text-white/60">{w.network}</span></div>
+                      <div className="text-white/40 text-[10px]">Адрес:</div>
+                      <div className="text-white/80 text-[11px] font-mono break-all">{w.address}</div>
+                    </div>
+
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/20 text-[10px]">{formatDate(w.created_at)}</span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusBg} ${statusColor}`}>
+                        {statusLabel}
+                      </span>
+                    </div>
+
+                    {isPending && (
+                      <div className="flex gap-2">
+                        <button
+                          disabled={actionLoading === w.id}
+                          onClick={() => handleApproveWithdrawal(w)}
+                          className="flex-1 flex items-center justify-center gap-1 bg-[#4ade80]/15 text-[#4ade80] text-[12px] font-semibold rounded-lg py-2 active:bg-[#4ade80]/25 transition-colors disabled:opacity-50"
+                        >
+                          <Icon name="Check" size={12} />
+                          Одобрить
+                        </button>
+                        <button
+                          disabled={actionLoading === w.id}
+                          onClick={() => handleRejectWithdrawal(w)}
+                          className="flex-1 flex items-center justify-center gap-1 bg-red-500/15 text-red-400 text-[12px] font-semibold rounded-lg py-2 active:bg-red-500/25 transition-colors disabled:opacity-50"
+                        >
+                          <Icon name="X" size={12} />
+                          Отклонить
                         </button>
                       </div>
                     )}

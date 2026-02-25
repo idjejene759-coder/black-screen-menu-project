@@ -24,6 +24,16 @@ const BALANCE_URL = "https://functions.poehali.dev/9b313374-9637-4e08-aacd-2659b
 const PAYMENTS_URL = "https://functions.poehali.dev/6f062055-7c07-4741-9e3a-0ae795f0c0df";
 const TG_BOT_USERNAME = "Jaguar_Official_bot";
 const ADMIN_CHECK_URL = "https://functions.poehali.dev/6eb840f4-abc2-453e-a7d9-5f9a989722bf";
+const WITHDRAWAL_URL = "https://functions.poehali.dev/9cfe3eb3-a1dd-4e28-806b-4476909e4725";
+
+const USDT_ICON = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/521d6370-ca4b-47aa-9be0-a7e2edc0027f.jpg";
+
+const WITHDRAW_NETWORKS = [
+  { id: "ERC20", name: "Tether ERC20", label: "ERC20", color: "#50AF95" },
+  { id: "TRC20", name: "Tether TRC20", label: "TRC20", color: "#50AF95" },
+  { id: "BEP20", name: "Tether BEP20", label: "BEP20", color: "#50AF95" },
+  { id: "TON", name: "Tether TON", label: "TON", color: "#50AF95" },
+];
 
 const navItems = [
   { icon: "Menu", label: "Меню" },
@@ -77,6 +87,15 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminRole, setAdminRole] = useState(0);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawStep, setWithdrawStep] = useState(1);
+  const [withdrawNetwork, setWithdrawNetwork] = useState("");
+  const [withdrawAddress, setWithdrawAddress] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState("15");
+  const [withdrawError, setWithdrawError] = useState("");
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
+  const [withdrawSearch, setWithdrawSearch] = useState("");
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -276,7 +295,10 @@ const Index = () => {
                   <Icon name="Plus" size={15} />
                   Пополнить
                 </button>
-                <button className="flex-1 flex items-center justify-center bg-white/10 text-white font-semibold text-[13px] rounded-lg py-2.5">
+                <button
+                  onClick={() => { setProfileOpen(false); setWithdrawOpen(true); setWithdrawStep(1); setWithdrawNetwork(""); setWithdrawAddress(""); setWithdrawAmount("15"); setWithdrawError(""); setWithdrawSuccess(false); setWithdrawSearch(""); }}
+                  className="flex-1 flex items-center justify-center bg-white/10 text-white font-semibold text-[13px] rounded-lg py-2.5"
+                >
                   Вывести
                 </button>
               </div>
@@ -645,6 +667,206 @@ const Index = () => {
               Как только они появятся, вы увидите их в этом разделе
             </span>
           </div>
+        </div>
+      )}
+
+      {withdrawOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col overflow-y-auto">
+          {withdrawStep === 1 && (
+            <>
+              <div className="flex items-center justify-between px-5 pt-4 pb-2">
+                <h1 className="text-[22px] font-bold text-white">Вывод</h1>
+                <button
+                  onClick={() => setWithdrawOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+                >
+                  <Icon name="X" size={16} className="text-white/60" />
+                </button>
+              </div>
+              <div className="px-5 pt-4">
+                <button
+                  onClick={() => setWithdrawStep(2)}
+                  className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 w-full max-w-[220px] active:bg-white/10 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-[#50AF95]/20 flex items-center justify-center">
+                    <img src={USDT_ICON} alt="USDT" className="w-full h-full object-cover scale-[1.8]" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#50AF95] font-bold text-[15px]">ERC20</span>
+                      <span className="text-white/30 text-[11px] bg-white/5 rounded-full px-2 py-0.5">4</span>
+                    </div>
+                    <span className="text-white/50 text-[12px]">Криптовалюта</span>
+                  </div>
+                </button>
+              </div>
+            </>
+          )}
+
+          {withdrawStep === 2 && (
+            <>
+              <div className="flex items-center justify-between px-5 pt-4 pb-2">
+                <button
+                  onClick={() => setWithdrawStep(1)}
+                  className="flex items-center gap-1.5 text-[#4ade80] text-[14px] font-medium"
+                >
+                  <Icon name="ChevronLeft" size={18} />
+                  Назад
+                </button>
+                <button
+                  onClick={() => setWithdrawOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+                >
+                  <Icon name="X" size={16} className="text-white/60" />
+                </button>
+              </div>
+              <div className="px-5 pt-2">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-[#f7931a]/20 flex items-center justify-center">
+                    <span className="text-[#f7931a] font-bold text-[16px]">B</span>
+                  </div>
+                  <h2 className="text-white font-bold text-[20px]">Криптовалюта</h2>
+                </div>
+
+                <div className="flex items-center bg-white/5 border border-white/10 rounded-xl px-3 gap-2 mb-4">
+                  <Icon name="Search" size={16} className="text-white/30" />
+                  <input
+                    type="text"
+                    value={withdrawSearch}
+                    onChange={(e) => setWithdrawSearch(e.target.value)}
+                    placeholder="Поиск"
+                    className="bg-transparent text-white text-[14px] py-2.5 outline-none w-full placeholder:text-white/30"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {WITHDRAW_NETWORKS
+                    .filter(n => !withdrawSearch || n.name.toLowerCase().includes(withdrawSearch.toLowerCase()) || n.label.toLowerCase().includes(withdrawSearch.toLowerCase()))
+                    .map((net) => (
+                    <button
+                      key={net.id}
+                      onClick={() => { setWithdrawNetwork(net.id); setWithdrawStep(3); setWithdrawError(""); }}
+                      className="flex flex-col gap-2 bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 active:bg-white/10 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-[#50AF95]/20 flex items-center justify-center">
+                          <img src={USDT_ICON} alt={net.label} className="w-full h-full object-cover scale-[1.8]" />
+                        </div>
+                        <span className="text-[#50AF95] font-bold text-[14px]">{net.label}</span>
+                      </div>
+                      <span className="text-white/50 text-[12px]">{net.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {withdrawStep === 3 && (
+            <>
+              <div className="flex items-center justify-between px-5 pt-4 pb-2">
+                <button
+                  onClick={() => setWithdrawStep(2)}
+                  className="flex items-center gap-1.5 text-[#4ade80] text-[14px] font-medium"
+                >
+                  <Icon name="ChevronLeft" size={18} />
+                  Назад
+                </button>
+                <button
+                  onClick={() => setWithdrawOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+                >
+                  <Icon name="X" size={16} className="text-white/60" />
+                </button>
+              </div>
+              <div className="px-5 pt-2">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-[#50AF95]/20 flex items-center justify-center">
+                    <img src={USDT_ICON} alt={withdrawNetwork} className="w-full h-full object-cover scale-[1.8]" />
+                  </div>
+                  <div>
+                    <span className="text-[#50AF95] font-bold text-[14px] mr-2">{withdrawNetwork}</span>
+                    <span className="text-white font-bold text-[18px]">Tether {withdrawNetwork}</span>
+                  </div>
+                </div>
+
+                <input
+                  type="text"
+                  value={withdrawAddress}
+                  onChange={(e) => setWithdrawAddress(e.target.value)}
+                  placeholder="Адрес получателя USDT"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[14px] outline-none mb-3 placeholder:text-white/30"
+                />
+
+                <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 mb-1">
+                  <span className="text-white/40 text-[11px]">Сумма</span>
+                  <div className="flex items-center">
+                    <input
+                      type="number"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      className="bg-transparent text-white text-[16px] font-bold outline-none w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      min="15"
+                    />
+                    <span className="text-white/40 text-[14px] shrink-0">USDT</span>
+                  </div>
+                </div>
+                <div className="text-white/30 text-[12px] mb-1 px-1">от 15 USDT до 10 000 000 USDT</div>
+                <div className="text-white/30 text-[12px] mb-4 px-1">Баланс: <span className="text-[#4ade80]">{userBalance.toFixed(2)} USDT</span></div>
+
+                {withdrawError && (
+                  <div className="text-red-400 text-[13px] font-medium mb-3 px-1">{withdrawError}</div>
+                )}
+
+                {withdrawSuccess ? (
+                  <div className="flex flex-col items-center gap-3 py-6">
+                    <div className="w-14 h-14 rounded-full bg-[#4ade80]/15 flex items-center justify-center">
+                      <Icon name="Check" size={28} className="text-[#4ade80]" />
+                    </div>
+                    <span className="text-white font-bold text-[16px]">Заявка отправлена</span>
+                    <span className="text-white/40 text-[13px] text-center">Ваша заявка на вывод принята и будет обработана в ближайшее время</span>
+                    <button
+                      onClick={() => setWithdrawOpen(false)}
+                      className="mt-2 bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 px-8 active:bg-[#3ecb6e] transition-colors"
+                    >
+                      Закрыть
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    disabled={withdrawLoading}
+                    onClick={async () => {
+                      const amt = parseFloat(withdrawAmount);
+                      if (!withdrawAddress.trim()) { setWithdrawError("Введите адрес кошелька"); return; }
+                      if (!withdrawAmount || isNaN(amt) || amt < 15) { setWithdrawError("Минимальная сумма вывода — 15 USDT"); return; }
+                      if (amt > userBalance) { setWithdrawError("Недостаточно средств"); return; }
+                      setWithdrawError("");
+                      setWithdrawLoading(true);
+                      try {
+                        const res = await fetch(`${WITHDRAWAL_URL}?action=create`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            user_id: userId ? parseInt(userId) : 0,
+                            network: withdrawNetwork,
+                            address: withdrawAddress.trim(),
+                            amount: amt,
+                          }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) { setWithdrawError(data.error || "Ошибка вывода"); }
+                        else { setWithdrawSuccess(true); fetchBalance(); }
+                      } catch { setWithdrawError("Ошибка соединения"); }
+                      setWithdrawLoading(false);
+                    }}
+                    className="w-full bg-[#3b82f6] text-white font-bold text-[15px] rounded-xl py-3.5 active:bg-[#2563eb] transition-colors disabled:opacity-50"
+                  >
+                    {withdrawLoading ? "Отправка..." : "Вывести"}
+                  </button>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
 

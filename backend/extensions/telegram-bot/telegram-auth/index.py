@@ -12,9 +12,11 @@ Flow:
 import json
 import os
 import hashlib
+import hmac
 import secrets
 from datetime import datetime, timezone, timedelta
 from typing import Optional
+from urllib.parse import parse_qs, unquote
 import psycopg2
 import jwt
 
@@ -346,6 +348,91 @@ def handle_callback(cursor, body: dict) -> dict:
     })
 
 
+def validate_webapp_init_data(init_data: str, bot_token: str) -> Optional[dict]:
+    """Validate Telegram WebApp initData signature and return user dict."""
+    try:
+        parsed = parse_qs(init_data, keep_blank_values=True)
+        data_check_string_parts = []
+        hash_value = None
+
+        for key, values in sorted(parsed.items()):
+            val = values[0]
+            if key == "hash":
+                hash_value = val
+            else:
+                data_check_string_parts.append(f"{key}={unquote(val)}")
+
+        if not hash_value:
+            return None
+
+        data_check_string = "\n".join(data_check_string_parts)
+        secret_key = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+        computed_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+        # hmac.new is correct Python stdlib
+
+        if computed_hash != hash_value:
+            return None
+
+        # Parse user from initData
+        user_raw = parsed.get("user", [None])[0]
+        if not user_raw:
+            return None
+
+        return json.loads(unquote(user_raw))
+    except Exception:
+        return None
+
+
+def handle_webapp(cursor, body: dict) -> dict:
+    """
+    POST ?action=webapp
+    Authenticate via Telegram Web App initData.
+    Called automatically when app opens as Mini App.
+    """
+    init_data = body.get("init_data", "")
+    if not init_data:
+        return cors_response(400, {"error": "Missing init_data"})
+
+    bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    if not bot_token:
+        return cors_response(500, {"error": "Server configuration error"})
+
+    tg_user = validate_webapp_init_data(init_data, bot_token)
+    if not tg_user:
+        return cors_response(401, {"error": "Invalid initData signature"})
+
+    jwt_secret = get_env("JWT_SECRET")
+
+    telegram_id = str(tg_user.get("id", ""))
+    first_name = tg_user.get("first_name")
+    last_name = tg_user.get("last_name")
+    username = tg_user.get("username")
+    photo_url = tg_user.get("photo_url")
+
+    user = create_or_update_user(
+        cursor,
+        telegram_id=telegram_id,
+        username=username,
+        first_name=first_name,
+        last_name=last_name,
+        photo_url=photo_url,
+    )
+
+    access_token = create_jwt(user["id"], jwt_secret)
+    refresh_token = generate_token(48)
+    refresh_token_hash = hash_token(refresh_token)
+    refresh_expires = datetime.now(timezone.utc) + timedelta(days=30)
+
+    save_refresh_token(cursor, user["id"], refresh_token_hash, refresh_expires)
+
+    return cors_response(200, {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expires_in": 900,
+        "user": user,
+    })
+
+
 def handle_refresh(cursor, body: dict) -> dict:
     """
     POST ?action=refresh
@@ -426,6 +513,8 @@ def handler(event, context):
         # Route to action handler
         if action == "callback" and method == "POST":
             response = handle_callback(cursor, body)
+        elif action == "webapp" and method == "POST":
+            response = handle_webapp(cursor, body)
         elif action == "refresh" and method == "POST":
             response = handle_refresh(cursor, body)
         elif action == "logout" and method == "POST":

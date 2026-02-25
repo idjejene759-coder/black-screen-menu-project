@@ -1,14 +1,30 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTelegramAuth } from "@/components/extensions/telegram-bot/useTelegramAuth";
 
 const TG_AUTH_URL = "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617";
 const TG_BOT_USERNAME = "Jaguar_Official_bot";
+
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        initData: string;
+        ready: () => void;
+        expand: () => void;
+        initDataUnsafe?: { user?: { id: number } };
+      };
+    };
+  }
+}
 
 interface AuthScreenProps {
   onAuth: () => void;
 }
 
 const AuthScreen = ({ onAuth }: AuthScreenProps) => {
+  const [webAppLoading, setWebAppLoading] = useState(false);
+  const [webAppError, setWebAppError] = useState("");
+
   const tgAuth = useTelegramAuth({
     apiUrls: {
       callback: `${TG_AUTH_URL}?action=callback`,
@@ -28,8 +44,53 @@ const AuthScreen = ({ onAuth }: AuthScreenProps) => {
     if (token) {
       window.history.replaceState({}, "", window.location.pathname);
       tgAuth.handleCallback(token);
+      return;
+    }
+
+    const tgWebApp = window.Telegram?.WebApp;
+    if (tgWebApp?.initData) {
+      tgWebApp.ready();
+      tgWebApp.expand();
+      setWebAppLoading(true);
+      fetch(`${TG_AUTH_URL}?action=webapp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ init_data: tgWebApp.initData }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.access_token && data.refresh_token) {
+            localStorage.setItem("telegram_auth_refresh_token", data.refresh_token);
+            window.location.reload();
+          } else {
+            setWebAppError(data.error || "Ошибка авторизации");
+            setWebAppLoading(false);
+          }
+        })
+        .catch(() => {
+          setWebAppError("Ошибка соединения");
+          setWebAppLoading(false);
+        });
     }
   }, []);
+
+  if (webAppLoading) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <img
+            src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/bdee33c2-9378-4db9-9a37-c87d8ac6f8cf.jpg"
+            alt="Jaguar Casino"
+            className="w-20 h-20 object-contain animate-pulse"
+          />
+          <span className="text-[#4ade80] font-extrabold text-lg tracking-wider uppercase">
+            Jaguar Casino
+          </span>
+          <span className="text-white/40 text-sm">Вход...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
@@ -44,8 +105,8 @@ const AuthScreen = ({ onAuth }: AuthScreenProps) => {
           Jaguar Casino
         </span>
 
-        {tgAuth.error && (
-          <div className="text-red-400/80 text-[12px] mb-4 text-center">{tgAuth.error}</div>
+        {(tgAuth.error || webAppError) && (
+          <div className="text-red-400/80 text-[12px] mb-4 text-center">{tgAuth.error || webAppError}</div>
         )}
 
         <button

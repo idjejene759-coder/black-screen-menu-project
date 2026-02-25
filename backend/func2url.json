@@ -1,4 +1,5 @@
 {
+  "admin-panel": "https://functions.poehali.dev/6eb840f4-abc2-453e-a7d9-5f9a989722bf",
   "get-payments": "https://functions.poehali.dev/6f062055-7c07-4741-9e3a-0ae795f0c0df",
   "get-balance": "https://functions.poehali.dev/9b313374-9637-4e08-aacd-2659b84a6074",
   "crypto-webhook": "https://functions.poehali.dev/56cf2d01-c4aa-4cb0-b489-4919512a3efe",

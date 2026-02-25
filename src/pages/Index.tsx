@@ -15,6 +15,7 @@ const bannerSlides = [
 ];
 import Icon from "@/components/ui/icon";
 import AuthScreen from "@/components/AuthScreen";
+import AdminPanel from "@/components/AdminPanel";
 import { useTelegramAuth } from "@/components/extensions/telegram-bot/useTelegramAuth";
 
 const TG_AUTH_URL = "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617";
@@ -22,6 +23,7 @@ const CRYPTO_PAY_URL = "https://functions.poehali.dev/892f6456-5e1e-4974-9df1-9e
 const BALANCE_URL = "https://functions.poehali.dev/9b313374-9637-4e08-aacd-2659b84a6074";
 const PAYMENTS_URL = "https://functions.poehali.dev/6f062055-7c07-4741-9e3a-0ae795f0c0df";
 const TG_BOT_USERNAME = "Jaguar_Official_bot";
+const ADMIN_CHECK_URL = "https://functions.poehali.dev/6eb840f4-abc2-453e-a7d9-5f9a989722bf";
 
 const navItems = [
   { icon: "Menu", label: "Меню" },
@@ -72,6 +74,8 @@ const Index = () => {
   const [depositLoading, setDepositLoading] = useState(false);
   const [userBalance, setUserBalance] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -107,6 +111,17 @@ const Index = () => {
   useEffect(() => {
     if (isAuthed && userId) fetchBalance();
   }, [isAuthed, userId, fetchBalance]);
+
+  useEffect(() => {
+    if (!isAuthed || !currentUser?.display_id) return;
+    (async () => {
+      try {
+        const res = await fetch(`${ADMIN_CHECK_URL}?action=check&display_id=${currentUser.display_id}`);
+        const data = await res.json();
+        if (data.is_admin) setIsAdmin(true);
+      } catch { /* */ }
+    })();
+  }, [isAuthed, currentUser?.display_id]);
 
   const fetchPayments = useCallback(async (type: string) => {
     if (!userId) return;
@@ -201,6 +216,19 @@ const Index = () => {
                   )}
                 </div>
               ))}
+
+              {isAdmin && (
+                <>
+                  <div className="h-px bg-[#4ade80]/20 mx-3" />
+                  <button
+                    className="w-full flex items-center gap-4 px-3 py-3.5 rounded-xl hover:bg-[#4ade80]/5 active:bg-[#4ade80]/10 transition-colors"
+                    onClick={() => { setMenuOpen(false); setAdminOpen(true); }}
+                  >
+                    <Icon name="Shield" size={22} className="text-red-400/80" />
+                    <span className="text-red-400 text-sm font-medium">Админ-панель</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
           <button
@@ -617,6 +645,13 @@ const Index = () => {
             </span>
           </div>
         </div>
+      )}
+
+      {adminOpen && isAdmin && (
+        <AdminPanel
+          adminDisplayId={currentUser?.display_id || ""}
+          onClose={() => setAdminOpen(false)}
+        />
       )}
 
       <header className="w-full px-2 py-3 flex items-center justify-between border-b border-white/5">

@@ -75,6 +75,7 @@ const Index = () => {
   const [userBalance, setUserBalance] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminRole, setAdminRole] = useState(0);
   const [adminOpen, setAdminOpen] = useState(false);
 
   useEffect(() => {
@@ -118,7 +119,7 @@ const Index = () => {
       try {
         const res = await fetch(`${ADMIN_CHECK_URL}?action=check&display_id=${currentUser.display_id}`);
         const data = await res.json();
-        if (data.is_admin) setIsAdmin(true);
+        if (data.is_admin) { setIsAdmin(true); setAdminRole(data.role); }
       } catch { /* */ }
     })();
   }, [isAuthed, currentUser?.display_id]);
@@ -650,6 +651,7 @@ const Index = () => {
       {adminOpen && isAdmin && (
         <AdminPanel
           adminDisplayId={currentUser?.display_id || ""}
+          adminRole={adminRole}
           onClose={() => setAdminOpen(false)}
         />
       )}

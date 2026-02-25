@@ -4,17 +4,20 @@ import Icon from "@/components/ui/icon";
 const ADMIN_URL = "https://functions.poehali.dev/6eb840f4-abc2-453e-a7d9-5f9a989722bf";
 const WITHDRAWAL_URL = "https://functions.poehali.dev/9cfe3eb3-a1dd-4e28-806b-4476909e4725";
 
+const ROLE_OWNER = 0;
 const ROLE_CHIEF = 1;
 const ROLE_ADMIN = 2;
 const ROLE_TECH = 3;
 
 const ROLE_NAMES: Record<number, string> = {
+  [ROLE_OWNER]: "Владелец",
   [ROLE_CHIEF]: "Гл.Администратор",
   [ROLE_ADMIN]: "Администратор",
   [ROLE_TECH]: "Тех.Специалист",
 };
 
 const ROLE_COLORS: Record<number, { bg: string; text: string; border: string }> = {
+  [ROLE_OWNER]: { bg: "bg-purple-500/15", text: "text-purple-400", border: "border-purple-500/30" },
   [ROLE_CHIEF]: { bg: "bg-red-500/15", text: "text-red-400", border: "border-red-500/30" },
   [ROLE_ADMIN]: { bg: "bg-blue-500/15", text: "text-blue-400", border: "border-blue-500/30" },
   [ROLE_TECH]: { bg: "bg-yellow-500/15", text: "text-yellow-400", border: "border-yellow-500/30" },
@@ -89,7 +92,8 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
   const [wdFilter, setWdFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
 
   const canManagePlayers = adminRole <= ROLE_ADMIN;
-  const canManageAdmins = adminRole === ROLE_CHIEF;
+  const canManageAdmins = adminRole <= ROLE_CHIEF;
+  const isOwner = adminRole === ROLE_OWNER;
 
   const fetchPlayers = useCallback(async (q = "") => {
     if (!canManagePlayers) return;
@@ -302,7 +306,7 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
   ];
 
   const roleDotColor = (role: number) =>
-    role === ROLE_CHIEF ? "rgb(248 113 113)" : role === ROLE_ADMIN ? "rgb(96 165 250)" : "rgb(250 204 21)";
+    role === ROLE_OWNER ? "rgb(192 132 252)" : role === ROLE_CHIEF ? "rgb(248 113 113)" : role === ROLE_ADMIN ? "rgb(96 165 250)" : "rgb(250 204 21)";
 
   return (
     <div className="fixed inset-0 z-[60] bg-black flex flex-col overflow-hidden">
@@ -554,7 +558,7 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
                     <div className="text-white/20 text-[10px] mb-2">
                       Назначен: {formatDate(a.created_at)}
                     </div>
-                    {canManageAdmins && !isSelf && (
+                    {canManageAdmins && !isSelf && a.role !== ROLE_OWNER && (
                       <div className="flex gap-2">
                         <button
                           onClick={() => { setChangeRoleAdmin(a); setChangeRoleValue(a.role); }}
@@ -572,6 +576,9 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
                           Убрать
                         </button>
                       </div>
+                    )}
+                    {a.role === ROLE_OWNER && !isSelf && (
+                      <div className="text-white/20 text-[10px] italic">Роль защищена от изменений</div>
                     )}
                   </div>
                 );

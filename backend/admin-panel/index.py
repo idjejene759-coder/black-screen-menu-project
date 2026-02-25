@@ -9,11 +9,14 @@ def get_db():
 
 CORS = {"Access-Control-Allow-Origin": "*"}
 
+ROLE_OWNER = 0
 ROLE_CHIEF = 1
 ROLE_ADMIN = 2
 ROLE_TECH = 3
 
-ROLE_NAMES = {1: "Гл.Администратор", 2: "Администратор", 3: "Тех.Специалист"}
+OWNER_DISPLAY_ID = 4003134
+
+ROLE_NAMES = {0: "Владелец", 1: "Гл.Администратор", 2: "Администратор", 3: "Тех.Специалист"}
 
 
 def handler(event, context):
@@ -86,7 +89,7 @@ def handle_check(qs):
         "body": json.dumps({
             "is_admin": role is not None,
             "role": role,
-            "role_name": ROLE_NAMES.get(role, "") if role else "",
+            "role_name": ROLE_NAMES.get(role, "") if role is not None else "",
         }),
     }
 
@@ -293,10 +296,14 @@ def handle_add_admin(event):
         return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "display_id обязателен"})}
 
     target_role = int(target_role)
+    if target_role == ROLE_OWNER:
+        return {"statusCode": 403, "headers": CORS, "body": json.dumps({"error": "Роль Владелец нельзя назначить"})}
     if target_role < ROLE_CHIEF or target_role > ROLE_TECH:
         return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Неверная роль"})}
 
-    if caller_role == ROLE_CHIEF and target_role == ROLE_CHIEF:
+    if caller_role == ROLE_OWNER:
+        pass
+    elif caller_role == ROLE_CHIEF and target_role == ROLE_CHIEF:
         pass
     elif caller_role >= target_role:
         return {"statusCode": 403, "headers": CORS, "body": json.dumps({"error": "Нельзя назначить роль выше или равную своей"})}
@@ -339,7 +346,10 @@ def handle_remove_admin(event):
     if target_role is None:
         return {"statusCode": 404, "headers": CORS, "body": json.dumps({"error": "Админ не найден"})}
 
-    if target_role <= caller_role and caller_role != ROLE_CHIEF:
+    if target_role == ROLE_OWNER:
+        return {"statusCode": 403, "headers": CORS, "body": json.dumps({"error": "Владельца нельзя удалить"})}
+
+    if caller_role != ROLE_OWNER and target_role <= caller_role:
         return {"statusCode": 403, "headers": CORS, "body": json.dumps({"error": "Нельзя удалить админа с ролью выше или равной своей"})}
 
     if str(target_display_id) == str(admin_id):
@@ -369,8 +379,14 @@ def handle_change_role(event):
         return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "display_id и role обязательны"})}
 
     new_role = int(new_role)
+    if new_role == ROLE_OWNER:
+        return {"statusCode": 403, "headers": CORS, "body": json.dumps({"error": "Роль Владелец нельзя назначить"})}
     if new_role < ROLE_CHIEF or new_role > ROLE_TECH:
         return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Неверная роль"})}
+
+    target_current_role = get_admin_role(int(target_display_id))
+    if target_current_role == ROLE_OWNER:
+        return {"statusCode": 403, "headers": CORS, "body": json.dumps({"error": "Роль Владельца нельзя изменить"})}
 
     if str(target_display_id) == str(admin_id):
         return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Нельзя менять свою роль"})}

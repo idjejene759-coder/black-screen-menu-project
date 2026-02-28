@@ -9,12 +9,8 @@ Telegram Bot Function
 
 import json
 import os
-import uuid
-import hashlib
-from datetime import datetime, timezone, timedelta
 from typing import Optional
 
-import psycopg2
 import telebot
 
 
@@ -38,12 +34,6 @@ def get_bot() -> telebot.TeleBot:
 def get_default_chat_id() -> str:
     """Get default chat ID for notifications."""
     return os.environ.get("TELEGRAM_CHAT_ID", "")
-
-
-def get_schema() -> str:
-    """Get database schema prefix."""
-    schema = os.environ.get("MAIN_DB_SCHEMA", "public")
-    return f"{schema}." if schema else ""
 
 
 # =============================================================================
@@ -76,74 +66,25 @@ def options_response() -> dict:
 
 
 # =============================================================================
-# DATABASE OPERATIONS
+# WEBHOOK HANDLERS
 # =============================================================================
-
-def save_auth_token(
-    telegram_id: str,
-    username: Optional[str],
-    first_name: Optional[str],
-    last_name: Optional[str]
-) -> str:
-    """Сохраняет токен авторизации в БД и возвращает его."""
-    token = str(uuid.uuid4())
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
-    schema = get_schema()
-
-    conn = psycopg2.connect(os.environ["DATABASE_URL"])
-    try:
-        cursor = conn.cursor()
-        cursor.execute(f"""
-            INSERT INTO {schema}telegram_auth_tokens
-            (token_hash, telegram_id, telegram_username, telegram_first_name,
-             telegram_last_name, telegram_photo_url, expires_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (
-            token_hash,
-            telegram_id,
-            username,
-            first_name,
-            last_name,
-            None,
-            datetime.now(timezone.utc) + timedelta(minutes=5)
-        ))
-        conn.commit()
-    finally:
-        conn.close()
-
-    return token
-
-
-# =============================================================================
-# WEBHOOK HANDLERS (Authorization)
-# =============================================================================
-
-def handle_web_auth(chat_id: int, user: dict) -> None:
-    """Обработка команды /start web_auth."""
-    telegram_id = str(user.get("id", ""))
-    username = user.get("username")
-    first_name = user.get("first_name")
-    last_name = user.get("last_name")
-
-    token = save_auth_token(telegram_id, username, first_name, last_name)
-
-    site_url = os.environ["SITE_URL"].rstrip("/")
-    auth_url = f"{site_url}/?token={token}"
-
-    bot = get_bot()
-    bot.send_message(
-        chat_id,
-        f"Авторизация готова!\n\nНажмите кнопку ниже, чтобы войти на сайт 👇\n\nСсылка действительна 5 минут.",
-        reply_markup=telebot.types.InlineKeyboardMarkup().add(
-            telebot.types.InlineKeyboardButton("Войти на сайт", url=auth_url)
-        )
-    )
-
 
 def handle_start(chat_id: int) -> None:
-    """Обработка команды /start без параметров."""
+    """Обработка команды /start."""
+    site_url = os.environ.get("SITE_URL", "").rstrip("/")
     bot = get_bot()
-    bot.send_message(chat_id, "Привет! Используйте кнопку «Войти через Telegram» на сайте.")
+    markup = telebot.types.InlineKeyboardMarkup()
+    markup.add(
+        telebot.types.InlineKeyboardButton(
+            "🎰 Открыть Jaguar Casino",
+            web_app=telebot.types.WebAppInfo(url=site_url)
+        )
+    )
+    bot.send_message(
+        chat_id,
+        "Добро пожаловать в Jaguar Casino! 🐆\n\nНажмите кнопку ниже, чтобы открыть приложение.",
+        reply_markup=markup
+    )
 
 
 def process_webhook(body: dict) -> dict:
@@ -162,11 +103,7 @@ def process_webhook(body: dict) -> dict:
 
     try:
         if text.startswith("/start"):
-            parts = text.split(" ", 1)
-            if len(parts) > 1 and parts[1] == "web_auth":
-                handle_web_auth(chat_id, user)
-            else:
-                handle_start(chat_id)
+            handle_start(chat_id)
     except telebot.apihelper.ApiTelegramException as e:
         print(f"Telegram API error: {e}")
     except Exception as e:

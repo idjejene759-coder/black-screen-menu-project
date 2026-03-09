@@ -1329,23 +1329,27 @@ const Index = () => {
 
         {active === 2 && (
           <div className="px-4 py-4">
-            <p className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Игры</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Icon name="Zap" size={20} className="text-white" />
+                <span className="text-white font-semibold text-base">Быстрые игры</span>
+              </div>
+              <button className="flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.08] rounded-full px-4 py-2">
+                <span className="text-white/70 text-sm">Все игры</span>
+                <Icon name="ChevronRight" size={14} className="text-white/40" />
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setGameOpen(true)}
                 className="group flex flex-col bg-[#111820] border border-white/5 rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
               >
-                <div className="relative aspect-square overflow-hidden">
+                <div className="relative aspect-square overflow-hidden rounded-2xl">
                   <img
                     src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/f16f38a7-4c04-4793-9f40-019ef84eae86.jpg"
                     alt="Jaguar Gems"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <span className="text-white font-bold text-sm drop-shadow-lg">Jaguar Gems</span>
-                    <p className="text-white/60 text-[10px]">Mines</p>
-                  </div>
                 </div>
               </button>
             </div>

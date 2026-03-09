@@ -7,9 +7,8 @@ import time
 import psycopg2
 
 ROUND_WAIT_SEC = 5
-ROUND_MAX_SEC = 120
 
-def generate_crash_point():
+def generate_crash_point_fair():
     r = random.random()
     if r < 0.35:
         return round(1 + random.random() * 0.5, 2)
@@ -20,6 +19,39 @@ def generate_crash_point():
     if r < 0.95:
         return round(8 + random.random() * 15, 2)
     return round(23 + random.random() * 80, 2)
+
+def generate_crash_point_rigged(win_chance):
+    if win_chance <= 10:
+        return round(1.02 + random.random() * 2.0, 2)
+    if win_chance <= 30:
+        r = random.random()
+        if r < 0.55:
+            return round(1.02 + random.random() * 1.5, 2)
+        if r < 0.80:
+            return round(2.5 + random.random() * 2.5, 2)
+        if r < 0.95:
+            return round(5 + random.random() * 5, 2)
+        return round(10 + random.random() * 20, 2)
+    return generate_crash_point_fair()
+
+def get_crash_point(conn):
+    cur = conn.cursor()
+    cur.execute("SELECT force_crash FROM crash_game_state WHERE id = 1")
+    row = cur.fetchone()
+    force = float(row[0]) if row and row[0] else 0
+
+    if force > 0:
+        cur.execute("UPDATE crash_game_state SET force_crash = 0 WHERE id = 1")
+        conn.commit()
+        return force
+
+    cur.execute("SELECT win_chance FROM game_settings WHERE game_name = 'crash'")
+    row = cur.fetchone()
+    win_chance = int(row[0]) if row else 50
+
+    if win_chance >= 50:
+        return generate_crash_point_fair()
+    return generate_crash_point_rigged(win_chance)
 
 def handler(event, context):
     if event.get('httpMethod') == 'OPTIONS':
@@ -45,7 +77,7 @@ def handler(event, context):
         elapsed = now - float(started_at)
 
         if phase == 'waiting' and elapsed >= ROUND_WAIT_SEC:
-            cp = generate_crash_point()
+            cp = get_crash_point(conn)
             cur.execute("UPDATE crash_game_state SET phase = 'flying', crash_point = %s, started_at = NOW(), updated_at = NOW() WHERE id = 1" % cp)
             conn.commit()
             cur.execute("SELECT round_id, crash_point, phase, EXTRACT(EPOCH FROM started_at) FROM crash_game_state WHERE id = 1")

@@ -7,6 +7,7 @@ import {
 } from "./admin/types";
 import { AdminPlayersScreen, AdminStatsScreen } from "./admin/AdminPlayersScreen";
 import { AdminsScreen, WithdrawalsScreen, VouchersScreen } from "./admin/AdminManageScreen";
+import CrashAdminSection from "./admin/CrashAdminSection";
 
 interface AdminPanelProps {
   adminDisplayId: string | number;
@@ -412,6 +413,13 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
                   Шанс определяет вероятность того, что ячейка окажется безопасной. При 50% — честная игра, при 5% — почти каждая ячейка будет миной.
                 </p>
               </div>
+
+              <CrashAdminSection
+                gameSettings={gameSettings}
+                adminDisplayId={adminDisplayId}
+                onChanceChange={(chance: number) => handleSetGameChance("crash", chance)}
+                onRefresh={fetchGameSettings}
+              />
             </>
           )}
         </div>

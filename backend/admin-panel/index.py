@@ -49,6 +49,7 @@ def handler(event, context):
         "change_role": lambda: handle_change_role(event),
         "get_game_settings": lambda: handle_get_game_settings(qs),
         "set_game_settings": lambda: handle_set_game_settings(event),
+        "force_crash": lambda: handle_force_crash(event),
     }
 
     if action in actions:
@@ -455,3 +456,25 @@ def handle_set_game_settings(event):
         conn.close()
 
     return {"statusCode": 200, "headers": CORS, "body": json.dumps({"ok": True, "game_settings_updated": win_chance})}
+
+
+def handle_force_crash(event):
+    body = json.loads(event.get("body") or "{}")
+    admin_id = body.get("admin_id", "")
+    _, err = require_role(admin_id, ROLE_ADMIN)
+    if err:
+        return err
+
+    crash_at = body.get("crash_at")
+    if not crash_at or float(crash_at) < 1.01:
+        return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "crash_at должен быть >= 1.01"})}
+
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE crash_game_state SET force_crash = %s WHERE id = 1", (float(crash_at),))
+        conn.commit()
+    finally:
+        conn.close()
+
+    return {"statusCode": 200, "headers": CORS, "body": json.dumps({"ok": True, "force_crash_set": float(crash_at)})}

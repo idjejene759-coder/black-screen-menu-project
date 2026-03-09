@@ -342,68 +342,76 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
   const [winCoin, setWinCoin] = useState<Coin | null>(null);
   const [offset, setOffset] = useState(0);
   const [notEnough, setNotEnough] = useState(false);
-  const [deducted, setDeducted] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
   const [phase, setPhase] = useState<"spin" | "result">("spin");
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number>(0);
   const winIndexRef = useRef(0);
+  const deductedRef = useRef(false);
+  const spinningRef = useRef(false);
+  const finishedRef = useRef(false);
+  const balanceRef = useRef(balance);
+  const onBalanceChangeRef = useRef(onBalanceChange);
+  const coinsRef = useRef(coins);
 
-  const startSpin = useCallback(() => {
-    if (spinning || finished) return;
+  useEffect(() => { balanceRef.current = balance; }, [balance]);
+  useEffect(() => { onBalanceChangeRef.current = onBalanceChange; }, [onBalanceChange]);
+  useEffect(() => { coinsRef.current = coins; }, [coins]);
 
-    if (balance < caseValue) {
+  const runSpin = useCallback((currentCoins: Coin[]) => {
+    if (spinningRef.current || finishedRef.current) return;
+
+    if (balanceRef.current < caseValue) {
       setNotEnough(true);
       return;
     }
 
-    if (!deducted) {
-      onBalanceChange(-caseValue);
-      setDeducted(true);
+    if (!deductedRef.current) {
+      onBalanceChangeRef.current(-caseValue);
+      deductedRef.current = true;
     }
 
     const win = pickWinValue(caseValue);
     const desiredWinValue = win.value;
     const desiredRarity = win.rarity;
-    let targetIdx = coins.findIndex((c) => c.value === desiredWinValue);
+    let targetIdx = currentCoins.findIndex((c) => c.value === desiredWinValue);
     if (targetIdx === -1 || targetIdx < VISIBLE_COINS + 5) {
       for (let i = TOTAL_COINS - 10; i >= VISIBLE_COINS + 5; i--) {
-        if (coins[i].value === desiredWinValue) { targetIdx = i; break; }
+        if (currentCoins[i].value === desiredWinValue) { targetIdx = i; break; }
       }
     }
     if (targetIdx < VISIBLE_COINS + 5) {
-      coins[TOTAL_COINS - 8] = { value: desiredWinValue, label: `${desiredWinValue}${currencySymbol}`, rarity: desiredRarity };
+      currentCoins[TOTAL_COINS - 8] = { value: desiredWinValue, label: `${desiredWinValue}${currencySymbol}`, rarity: desiredRarity };
       targetIdx = TOTAL_COINS - 8;
     }
 
     winIndexRef.current = targetIdx;
+    spinningRef.current = true;
     setSpinning(true);
 
     const containerWidth = containerRef.current?.offsetWidth || COIN_SIZE * VISIBLE_COINS;
     const centerOffset = containerWidth / 2 - COIN_SIZE / 2;
     const targetOffset = targetIdx * (COIN_SIZE + 16) - centerOffset;
-
     const startTime = performance.now();
 
-    function easeOutQuart(t: number) {
-      return 1 - Math.pow(1 - t, 4);
-    }
+    function easeOutQuart(t: number) { return 1 - Math.pow(1 - t, 4); }
 
     function animate(now: number) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / SPIN_DURATION, 1);
-      const eased = easeOutQuart(progress);
-      setOffset(targetOffset * eased);
+      setOffset(targetOffset * easeOutQuart(progress));
 
       if (progress < 1) {
         animRef.current = requestAnimationFrame(animate);
       } else {
+        spinningRef.current = false;
+        finishedRef.current = true;
         setSpinning(false);
         setFinished(true);
-        const wc = coins[targetIdx];
+        const wc = currentCoins[targetIdx];
         setWinCoin(wc);
-        onBalanceChange(wc.value);
+        onBalanceChangeRef.current(wc.value);
         setTimeout(() => {
           setShowResult(true);
           setPhase("result");
@@ -413,31 +421,39 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
     }
 
     animRef.current = requestAnimationFrame(animate);
-  }, [spinning, finished, coins, currencySymbol, balance, caseValue, deducted, onBalanceChange]);
+  }, [caseValue, currencySymbol]);
 
   useEffect(() => {
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => startSpin(), 600);
+    const timer = setTimeout(() => runSpin(coinsRef.current), 600);
     return () => clearTimeout(timer);
-  }, [startSpin]);
+  }, [runSpin]);
 
   const handleOpenAgain = () => {
-    if (balance < caseValue) { setNotEnough(true); return; }
+    if (balanceRef.current < caseValue) { setNotEnough(true); return; }
+
+    if (animRef.current) cancelAnimationFrame(animRef.current);
+
     const newCoins = generateCoins(currencySymbol, caseValue);
+    deductedRef.current = false;
+    spinningRef.current = false;
+    finishedRef.current = false;
+    coinsRef.current = newCoins;
+
     setCoins(newCoins);
     setSpinning(false);
     setFinished(false);
     setWinCoin(null);
     setOffset(0);
     setNotEnough(false);
-    setDeducted(false);
     setShowResult(false);
     setConfettiActive(false);
     setPhase("spin");
-    setTimeout(() => startSpin(), 100);
+
+    setTimeout(() => runSpin(newCoins), 100);
   };
 
   const winRarityData = winCoin ? RARITY_COLORS[winCoin.rarity] : null;
@@ -615,7 +631,7 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
                   </div>
                   <span className="text-red-400 font-bold text-base">Недостаточно средств</span>
                   <span className="text-white/40 text-sm text-center">
-                    Нужно {caseValue}{currencySymbol} — у тебя {balance.toFixed(2)}{currencySymbol}
+                    Нужно {caseValue}{currencySymbol} — у тебя {currency === "usdt" ? balance.toFixed(2) : Math.floor(balance)}{currencySymbol}
                   </span>
                 </div>
               )}

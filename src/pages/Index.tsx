@@ -1378,12 +1378,12 @@ const Index = () => {
                   <div className="w-[90px] h-[90px] relative">
                     <img
                       src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/b2287a6f-856d-4fb5-8514-12e1e32994d5.jpg"
-                      alt={`${val} ★`}
+                      alt={`${val} ${currency === "usdt" ? "$" : "★"}`}
                       className="w-full h-full rounded-full object-cover"
                     />
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="text-white font-extrabold text-[18px] leading-none" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>{val}</span>
-                      <span className="text-white font-bold text-[13px] leading-none mt-0.5" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>★</span>
+                      <span className="text-white font-bold text-[13px] leading-none mt-0.5" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{currency === "usdt" ? "$" : "★"}</span>
                     </div>
                   </div>
                   <button className="w-full py-2 rounded-xl bg-[#4ade80] text-black font-bold text-[13px] active:scale-[0.97] transition-transform">

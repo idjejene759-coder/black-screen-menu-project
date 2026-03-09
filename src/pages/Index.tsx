@@ -122,6 +122,7 @@ const Index = () => {
   const [gameOpen, setGameOpen] = useState(false);
   const [crashOpen, setCrashOpen] = useState(false);
   const [caseRouletteOpen, setCaseRouletteOpen] = useState<number | null>(null);
+  const [caseDetailOpen, setCaseDetailOpen] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1455,7 +1456,7 @@ const Index = () => {
                   {cases.map((c) => (
                     <div
                       key={c.val}
-                      onClick={() => setCaseRouletteOpen(c.val)}
+                      onClick={() => setCaseDetailOpen(c.val)}
                       className={`relative flex flex-col rounded-2xl overflow-hidden cursor-pointer active:scale-[0.96] transition-all duration-200 bg-gradient-to-br ${c.gradient}`}
                       style={{ border: `1px solid ${c.border}`, boxShadow: `0 4px 20px ${c.glow}33` }}
                     >
@@ -1550,6 +1551,184 @@ const Index = () => {
           ))}
         </div>
       </nav>
+
+      {caseDetailOpen !== null && (() => {
+        const sym = currency === "usdt" ? "$" : "★";
+        const cases = [
+          { val: 10,  name: "Старт",   rarity: "common",    min: 1,   max: 25,   color: "#888",    glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30",     border: "rgba(120,120,120,0.25)", desc: "Идеально для начала. Небольшие призы, много удачи нужно!" },
+          { val: 15,  name: "Новичок", rarity: "common",    min: 1,   max: 30,   color: "#888",    glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30",     border: "rgba(120,120,120,0.25)", desc: "Первые шаги в мире кейсов. Чаще всего везёт новичкам!" },
+          { val: 20,  name: "Везунчик",rarity: "rare",      min: 3,   max: 50,   color: "#3b82f6", glow: "rgba(59,130,246,0.6)",  gradient: "from-blue-600/25 to-blue-900/25",     border: "rgba(59,130,246,0.3)",  desc: "Редкий кейс с приятными сюрпризами внутри." },
+          { val: 25,  name: "Удача",   rarity: "rare",      min: 5,   max: 75,   color: "#3b82f6", glow: "rgba(59,130,246,0.6)",  gradient: "from-blue-600/25 to-blue-900/25",     border: "rgba(59,130,246,0.3)",  desc: "Верите в удачу? Этот кейс специально для вас." },
+          { val: 50,  name: "Форсаж", rarity: "rare",      min: 10,  max: 150,  color: "#3b82f6", glow: "rgba(59,130,246,0.6)",  gradient: "from-blue-600/25 to-blue-900/25",     border: "rgba(59,130,246,0.3)",  desc: "Ускоряй выигрыш! Солидные призы ждут смелых." },
+          { val: 100, name: "Элита",  rarity: "epic",      min: 20,  max: 300,  color: "#a855f7", glow: "rgba(168,85,247,0.7)",  gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)", desc: "Для избранных. Крупные выигрыши почти гарантированы." },
+          { val: 260, name: "Премиум",rarity: "epic",      min: 50,  max: 750,  color: "#a855f7", glow: "rgba(168,85,247,0.7)",  gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)", desc: "Премиальный опыт. Призы на уровне выше среднего." },
+          { val: 500, name: "Олигарх",rarity: "legendary", min: 100, max: 1500, color: "#fbbf24", glow: "rgba(251,191,36,0.8)",  gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)",  desc: "Только для серьёзных игроков. Призы меняют жизнь." },
+          { val: 670, name: "Магнат", rarity: "legendary", min: 150, max: 2000, color: "#fbbf24", glow: "rgba(251,191,36,0.8)",  gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)",  desc: "Статус магната открывает огромные призы." },
+          { val: 999, name: "Хозяин", rarity: "legendary", min: 200, max: 3000, color: "#fbbf24", glow: "rgba(251,191,36,0.8)",  gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)",  desc: "Вершина. Максимальные призы, максимальный адреналин!" },
+        ];
+        const rarityLabel: Record<string, string> = { common: "Обычный", rare: "Редкий", epic: "Эпический", legendary: "Легендарный" };
+        const c = cases.find(x => x.val === caseDetailOpen)!;
+        const previewPrizes = [
+          { val: c.min, r: "common" },
+          { val: Math.round(c.min + (c.max - c.min) * 0.15), r: "common" },
+          { val: Math.round(c.min + (c.max - c.min) * 0.35), r: "rare" },
+          { val: Math.round(c.min + (c.max - c.min) * 0.6), r: "epic" },
+          { val: c.max, r: "legendary" },
+        ];
+        const prizeColors: Record<string, { color: string; glow: string }> = {
+          common:    { color: "#888",    glow: "rgba(150,150,150,0.5)" },
+          rare:      { color: "#3b82f6", glow: "rgba(59,130,246,0.6)" },
+          epic:      { color: "#a855f7", glow: "rgba(168,85,247,0.7)" },
+          legendary: { color: "#fbbf24", glow: "rgba(251,191,36,0.8)" },
+        };
+        return (
+          <div
+            className="fixed inset-0 z-[280] flex flex-col"
+            style={{ background: "linear-gradient(180deg, #0a0a1a 0%, #0d0d20 60%, #0a0a18 100%)" }}
+          >
+            <style>{`
+              @keyframes caseSlideIn {
+                from { opacity: 0; transform: translateY(60px) scale(0.95); }
+                to   { opacity: 1; transform: translateY(0) scale(1); }
+              }
+              @keyframes coinFloat {
+                0%, 100% { transform: translateY(0px) rotate(0deg); }
+                50%       { transform: translateY(-8px) rotate(3deg); }
+              }
+              @keyframes prizeRow {
+                from { opacity: 0; transform: translateX(-20px); }
+                to   { opacity: 1; transform: translateX(0); }
+              }
+            `}</style>
+
+            <div className="flex items-center justify-between px-4 pt-5 pb-3">
+              <button
+                onClick={() => setCaseDetailOpen(null)}
+                className="flex items-center gap-1.5 text-white/50 hover:text-white/80 transition-colors"
+              >
+                <Icon name="ChevronLeft" size={18} />
+                <span className="text-sm">Другие кейсы</span>
+              </button>
+              <div
+                className="px-3 py-1 rounded-full text-xs font-semibold"
+                style={{ background: `${c.color}22`, color: c.color, border: `1px solid ${c.color}44` }}
+              >
+                {rarityLabel[c.rarity]}
+              </div>
+            </div>
+
+            <div
+              className="flex-1 flex flex-col items-center px-6 overflow-y-auto pb-6"
+              style={{ animation: "caseSlideIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }}
+            >
+              <div className="mt-2 mb-1 text-white/40 text-xs uppercase tracking-widest">Кейс</div>
+              <div className="text-white font-extrabold text-3xl mb-1">{c.name}</div>
+              <div className="text-white/40 text-sm mb-6 text-center">{c.desc}</div>
+
+              <div
+                className="w-36 h-36 rounded-full flex flex-col items-center justify-center relative mb-8"
+                style={{
+                  background: `radial-gradient(circle at 35% 30%, ${c.color}66, ${c.color}11)`,
+                  border: `3px solid ${c.color}77`,
+                  boxShadow: `0 0 40px ${c.glow}, 0 0 80px ${c.glow}55`,
+                  animation: "coinFloat 3s ease-in-out infinite",
+                }}
+              >
+                <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.25), transparent 60%)" }} />
+                <img
+                  src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/b2287a6f-856d-4fb5-8514-12e1e32994d5.jpg"
+                  alt={c.name}
+                  className="absolute inset-0 w-full h-full rounded-full object-cover opacity-50"
+                />
+                <span className="font-extrabold text-white relative z-10 leading-none" style={{ fontSize: c.val >= 100 ? 24 : 30, textShadow: `0 0 20px ${c.glow}, 0 2px 6px rgba(0,0,0,0.9)` }}>
+                  {c.val}
+                </span>
+                <span className="font-bold relative z-10" style={{ fontSize: 18, color: c.color, textShadow: `0 0 10px ${c.glow}` }}>{sym}</span>
+              </div>
+
+              <div className="w-full mb-6">
+                <div className="text-white/40 text-xs uppercase tracking-wider mb-3 text-center">Внутри кейса</div>
+                <div className="flex items-center justify-center gap-2">
+                  {previewPrizes.map((p, i) => {
+                    const pc = prizeColors[p.r];
+                    const isCenter = i === 2;
+                    return (
+                      <div
+                        key={i}
+                        className="flex flex-col items-center justify-center rounded-full relative flex-shrink-0"
+                        style={{
+                          width: isCenter ? 72 : i === 1 || i === 3 ? 60 : 50,
+                          height: isCenter ? 72 : i === 1 || i === 3 ? 60 : 50,
+                          background: `radial-gradient(circle at 35% 30%, ${pc.color}55, ${pc.color}11)`,
+                          border: `2px solid ${pc.color}66`,
+                          boxShadow: `0 0 16px ${pc.glow}55`,
+                          animation: `prizeRow 0.4s ease forwards`,
+                          animationDelay: `${i * 0.07}s`,
+                          opacity: 0,
+                        }}
+                      >
+                        <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.2), transparent 60%)" }} />
+                        <span className="font-extrabold relative z-10" style={{ fontSize: isCenter ? 13 : 11, color: "#fff", textShadow: `0 0 8px ${pc.glow}` }}>
+                          {p.val}{sym}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div
+                className="w-full rounded-2xl p-4 mb-6"
+                style={{ background: `${c.color}11`, border: `1px solid ${c.color}33` }}
+              >
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col items-center gap-1 flex-1">
+                    <span className="text-white/40 text-[10px] uppercase tracking-wider">Мин. приз</span>
+                    <span className="font-bold text-lg" style={{ color: c.color }}>{c.min}{sym}</span>
+                  </div>
+                  <div className="w-px h-10 bg-white/10" />
+                  <div className="flex flex-col items-center gap-1 flex-1">
+                    <span className="text-white/40 text-[10px] uppercase tracking-wider">Макс. приз</span>
+                    <span className="font-bold text-lg" style={{ color: c.color }}>{c.max}{sym}</span>
+                  </div>
+                  <div className="w-px h-10 bg-white/10" />
+                  <div className="flex flex-col items-center gap-1 flex-1">
+                    <span className="text-white/40 text-[10px] uppercase tracking-wider">Стоимость</span>
+                    <span className="font-bold text-lg text-white">{c.val}{sym}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-4 pb-8 pt-3 flex flex-col gap-3">
+              <button
+                onClick={() => { setCaseDetailOpen(null); setCaseRouletteOpen(c.val); }}
+                className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-[0.97]"
+                style={{
+                  background: c.rarity === "legendary"
+                    ? "linear-gradient(135deg, #fbbf24, #f97316)"
+                    : c.rarity === "epic"
+                    ? "linear-gradient(135deg, #a855f7, #7c3aed)"
+                    : c.rarity === "rare"
+                    ? "linear-gradient(135deg, #3b82f6, #1d4ed8)"
+                    : "linear-gradient(135deg, #6b7280, #374151)",
+                  color: c.rarity === "legendary" ? "#000" : "#fff",
+                  boxShadow: `0 4px 24px ${c.glow}88`,
+                }}
+              >
+                Открыть за {c.val}{sym}
+              </button>
+              <button
+                onClick={() => setCaseDetailOpen(null)}
+                className="w-full py-3 rounded-2xl text-white/50 text-sm font-medium"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                Назад
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {caseRouletteOpen !== null && (
         <CaseRoulette

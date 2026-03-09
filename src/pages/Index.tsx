@@ -1739,9 +1739,10 @@ const Index = () => {
           caseValue={caseRouletteOpen}
           currency={currency}
           balance={currency === "usdt" ? userBalance : starsBalance}
-          onBalanceChange={(delta) => {
-            if (currency === "usdt") setUserBalance(prev => +(prev + delta).toFixed(2));
-            else setStarsBalance(prev => +(prev + delta).toFixed(2));
+          userId={String(userId)}
+          onBalanceSet={(bal) => {
+            if (currency === "usdt") setUserBalance(bal);
+            else setStarsBalance(bal);
           }}
           onClose={() => { setCaseRouletteOpen(null); fetchBalance(); }}
         />

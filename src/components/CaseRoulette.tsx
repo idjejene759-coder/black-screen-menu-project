@@ -326,15 +326,47 @@ function CoinVisual({
   );
 }
 
+const GAME_BALANCE_URL = "https://functions.poehali.dev/64bf4a3e-c7fb-44f5-a1a9-b70cae660400";
+
+async function apiBet(userId: string, amount: number, currency: string): Promise<{ ok: boolean; balance?: number; error?: string }> {
+  try {
+    const res = await fetch(GAME_BALANCE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, action: "bet", amount, currency }),
+    });
+    const data = await res.json();
+    if (!res.ok) return { ok: false, error: data.error };
+    return { ok: true, balance: data.balance };
+  } catch {
+    return { ok: false, error: "network" };
+  }
+}
+
+async function apiWin(userId: string, amount: number, currency: string): Promise<{ ok: boolean; balance?: number }> {
+  try {
+    const res = await fetch(GAME_BALANCE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, action: "win", amount, currency }),
+    });
+    const data = await res.json();
+    return { ok: res.ok, balance: data.balance };
+  } catch {
+    return { ok: false };
+  }
+}
+
 interface CaseRouletteProps {
   caseValue: number;
   currency: "usdt" | "stars";
   balance: number;
-  onBalanceChange: (delta: number) => void;
+  userId: string;
+  onBalanceSet: (balance: number) => void;
   onClose: () => void;
 }
 
-export default function CaseRoulette({ caseValue, currency, balance, onBalanceChange, onClose }: CaseRouletteProps) {
+export default function CaseRoulette({ caseValue, currency, balance, userId, onBalanceSet, onClose }: CaseRouletteProps) {
   const currencySymbol = currency === "usdt" ? "$" : "★";
   const [coins, setCoins] = useState<Coin[]>(() => generateCoins(currencySymbol, caseValue));
   const [spinning, setSpinning] = useState(false);
@@ -348,18 +380,13 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number>(0);
   const winIndexRef = useRef(0);
-  const deductedRef = useRef(false);
   const spinningRef = useRef(false);
   const finishedRef = useRef(false);
   const balanceRef = useRef(balance);
-  const onBalanceChangeRef = useRef(onBalanceChange);
-  const coinsRef = useRef(coins);
 
   useEffect(() => { balanceRef.current = balance; }, [balance]);
-  useEffect(() => { onBalanceChangeRef.current = onBalanceChange; }, [onBalanceChange]);
-  useEffect(() => { coinsRef.current = coins; }, [coins]);
 
-  const runSpin = useCallback((currentCoins: Coin[]) => {
+  const runSpin = useCallback(async (currentCoins: Coin[]) => {
     if (spinningRef.current || finishedRef.current) return;
 
     if (balanceRef.current < caseValue) {
@@ -367,10 +394,12 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
       return;
     }
 
-    if (!deductedRef.current) {
-      onBalanceChangeRef.current(-caseValue);
-      deductedRef.current = true;
+    const betResult = await apiBet(userId, caseValue, currency);
+    if (!betResult.ok) {
+      setNotEnough(true);
+      return;
     }
+    if (betResult.balance !== undefined) onBalanceSet(betResult.balance);
 
     const win = pickWinValue(caseValue);
     const desiredWinValue = win.value;
@@ -411,7 +440,9 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
         setFinished(true);
         const wc = currentCoins[targetIdx];
         setWinCoin(wc);
-        onBalanceChangeRef.current(wc.value);
+        apiWin(userId, wc.value, currency).then((res) => {
+          if (res.balance !== undefined) onBalanceSet(res.balance);
+        });
         setTimeout(() => {
           setShowResult(true);
           setPhase("result");
@@ -421,27 +452,26 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
     }
 
     animRef.current = requestAnimationFrame(animate);
-  }, [caseValue, currencySymbol]);
+  }, [caseValue, currencySymbol, userId, currency, onBalanceSet]);
 
   useEffect(() => {
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => runSpin(coinsRef.current), 600);
+    const coinsSnap = coins;
+    const timer = setTimeout(() => runSpin(coinsSnap), 600);
     return () => clearTimeout(timer);
-  }, [runSpin]);
+  }, []); // только при монтировании
 
-  const handleOpenAgain = () => {
+  const handleOpenAgain = async () => {
     if (balanceRef.current < caseValue) { setNotEnough(true); return; }
 
     if (animRef.current) cancelAnimationFrame(animRef.current);
 
     const newCoins = generateCoins(currencySymbol, caseValue);
-    deductedRef.current = false;
     spinningRef.current = false;
     finishedRef.current = false;
-    coinsRef.current = newCoins;
 
     setCoins(newCoins);
     setSpinning(false);

@@ -52,41 +52,41 @@ function BetPanel({ cur, betInput, setBetInput, minBet, bal, quickBets, sym, isF
 }) {
   const step = cur === "usdt" ? 1 : 5;
   return (
-    <div className="bg-[#12122e] border border-purple-500/10 rounded-xl p-2.5">
-      <div className="flex gap-2">
-        <div className="flex-1 space-y-1.5">
-          <div className="flex items-center bg-[#0c0c24] border border-white/10 rounded-lg overflow-hidden h-10">
-            <button onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))} className="px-2.5 text-white/30 active:text-white transition">
-              <Icon name="Minus" size={14} />
+    <div className="bg-[#12122e] border border-purple-500/10 rounded-lg p-2">
+      <div className="flex gap-1.5">
+        <div className="flex-1 space-y-1">
+          <div className="flex items-center bg-[#0c0c24] border border-white/10 rounded-md overflow-hidden h-8">
+            <button onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))} className="px-2 text-white/30 active:text-white transition">
+              <Icon name="Minus" size={12} />
             </button>
-            <input type="number" value={betInput} onChange={e => setBetInput(e.target.value)} className="flex-1 bg-transparent text-white text-center font-bold text-base outline-none min-w-0" min={minBet} />
-            <button onClick={() => setBetInput(String(Math.min(bal, +(parseFloat(betInput) || 0) + step)))} className="px-2.5 text-white/30 active:text-white transition">
-              <Icon name="Plus" size={14} />
+            <input type="number" value={betInput} onChange={e => setBetInput(e.target.value)} className="flex-1 bg-transparent text-white text-center font-bold text-sm outline-none min-w-0" min={minBet} />
+            <button onClick={() => setBetInput(String(Math.min(bal, +(parseFloat(betInput) || 0) + step)))} className="px-2 text-white/30 active:text-white transition">
+              <Icon name="Plus" size={12} />
             </button>
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-0.5">
             {quickBets.map(q => (
-              <button key={q} onClick={() => setBetInput(String(q))} className="flex-1 py-1 rounded-md bg-white/5 text-white/40 text-[10px] font-bold active:bg-white/10 transition">
+              <button key={q} onClick={() => setBetInput(String(q))} className="flex-1 py-0.5 rounded bg-white/5 text-white/40 text-[9px] font-bold active:bg-white/10 transition">
                 {q >= 1000 ? `${q / 1000}K` : q}
               </button>
             ))}
           </div>
         </div>
         {isFlying && hasBet ? (
-          <button onClick={cashOut} className="w-[100px] rounded-lg bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-sm active:scale-[0.96] transition-transform flex flex-col items-center justify-center">
+          <button onClick={cashOut} className="w-[80px] rounded-md bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-xs active:scale-[0.96] transition-transform flex flex-col items-center justify-center">
             <span>ЗАБРАТЬ</span>
-            <span className="text-[11px] font-bold opacity-80">{currentWin.toFixed(2)}{sym}</span>
+            <span className="text-[9px] font-bold opacity-80">{currentWin.toFixed(2)}{sym}</span>
           </button>
         ) : (isWaiting || (isFlying && !hasBet)) && !hasBet ? (
-          <button onClick={placeBet} disabled={betVal < minBet || betVal > bal} className="w-[100px] rounded-lg bg-gradient-to-b from-purple-500 to-purple-700 text-white font-extrabold text-sm active:scale-[0.96] transition-transform disabled:opacity-40">
+          <button onClick={placeBet} disabled={betVal < minBet || betVal > bal} className="w-[80px] rounded-md bg-gradient-to-b from-purple-500 to-purple-700 text-white font-extrabold text-xs active:scale-[0.96] transition-transform disabled:opacity-40">
             СТАВКА
           </button>
         ) : (isCrashed || isCashedOut) ? (
-          <button onClick={onNewRound} className={`w-[100px] rounded-lg font-extrabold text-sm active:scale-[0.96] transition-transform ${isCrashed ? 'bg-gradient-to-b from-red-500 to-red-700 text-white' : 'bg-gradient-to-b from-purple-500 to-purple-700 text-white'}`}>
+          <button onClick={onNewRound} className={`w-[80px] rounded-md font-extrabold text-xs active:scale-[0.96] transition-transform ${isCrashed ? 'bg-gradient-to-b from-red-500 to-red-700 text-white' : 'bg-gradient-to-b from-purple-500 to-purple-700 text-white'}`}>
             {isCrashed ? "ЗАНОВО" : "ЕЩЁ"}
           </button>
         ) : (
-          <button disabled className="w-[100px] rounded-lg bg-white/5 text-white/20 font-bold text-[11px]">ЖДИТЕ...</button>
+          <button disabled className="w-[80px] rounded-md bg-white/5 text-white/20 font-bold text-[10px]">ЖДИТЕ...</button>
         )}
       </div>
     </div>

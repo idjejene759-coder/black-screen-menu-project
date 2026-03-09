@@ -291,7 +291,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const panelProps = { cur, betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, isWaiting, currentWin };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-[#0c0c24] flex flex-col">
+    <div className="fixed inset-0 z-[200] bg-black flex flex-col">
       <div className="flex items-center justify-between px-3 py-2 bg-[#10102a] border-b border-white/5 shrink-0">
         <button onClick={onClose} className="flex items-center gap-1 text-white/60 active:scale-95">
           <Icon name="ChevronLeft" size={18} />
@@ -363,13 +363,10 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         )}
       </div>
 
-      <div className="px-3 pt-2 pb-2 space-y-2">
+      <div className="px-3 pt-2 pb-1 space-y-1.5 shrink-0">
         <BetPanel {...panelProps} />
         <BetPanel {...panelProps} />
-      </div>
-
-      <div className="px-3 py-1 shrink-0">
-        <div className="flex items-center justify-between text-white/15 text-[9px]">
+        <div className="flex items-center justify-between text-white/15 text-[9px] pt-0.5">
           <span>Мин: {minBet} {sym}</span>
           <span>Crash X — Turbo Games</span>
         </div>

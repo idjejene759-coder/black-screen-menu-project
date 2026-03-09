@@ -84,12 +84,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
     if (!res || !res.ok) return;
     onBalanceChange(cur, -betVal);
     setBet(betVal);
-    const extraFactor = (100 - winChance) / 100;
-    const extraMines = Math.round((CELLS - mines) * extraFactor * 0.4);
-    const totalMines = Math.min(mines + extraMines, CELLS - 1);
-    const b = new Set<number>();
-    while (b.size < totalMines) b.add(Math.floor(Math.random() * CELLS));
-    setBombs(b);
+    setBombs(new Set());
     setRevealed(new Set());
     setCells(Array(CELLS).fill("hidden"));
     setMult(1);
@@ -99,15 +94,27 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
   const reveal = useCallback((i: number) => {
     if (phase !== "playing" || revealed.has(i)) return;
     const nr = new Set(revealed); nr.add(i);
-    setRevealed(nr);
+    const nb = new Set(bombs);
     const nc = [...cells];
 
     triggerRevealAnim(i);
 
-    if (bombs.has(i)) {
+    const isBomb = Math.random() * 100 >= winChance;
+
+    if (isBomb) {
+      nb.add(i);
+      const free = Array.from({ length: CELLS }, (_, idx) => idx).filter(idx => !nr.has(idx) && !nb.has(idx));
+      const extra = Math.min(mines - 1, free.length);
+      for (let e = 0; e < extra; e++) {
+        const ri = Math.floor(Math.random() * free.length);
+        nb.add(free[ri]);
+        free.splice(ri, 1);
+      }
+      setBombs(nb);
+      setRevealed(nr);
       nc[i] = "bomb";
-      bombs.forEach(b => { nc[b] = "bomb"; });
-      nr.forEach(r => { if (!bombs.has(r)) nc[r] = "gem"; });
+      nb.forEach(b => { nc[b] = "bomb"; });
+      nr.forEach(r => { if (!nb.has(r)) nc[r] = "gem"; });
       setCells(nc);
       setShakeGrid(true);
       setTimeout(() => setShakeGrid(false), 500);
@@ -115,20 +122,31 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
       onRefreshBalance();
       return;
     }
+
     nc[i] = "gem";
+    setBombs(nb);
+    setRevealed(nr);
     setCells(nc);
-    const safe = [...nr].filter(r => !bombs.has(r)).length;
+    const safe = [...nr].filter(r => !nb.has(r)).length;
     const newMult = 1 + MULT_STEP * safe * (safe + 1) / 2;
     setMult(newMult);
-    if (safe >= CELLS - bombs.size) {
+
+    if (safe >= CELLS - mines) {
       const winnings = bet * newMult;
       apiBalance(userId, "win", winnings, cur).then(() => onRefreshBalance());
       onBalanceChange(cur, winnings);
-      bombs.forEach(b => { nc[b] = "bomb"; });
+      const free = Array.from({ length: CELLS }, (_, idx) => idx).filter(idx => !nr.has(idx) && !nb.has(idx));
+      for (let e = 0; e < Math.min(mines, free.length); e++) {
+        const ri = Math.floor(Math.random() * free.length);
+        nb.add(free[ri]);
+        nc[free[ri]] = "bomb";
+        free.splice(ri, 1);
+      }
+      setBombs(nb);
       setCells(nc);
       setPhase("won");
     }
-  }, [phase, revealed, bombs, cells, mines, bet, onBalanceChange, cur, triggerRevealAnim, userId, onRefreshBalance]);
+  }, [phase, revealed, bombs, cells, mines, bet, onBalanceChange, cur, triggerRevealAnim, userId, onRefreshBalance, winChance]);
 
   const cashOut = useCallback(async () => {
     if (phase !== "playing") return;
@@ -139,10 +157,18 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
     onBalanceChange(cur, winnings);
     onRefreshBalance();
     const nc = [...cells];
-    bombs.forEach(b => { nc[b] = "bomb"; });
+    const nb = new Set(bombs);
+    const free = Array.from({ length: CELLS }, (_, idx) => idx).filter(idx => !revealed.has(idx) && !nb.has(idx));
+    for (let e = 0; e < Math.min(mines, free.length); e++) {
+      const ri = Math.floor(Math.random() * free.length);
+      nb.add(free[ri]);
+      free.splice(ri, 1);
+    }
+    nb.forEach(b => { nc[b] = "bomb"; });
+    setBombs(nb);
     setCells(nc);
     setPhase("won");
-  }, [phase, revealed, bet, mult, onBalanceChange, bombs, cells, cur, userId, onRefreshBalance]);
+  }, [phase, revealed, bet, mult, onBalanceChange, bombs, cells, cur, userId, onRefreshBalance, mines]);
 
   const safe = [...revealed].filter(r => !bombs.has(r)).length;
   const winAmount = bet * mult;

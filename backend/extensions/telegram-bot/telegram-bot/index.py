@@ -136,11 +136,11 @@ def handle_successful_payment(message: dict) -> None:
     usdt_amount = float(payload.get("usdt", 0))
     stars_amount = int(payload.get("stars", 0))
 
-    if not user_id or usdt_amount <= 0:
-        print(f"[STARS] Invalid payment data: user_id={user_id}, usdt={usdt_amount}")
+    if not user_id or stars_amount <= 0:
+        print(f"[STARS] Invalid payment data: user_id={user_id}, stars={stars_amount}")
         return
 
-    print(f"[STARS] Processing payment: user={user_id}, stars={stars_amount}, usdt={usdt_amount}, charge_id={telegram_payment_charge_id}")
+    print(f"[STARS] Processing payment: user={user_id}, stars={stars_amount}, charge_id={telegram_payment_charge_id}")
 
     conn = None
     try:
@@ -150,25 +150,24 @@ def handle_successful_payment(message: dict) -> None:
         cur.execute(
             """INSERT INTO payments (user_id, invoice_id, amount, status, type, pay_url, created_at, paid_at)
                VALUES (%s, %s, %s, 'paid', 'stars', '', NOW(), NOW())""",
-            (user_id, abs(hash(telegram_payment_charge_id)) % 2147483647, usdt_amount)
+            (user_id, abs(hash(telegram_payment_charge_id)) % 2147483647, stars_amount)
         )
 
         cur.execute(
-            """INSERT INTO user_balances (user_id, balance, updated_at)
+            """INSERT INTO user_stars_balances (user_id, balance, updated_at)
                VALUES (%s, %s, NOW())
-               ON CONFLICT (user_id) DO UPDATE SET balance = user_balances.balance + %s, updated_at = NOW()""",
-            (user_id, usdt_amount, usdt_amount)
+               ON CONFLICT (user_id) DO UPDATE SET balance = user_stars_balances.balance + %s, updated_at = NOW()""",
+            (user_id, stars_amount, stars_amount)
         )
 
         conn.commit()
-        print(f"[STARS] Balance credited: user={user_id}, +{usdt_amount} USDT")
+        print(f"[STARS] Stars credited: user={user_id}, +{stars_amount} stars")
 
         bot = get_bot()
         bot.send_message(
             chat_id,
             f"✅ Оплата прошла успешно!\n\n"
-            f"⭐ Списано: {stars_amount} звёзд\n"
-            f"💰 Начислено: {usdt_amount} USDT\n\n"
+            f"⭐ Начислено: {stars_amount} звёзд\n\n"
             f"Баланс обновлён. Возвращайтесь в приложение!"
         )
 
@@ -187,8 +186,6 @@ def handle_successful_payment(message: dict) -> None:
         print(f"[STARS] DB error: {e}")
         if conn:
             conn.rollback()
-        bot = get_bot()
-        bot.send_message(chat_id, "Произошла ошибка при начислении. Обратитесь в поддержку.")
     finally:
         if conn:
             conn.close()

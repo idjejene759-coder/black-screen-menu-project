@@ -8,7 +8,7 @@ def get_db():
 
 
 def handler(event, context):
-    """Получение баланса пользователя"""
+    """Получение баланса пользователя (USDT + Stars)"""
     if event.get("httpMethod") == "OPTIONS":
         return {
             "statusCode": 200,
@@ -37,11 +37,15 @@ def handler(event, context):
         cur.execute("SELECT balance FROM user_balances WHERE user_id = %s", (user_id,))
         row = cur.fetchone()
         balance = float(row[0]) if row else 0.0
+
+        cur.execute("SELECT balance FROM user_stars_balances WHERE user_id = %s", (user_id,))
+        row_stars = cur.fetchone()
+        stars_balance = int(row_stars[0]) if row_stars else 0
     finally:
         conn.close()
 
     return {
         "statusCode": 200,
         "headers": cors,
-        "body": json.dumps({"balance": balance}),
+        "body": json.dumps({"balance": balance, "stars_balance": stars_balance}),
     }

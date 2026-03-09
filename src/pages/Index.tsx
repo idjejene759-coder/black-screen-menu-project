@@ -94,6 +94,7 @@ const Index = () => {
   const [depositError, setDepositError] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
   const [userBalance, setUserBalance] = useState(0);
+  const [starsBalance, setStarsBalance] = useState(0);
   const [currency, setCurrency] = useState<"usdt" | "stars">("usdt");
   const [currencyPickerOpen, setCurrencyPickerOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -137,7 +138,10 @@ const Index = () => {
     try {
       const res = await fetch(`${BALANCE_URL}?user_id=${encodeURIComponent(String(userId))}`);
       const data = await res.json();
-      if (res.ok) setUserBalance(data.balance || 0);
+      if (res.ok) {
+        setUserBalance(data.balance || 0);
+        setStarsBalance(data.stars_balance || 0);
+      }
     } catch { /* ignore */ }
   }, [userId]);
 
@@ -302,7 +306,7 @@ const Index = () => {
               <div className="text-[22px] font-bold text-white mt-0.5 tracking-tight">
                 {currency === "usdt"
                   ? `${userBalance.toFixed(userBalance < 0.01 && userBalance > 0 ? 5 : 2)} USDT`
-                  : `${usdtToStars(userBalance).toLocaleString()} Stars`}
+                  : `${starsBalance.toLocaleString()} Stars`}
               </div>
               <div className="flex gap-2.5 mt-3">
                 <button
@@ -1097,7 +1101,7 @@ const Index = () => {
                 </div>
               )}
               <span className="text-white text-xs font-medium">
-                {currency === "usdt" ? userBalance.toFixed(userBalance < 0.01 && userBalance > 0 ? 5 : 2) : usdtToStars(userBalance).toLocaleString()}
+                {currency === "usdt" ? userBalance.toFixed(userBalance < 0.01 && userBalance > 0 ? 5 : 2) : starsBalance.toLocaleString()}
               </span>
               <Icon name="ChevronDown" size={12} className="text-white/40" />
             </button>

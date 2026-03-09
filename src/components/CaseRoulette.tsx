@@ -41,46 +41,152 @@ const RARITY_COLORS: Record<Rarity, {
   },
 };
 
-function getRarity(multiplier: number): Rarity {
-  if (multiplier >= 5) return "legendary";
-  if (multiplier >= 1.5) return "epic";
-  if (multiplier >= 0.6) return "rare";
-  return "common";
+interface PrizeTier {
+  values: number[];
+  weight: number;
+  rarity: Rarity;
 }
 
-function getMultipliers(caseValue: number) {
-  const decimals = caseValue < 10 ? 2 : caseValue < 100 ? 1 : 0;
-  const round = (n: number) => parseFloat(n.toFixed(decimals));
+interface CaseConfig {
+  tiers: PrizeTier[];
+}
+
+function getCaseConfig(caseValue: number): CaseConfig {
+  const r = (n: number) => {
+    if (caseValue >= 100) return Math.round(n);
+    if (caseValue >= 20) return Math.round(n * 10) / 10;
+    return Math.round(n * 100) / 100;
+  };
+
+  const configs: Record<number, CaseConfig> = {
+    10: {
+      tiers: [
+        { rarity: "common",    weight: 60, values: [r(1), r(1.5), r(2), r(2.5), r(3)] },
+        { rarity: "rare",      weight: 28, values: [r(4), r(5), r(6), r(7)] },
+        { rarity: "epic",      weight: 10, values: [r(10), r(12), r(15)] },
+        { rarity: "legendary", weight: 2,  values: [r(20), r(25)] },
+      ],
+    },
+    15: {
+      tiers: [
+        { rarity: "common",    weight: 60, values: [r(1.5), r(2), r(3), r(4)] },
+        { rarity: "rare",      weight: 28, values: [r(6), r(8), r(10), r(12)] },
+        { rarity: "epic",      weight: 10, values: [r(18), r(22), r(27)] },
+        { rarity: "legendary", weight: 2,  values: [r(38), r(45)] },
+      ],
+    },
+    20: {
+      tiers: [
+        { rarity: "common",    weight: 58, values: [r(2), r(3), r(4), r(5), r(6)] },
+        { rarity: "rare",      weight: 28, values: [r(8), r(10), r(13), r(16)] },
+        { rarity: "epic",      weight: 11, values: [r(25), r(32), r(40)] },
+        { rarity: "legendary", weight: 3,  values: [r(60), r(80)] },
+      ],
+    },
+    25: {
+      tiers: [
+        { rarity: "common",    weight: 57, values: [r(2.5), r(4), r(6), r(8)] },
+        { rarity: "rare",      weight: 28, values: [r(12), r(16), r(20), r(24)] },
+        { rarity: "epic",      weight: 11, values: [r(35), r(45), r(55)] },
+        { rarity: "legendary", weight: 4,  values: [r(80), r(100), r(125)] },
+      ],
+    },
+    50: {
+      tiers: [
+        { rarity: "common",    weight: 55, values: [r(5), r(8), r(10), r(12), r(15)] },
+        { rarity: "rare",      weight: 28, values: [r(25), r(32), r(40), r(48)] },
+        { rarity: "epic",      weight: 12, values: [r(70), r(90), r(115)] },
+        { rarity: "legendary", weight: 5,  values: [r(180), r(250), r(300)] },
+      ],
+    },
+    100: {
+      tiers: [
+        { rarity: "common",    weight: 53, values: [r(10), r(15), r(20), r(25), r(30)] },
+        { rarity: "rare",      weight: 28, values: [r(50), r(65), r(80), r(95)] },
+        { rarity: "epic",      weight: 13, values: [r(140), r(180), r(230)] },
+        { rarity: "legendary", weight: 6,  values: [r(400), r(550), r(700)] },
+      ],
+    },
+    260: {
+      tiers: [
+        { rarity: "common",    weight: 52, values: [r(25), r(40), r(55), r(70), r(85)] },
+        { rarity: "rare",      weight: 28, values: [r(130), r(170), r(210), r(250)] },
+        { rarity: "epic",      weight: 13, values: [r(380), r(500), r(630)] },
+        { rarity: "legendary", weight: 7,  values: [r(1100), r(1500), r(2000)] },
+      ],
+    },
+    500: {
+      tiers: [
+        { rarity: "common",    weight: 50, values: [r(50), r(75), r(100), r(130), r(160)] },
+        { rarity: "rare",      weight: 28, values: [r(260), r(340), r(420), r(490)] },
+        { rarity: "epic",      weight: 14, values: [r(750), r(1000), r(1300)] },
+        { rarity: "legendary", weight: 8,  values: [r(2500), r(3500), r(5000)] },
+      ],
+    },
+    670: {
+      tiers: [
+        { rarity: "common",    weight: 49, values: [r(65), r(100), r(140), r(180), r(220)] },
+        { rarity: "rare",      weight: 28, values: [r(350), r(460), r(560), r(660)] },
+        { rarity: "epic",      weight: 14, values: [r(1000), r(1400), r(1800)] },
+        { rarity: "legendary", weight: 9,  values: [r(3500), r(5000), r(7000)] },
+      ],
+    },
+    999: {
+      tiers: [
+        { rarity: "common",    weight: 48, values: [r(100), r(150), r(200), r(260), r(320)] },
+        { rarity: "rare",      weight: 27, values: [r(520), r(680), r(840), r(980)] },
+        { rarity: "epic",      weight: 15, values: [r(1500), r(2000), r(2700)] },
+        { rarity: "legendary", weight: 10, values: [r(5000), r(7500), r(10000)] },
+      ],
+    },
+  };
+
+  if (configs[caseValue]) return configs[caseValue];
+
+  const scale = caseValue / 100;
   return {
-    low:  [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5].map(m => round(caseValue * m)),
-    mid:  [0.6, 0.75, 0.9, 1.1, 1.3, 1.5].map(m => round(caseValue * m)),
-    high: [2, 3, 5, 8, 12].map(m => round(caseValue * m)),
+    tiers: [
+      { rarity: "common",    weight: 55, values: [r(caseValue * 0.1), r(caseValue * 0.15), r(caseValue * 0.2), r(caseValue * 0.25)] },
+      { rarity: "rare",      weight: 28, values: [r(caseValue * 0.5), r(caseValue * 0.65), r(caseValue * 0.8), r(caseValue * 0.95)] },
+      { rarity: "epic",      weight: 12, values: [r(caseValue * 1.4), r(caseValue * 1.8), r(caseValue * 2.3)] },
+      { rarity: "legendary", weight: 5,  values: [r(caseValue * 4 * scale + caseValue * 2), r(caseValue * 5.5)] },
+    ],
   };
 }
 
+function pickTier(tiers: PrizeTier[]): PrizeTier {
+  const total = tiers.reduce((s, t) => s + t.weight, 0);
+  let rand = Math.random() * total;
+  for (const tier of tiers) {
+    rand -= tier.weight;
+    if (rand <= 0) return tier;
+  }
+  return tiers[0];
+}
+
 function generateCoins(currencySymbol: string, caseValue: number): Coin[] {
-  const { low, mid, high } = getMultipliers(caseValue);
+  const { tiers } = getCaseConfig(caseValue);
   const coins: Coin[] = [];
   for (let i = 0; i < TOTAL_COINS; i++) {
-    const rand = Math.random();
-    let val: number;
-    if (rand < 0.65) val = low[Math.floor(Math.random() * low.length)];
-    else if (rand < 0.90) val = mid[Math.floor(Math.random() * mid.length)];
-    else val = high[Math.floor(Math.random() * high.length)];
-    const rarity = getRarity(val / caseValue);
-    coins.push({ value: val, label: `${val}${currencySymbol}`, rarity });
+    const tier = pickTier(tiers);
+    const val = tier.values[Math.floor(Math.random() * tier.values.length)];
+    coins.push({ value: val, label: `${val}${currencySymbol}`, rarity: tier.rarity });
   }
   return coins;
 }
 
-function pickWinValue(caseValue: number): number {
-  const { low, mid, high } = getMultipliers(caseValue);
+function pickWinValue(caseValue: number): { value: number; rarity: Rarity } {
+  const { tiers } = getCaseConfig(caseValue);
   const rand = Math.random();
-  if (rand < 0.45) return low[Math.floor(Math.random() * low.length)];
-  if (rand < 0.77) return mid[Math.floor(Math.random() * mid.length)];
-  if (rand < 0.95) return high[0];
-  if (rand < 0.98) return high[Math.floor(Math.random() * 3) + 1];
-  return high[high.length - 1];
+
+  let tier: PrizeTier;
+  if (rand < 0.50)      tier = tiers[0];
+  else if (rand < 0.78) tier = tiers[1];
+  else if (rand < 0.94) tier = tiers[2];
+  else                  tier = tiers[3];
+
+  const value = tier.values[Math.floor(Math.random() * tier.values.length)];
+  return { value, rarity: tier.rarity };
 }
 
 interface ConfettiParticle {
@@ -257,7 +363,9 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
       setDeducted(true);
     }
 
-    const desiredWinValue = pickWinValue(caseValue);
+    const win = pickWinValue(caseValue);
+    const desiredWinValue = win.value;
+    const desiredRarity = win.rarity;
     let targetIdx = coins.findIndex((c) => c.value === desiredWinValue);
     if (targetIdx === -1 || targetIdx < VISIBLE_COINS + 5) {
       for (let i = TOTAL_COINS - 10; i >= VISIBLE_COINS + 5; i--) {
@@ -265,8 +373,7 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
       }
     }
     if (targetIdx < VISIBLE_COINS + 5) {
-      const rarity = getRarity(desiredWinValue / caseValue);
-      coins[TOTAL_COINS - 8] = { value: desiredWinValue, label: `${desiredWinValue}${currencySymbol}`, rarity };
+      coins[TOTAL_COINS - 8] = { value: desiredWinValue, label: `${desiredWinValue}${currencySymbol}`, rarity: desiredRarity };
       targetIdx = TOTAL_COINS - 8;
     }
 

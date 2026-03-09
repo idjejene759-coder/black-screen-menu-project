@@ -291,8 +291,8 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const panelProps = { cur, betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, isWaiting, currentWin };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black flex flex-col">
-      <img src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/38c3a905-acbb-4132-9d0a-5ef2b870a588.png" alt="reference" className="w-full h-full object-contain" />
+    <div className="fixed inset-0 z-[200] bg-[#1a1535] flex flex-col">
+      <img src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/b3120d18-ecb5-4a55-aaea-293cbf68ec03.jpg" alt="reference" className="w-full h-full object-contain" />
     </div>
   );
 }

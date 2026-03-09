@@ -45,46 +45,97 @@ function generateHistory(): number[] {
   return Array.from({ length: 30 }, () => generateCrashPoint());
 }
 
-function BetPanel({ cur, betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, isWaiting, currentWin }: {
-  cur: Cur; betInput: string; setBetInput: (v: string) => void; minBet: number; bal: number; quickBets: number[]; sym: string;
+function BetPanel({ betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, currentWin, step }: {
+  betInput: string; setBetInput: (v: string) => void; minBet: number; bal: number; quickBets: number[]; sym: string;
   isFlying: boolean; hasBet: boolean; cashOut: () => void; placeBet: () => void; betVal: number;
-  isWaiting: boolean; currentWin: number;
+  currentWin: number; step: number;
 }) {
-  const step = cur === "usdt" ? 1 : 5;
+  const [autoCashout, setAutoCashout] = useState("2.00");
+
   return (
-    <div className="bg-[#12122e] border border-purple-500/10 rounded-xl p-1.5">
-      <div className="flex gap-1.5">
-        <div className="flex-1 min-w-0 space-y-1">
-          <div className="flex items-center bg-[#0c0c24] border border-white/10 rounded-lg overflow-hidden h-7">
-            <button onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))} className="px-2 text-white/40 active:text-white transition shrink-0">
-              <Icon name="Minus" size={12} />
+    <div className="bg-[#1e1b3a] border border-[#2d2755] rounded-2xl p-3 space-y-2.5">
+      <div className="flex items-center gap-3">
+        <label className="flex items-center gap-1.5 cursor-pointer">
+          <div className="w-8 h-4 bg-[#2d2755] rounded-full relative">
+            <div className="w-3.5 h-3.5 bg-[#4a4570] rounded-full absolute top-0.5 left-0.5" />
+          </div>
+          <span className="text-white/60 text-xs font-medium">Автоставка</span>
+        </label>
+        <label className="flex items-center gap-1.5 cursor-pointer">
+          <div className="w-8 h-4 bg-[#2d2755] rounded-full relative">
+            <div className="w-3.5 h-3.5 bg-[#4a4570] rounded-full absolute top-0.5 left-0.5" />
+          </div>
+          <span className="text-white/60 text-xs font-medium">Автовывод</span>
+        </label>
+        <div className="ml-auto flex items-center bg-[#2d2755] rounded-lg px-2.5 py-1.5">
+          <span className="text-white/40 text-xs mr-1">x</span>
+          <input
+            type="text"
+            value={autoCashout}
+            onChange={e => setAutoCashout(e.target.value)}
+            className="bg-transparent text-white font-bold text-sm w-10 outline-none text-center"
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="flex items-center bg-[#13112a] border border-[#2d2755] rounded-xl overflow-hidden h-12">
+            <button
+              onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))}
+              className="w-12 h-full flex items-center justify-center text-white/50 active:text-white transition border-r border-[#2d2755]"
+            >
+              <Icon name="Minus" size={18} />
             </button>
-            <input type="number" value={betInput} onChange={e => setBetInput(e.target.value)} className="flex-1 bg-transparent text-white text-center font-bold text-xs outline-none min-w-0 [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden" min={minBet} />
-            <button onClick={() => setBetInput(String(Math.min(bal, +(parseFloat(betInput) || 0) + step)))} className="px-2 text-white/40 active:text-white transition shrink-0">
-              <Icon name="Plus" size={12} />
+            <input
+              type="number"
+              value={betInput}
+              onChange={e => setBetInput(e.target.value)}
+              className="flex-1 bg-transparent text-white text-center font-extrabold text-xl outline-none min-w-0 [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden"
+              min={minBet}
+            />
+            <button
+              onClick={() => setBetInput(String(Math.min(bal, +(parseFloat(betInput) || 0) + step)))}
+              className="w-12 h-full flex items-center justify-center text-white/50 active:text-white transition border-l border-[#2d2755]"
+            >
+              <Icon name="Plus" size={18} />
             </button>
           </div>
-          <div className="flex gap-0.5">
+          <div className="flex gap-1.5">
             {quickBets.map(q => (
-              <button key={q} onClick={() => setBetInput(String(q))} className="flex-1 py-0.5 rounded bg-white/5 border border-white/8 text-white/50 text-[9px] font-bold active:bg-white/10 transition">
+              <button
+                key={q}
+                onClick={() => setBetInput(String(q))}
+                className="flex-1 py-1.5 rounded-lg bg-[#2d2755] text-white/60 text-xs font-bold active:bg-[#3d3775] transition"
+              >
                 {q >= 1000 ? `${q / 1000}K` : q}
               </button>
             ))}
           </div>
         </div>
         {isFlying && hasBet ? (
-          <button onClick={cashOut} className="w-16 shrink-0 self-stretch rounded-lg bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-[10px] active:scale-[0.96] transition-transform flex flex-col items-center justify-center">
+          <button
+            onClick={cashOut}
+            className="w-[120px] shrink-0 rounded-xl bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-lg active:scale-[0.97] transition-transform flex flex-col items-center justify-center shadow-lg shadow-green-500/20"
+          >
             <span>ЗАБРАТЬ</span>
-            <span className="text-[8px] font-bold opacity-80">{currentWin.toFixed(2)}{sym}</span>
+            <span className="text-sm font-bold opacity-80">{currentWin.toFixed(2)}{sym}</span>
           </button>
         ) : !hasBet ? (
-          <button onClick={placeBet} disabled={betVal < minBet || betVal > bal} className="w-16 shrink-0 self-stretch rounded-lg bg-gradient-to-b from-purple-500 to-purple-700 text-white font-extrabold text-[10px] active:scale-[0.96] transition-transform disabled:opacity-40">
+          <button
+            onClick={placeBet}
+            disabled={betVal < minBet || betVal > bal}
+            className="w-[120px] shrink-0 rounded-xl bg-gradient-to-r from-[#7c3aed] to-[#c026d3] text-white font-extrabold text-lg active:scale-[0.97] transition-transform disabled:opacity-40 shadow-lg shadow-purple-500/20"
+          >
             СТАВКА
           </button>
         ) : (
-          <button disabled className="w-16 shrink-0 self-stretch rounded-lg bg-white/5 text-white/20 font-bold text-[9px]">ЖДИТЕ...</button>
+          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#2d2755] text-white/30 font-bold text-sm">
+            ЖДИТЕ...
+          </button>
         )}
       </div>
+      <div className="h-1 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] opacity-60" />
     </div>
   );
 }
@@ -114,6 +165,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const sym = cur === "usdt" ? "$" : "★";
   const minBet = cur === "usdt" ? MIN_BET_USDT : MIN_BET_STARS;
   const quickBets = cur === "usdt" ? QUICK_BETS_USDT : QUICK_BETS_STARS;
+  const step = cur === "usdt" ? 1 : 5;
 
   useEffect(() => { betInputRef.current = betInput; }, [betInput]);
 
@@ -224,11 +276,9 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     };
   }, []);
 
-  const onNewRound = useCallback(() => { setBetPlaced(0); startRoundWait(); }, [startRoundWait]);
-
   const renderGraph = () => {
     const w = 360;
-    const h = 180;
+    const h = 200;
     const px = (rocketPos.x / 100) * w;
     const py = (rocketPos.y / 100) * h;
     const isCrashedOrAway = phase === "crashed" || flyAway;
@@ -237,31 +287,27 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "visible" }}>
         <defs>
           <linearGradient id="lineGrad" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stopColor="#22c55e" />
-            <stop offset="100%" stopColor="#4ade80" />
+            <stop offset="0%" stopColor="#7c3aed" />
+            <stop offset="100%" stopColor="#a855f7" />
           </linearGradient>
           <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#22c55e" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
           </linearGradient>
-          <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+          <filter id="glow"><feGaussianBlur stdDeviation="3" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
         </defs>
         {[0.25, 0.5, 0.75].map(f => (
-          <line key={f} x1="0" y1={h * f} x2={w} y2={h * f} stroke="white" strokeOpacity="0.04" strokeDasharray="3 3" />
+          <line key={f} x1="0" y1={h * f} x2={w} y2={h * f} stroke="white" strokeOpacity="0.03" strokeDasharray="4 4" />
         ))}
         {!isCrashedOrAway && (
           <>
             <polygon points={`0,${h} 0,${py} ${px},${py} ${px},${h}`} fill="url(#fillGrad)" />
-            <path d={`M 0 ${h} Q ${px * 0.3} ${h - (h - py) * 0.2} ${px} ${py}`} fill="none" stroke="url(#lineGrad)" strokeWidth="2.5" strokeLinecap="round" filter="url(#glow)" />
+            <path d={`M 0 ${h} Q ${px * 0.3} ${h - (h - py) * 0.2} ${px} ${py}`} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
           </>
         )}
-        {isCrashedOrAway ? (
-          <g style={{ transform: `translate(${w + 40}px, -60px)` }}>
-            <text x="0" y="0" fontSize="24" textAnchor="middle">🚀</text>
-          </g>
-        ) : (
-          <g style={{ transform: `translate(${px}px, ${py - 14}px)` }}>
-            <text x="0" y="0" fontSize="24" textAnchor="middle" style={{ filter: "drop-shadow(0 0 6px rgba(74,222,128,0.5))" }}>🚀</text>
+        {!isCrashedOrAway && (
+          <g style={{ transform: `translate(${px}px, ${py - 16}px)` }}>
+            <text x="0" y="0" fontSize="28" textAnchor="middle" style={{ filter: "drop-shadow(0 0 8px rgba(124,58,237,0.6))" }}>🚀</text>
           </g>
         )}
       </svg>
@@ -270,12 +316,12 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
   if (phase === "loading") {
     return (
-      <div className="fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center">
+      <div className="fixed inset-0 z-[200] bg-[#13112a] flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-3 border-purple-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-green-400 font-extrabold text-xl tracking-widest">CRASH X</span>
-          <div className="w-44 h-1 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-purple-500 to-green-400 rounded-full transition-all" style={{ width: `${Math.min(loadProg, 100)}%` }} />
+          <div className="text-5xl animate-bounce">🚀</div>
+          <span className="text-purple-400 font-extrabold text-2xl tracking-widest">LUCKY JET</span>
+          <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] rounded-full transition-all" style={{ width: `${Math.min(loadProg, 100)}%` }} />
           </div>
         </div>
       </div>
@@ -288,11 +334,90 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const isWaiting = phase === "roundWait";
   const hasBet = betPlaced > 0;
 
-  const panelProps = { cur, betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, isWaiting, currentWin };
+  const panelProps = { betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, currentWin, step };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-[#1a1535] flex flex-col">
-      <img src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/b3120d18-ecb5-4a55-aaea-293cbf68ec03.jpg" alt="reference" className="w-full h-full object-contain" />
+    <div className="fixed inset-0 z-[200] bg-[#13112a] flex flex-col overflow-auto">
+      <div className="flex items-center justify-between px-3 py-2.5 shrink-0">
+        <button onClick={onClose} className="flex items-center gap-1 text-white/60 active:scale-95">
+          <Icon name="ChevronLeft" size={20} />
+          <span className="text-sm font-medium">Назад</span>
+        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-white/40 text-xs uppercase font-medium">{cur === "usdt" ? "USDT" : "Stars"}</span>
+          <span className="text-white font-bold text-base">{bal.toFixed(2)} {sym}</span>
+        </div>
+        <button
+          onClick={() => { setCur(c => c === "usdt" ? "stars" : "usdt"); setBetInput(cur === "usdt" ? "5" : "1"); }}
+          className="bg-[#2d2755] rounded-xl px-3 py-1.5 text-xs text-white/60 font-medium active:scale-95"
+        >
+          {cur === "usdt" ? "★ Stars" : "$ USDT"}
+        </button>
+      </div>
+
+      <div className="px-3 py-1.5 shrink-0">
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+          {history.slice(0, 10).map((h, i) => (
+            <span key={i} className={`shrink-0 text-xs font-bold px-2.5 py-1 rounded-lg ${
+              h < 1.5 ? "bg-[#1e3a5f] text-blue-400" : h < 2 ? "bg-[#2d2755] text-purple-300" : h < 5 ? "bg-[#3d2755] text-pink-300" : "bg-[#2d4035] text-green-400"
+            }`}>
+              {h.toFixed(2)}x
+            </span>
+          ))}
+          <button className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg bg-[#2d2755]">
+            <Icon name="Clock" size={14} className="text-white/30" />
+          </button>
+        </div>
+      </div>
+
+      <div className="mx-3 mt-1 rounded-2xl border border-[#2d2755] bg-[#1a1535] relative overflow-hidden shrink-0" style={{ height: "30vh", minHeight: 180, maxHeight: 260 }}>
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#1a1535] to-transparent" />
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="absolute w-0.5 h-0.5 bg-white/20 rounded-full animate-pulse" style={{ left: `${15 + i * 20}%`, top: `${10 + i * 12}%`, animationDelay: `${i * 0.5}s` }} />
+          ))}
+        </div>
+
+        {isWaiting && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+            <div className="text-5xl mb-3 animate-bounce">🚀</div>
+            <span className="text-white font-extrabold text-sm tracking-wider uppercase">Ожидание раунда</span>
+            <div className="w-40 h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] rounded-full transition-all duration-100" style={{ width: `${roundProgress}%` }} />
+            </div>
+          </div>
+        )}
+        {isFlying && (
+          <div className="absolute inset-0 z-10">
+            {renderGraph()}
+            <div className="absolute top-4 left-4">
+              <div className="text-white font-extrabold text-4xl leading-none" style={{ textShadow: "0 0 20px rgba(124,58,237,0.5)" }}>
+                x{multiplier.toFixed(2)}
+              </div>
+              {hasBet && <div className="text-purple-300 font-bold text-base mt-1">{currentWin.toFixed(2)} {sym}</div>}
+            </div>
+          </div>
+        )}
+        {isCrashed && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+            <div className="text-red-500 font-extrabold text-5xl leading-none animate-pulse">x{multiplier.toFixed(2)}</div>
+            <div className="text-red-400 font-bold text-base mt-2 uppercase tracking-wider">Улетел!</div>
+            {hasBet && !cashedOutRef.current && <div className="text-red-400/60 text-sm mt-1">-{betPlaced.toFixed(2)} {sym}</div>}
+          </div>
+        )}
+        {isCashedOut && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+            <div className="text-green-400 font-extrabold text-5xl leading-none">x{multiplier.toFixed(2)}</div>
+            <div className="text-green-300 font-bold text-lg mt-2">+{currentWin.toFixed(2)} {sym}</div>
+            <div className="text-green-400/50 text-sm mt-1">Забрано!</div>
+          </div>
+        )}
+      </div>
+
+      <div className="px-3 pt-3 pb-4 space-y-2.5 shrink-0">
+        <BetPanel {...panelProps} />
+        <BetPanel {...panelProps} />
+      </div>
     </div>
   );
 }

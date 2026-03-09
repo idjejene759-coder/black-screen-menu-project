@@ -328,7 +328,11 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
         const now = Date.now() / 1000;
         const localElapsed = Math.max(0, (now - serverStartedAtRef.current) + timeOffsetRef.current);
-        const m = +Math.pow(Math.E, localElapsed * 0.27).toFixed(2);
+        const THRESHOLD = Math.log(10) / 0.27;
+        const m = +(localElapsed <= THRESHOLD
+          ? Math.pow(Math.E, localElapsed * 0.27)
+          : 10 * Math.pow(Math.E, (localElapsed - THRESHOLD) * 0.8)
+        ).toFixed(2);
 
         const yBase = Math.max(100 - localElapsed * 8, 25);
         const wobble = Math.sin(localElapsed * 3) * 2.5;

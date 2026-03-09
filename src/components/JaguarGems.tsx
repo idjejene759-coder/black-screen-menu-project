@@ -3,7 +3,8 @@ import Icon from "@/components/ui/icon";
 
 const CELLS = 25;
 const MAX_MINES = 7;
-const MIN_BET = 0.5;
+const MIN_BET_USDT = 0.5;
+const MIN_BET_STARS = 10;
 const MULT_STEP = 0.5;
 const GAME_API = "https://functions.poehali.dev/64bf4a3e-c7fb-44f5-a1a9-b70cae660400";
 
@@ -50,6 +51,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
   const bal = cur === "usdt" ? usdtBalance : starsBalance;
   const betVal = parseFloat(betInput) || 0;
   const sym = cur === "usdt" ? "$" : "★";
+  const minBet = cur === "usdt" ? MIN_BET_USDT : MIN_BET_STARS;
 
   useEffect(() => {
     fetch(`${GAME_API}?game=mines`).then(r => r.json()).then(d => {
@@ -79,7 +81,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
   }, []);
 
   const start = useCallback(async () => {
-    if (betVal < MIN_BET || betVal > bal) return;
+    if (betVal < minBet || betVal > bal) return;
     const res = await apiBalance(userId, "bet", betVal, cur);
     if (!res || !res.ok) return;
     onBalanceChange(cur, -betVal);
@@ -320,7 +322,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
           <>
             <div className="bg-[#111820] border border-white/5 rounded-xl px-2.5 py-2 flex items-center gap-2">
               <button
-                onClick={() => setBetInput(Math.max(MIN_BET, betVal - (cur === "stars" ? 10 : 0.5)).toFixed(2))}
+                onClick={() => setBetInput(Math.max(minBet, betVal - (cur === "stars" ? 10 : 0.5)).toFixed(2))}
                 className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40 active:bg-white/10 text-base font-bold shrink-0"
               >-</button>
               <div className="flex-1 flex items-center justify-center gap-1">
@@ -334,7 +336,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
                   }}
                   onBlur={() => {
                     const v = parseFloat(betInput);
-                    setBetInput(isNaN(v) || v < MIN_BET ? MIN_BET.toFixed(2) : v.toFixed(2));
+                    setBetInput(isNaN(v) || v < minBet ? minBet.toFixed(2) : v.toFixed(2));
                   }}
                   className="bg-transparent text-center text-white text-lg font-bold outline-none w-full"
                 />
@@ -348,9 +350,9 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
 
             <div className="flex gap-1.5">
               {[
-                { l: "MIN", fn: () => setBetInput(MIN_BET.toFixed(2)) },
+                { l: "MIN", fn: () => setBetInput(minBet.toFixed(2)) },
                 { l: "x2", fn: () => setBetInput((betVal * 2).toFixed(2)) },
-                { l: "½", fn: () => setBetInput(Math.max(MIN_BET, betVal / 2).toFixed(2)) },
+                { l: "½", fn: () => setBetInput(Math.max(minBet, betVal / 2).toFixed(2)) },
                 { l: "MAX", fn: () => setBetInput(bal.toFixed(2)) },
               ].map(b => (
                 <button key={b.l} onClick={b.fn} className="flex-1 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05] text-white/25 text-[10px] font-medium active:bg-white/[0.06]">{b.l}</button>
@@ -359,10 +361,10 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
 
             <button
               onClick={start}
-              disabled={betVal < MIN_BET || betVal > bal}
+              disabled={betVal < minBet || betVal > bal}
               className="w-full py-3 rounded-xl bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-[#0a0e14] font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-25"
             >
-              {betVal > bal ? "Недостаточно средств" : betVal < MIN_BET ? `Мин. ${MIN_BET} ${sym}` : "Играть"}
+              {betVal > bal ? "Недостаточно средств" : betVal < minBet ? `Мин. ${minBet} ${sym}` : "Играть"}
             </button>
           </>
         )}

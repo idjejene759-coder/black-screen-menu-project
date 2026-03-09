@@ -292,6 +292,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
   return (
     <div className="fixed inset-0 z-[200] bg-black flex flex-col">
+      <img src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/38c3a905-acbb-4132-9d0a-5ef2b870a588.png" alt="reference" className="w-full h-full object-contain" />
     </div>
   );
 }

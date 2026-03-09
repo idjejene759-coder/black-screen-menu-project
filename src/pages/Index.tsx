@@ -1381,9 +1381,9 @@ const Index = () => {
                       alt={`${val} ${currency === "usdt" ? "$" : "★"}`}
                       className="w-full h-full rounded-full object-cover"
                     />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-white font-extrabold text-[18px] leading-none" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>{val}</span>
-                      <span className="text-white font-bold text-[13px] leading-none mt-0.5" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{currency === "usdt" ? "$" : "★"}</span>
+                      <span className="text-white font-bold text-[14px] leading-none ml-1" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{currency === "usdt" ? "$" : "★"}</span>
                     </div>
                   </div>
                   <button className="w-full py-2 rounded-xl bg-[#4ade80] text-black font-bold text-[13px] active:scale-[0.97] transition-transform">

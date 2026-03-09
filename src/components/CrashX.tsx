@@ -45,44 +45,44 @@ function generateHistory(): number[] {
   return Array.from({ length: 30 }, () => generateCrashPoint());
 }
 
-function BetPanel({ cur, betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, isCrashed, isCashedOut, isWaiting, currentWin, onNewRound, stretch }: {
+function BetPanel({ cur, betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, isWaiting, currentWin }: {
   cur: Cur; betInput: string; setBetInput: (v: string) => void; minBet: number; bal: number; quickBets: number[]; sym: string;
   isFlying: boolean; hasBet: boolean; cashOut: () => void; placeBet: () => void; betVal: number;
-  isCrashed: boolean; isCashedOut: boolean; isWaiting: boolean; currentWin: number; onNewRound: () => void; stretch?: boolean;
+  isWaiting: boolean; currentWin: number;
 }) {
   const step = cur === "usdt" ? 1 : 5;
   return (
-    <div className={`bg-[#12122e] border border-purple-500/10 rounded-lg p-2 ${stretch ? 'h-full flex flex-col' : ''}`}>
-      <div className={`flex gap-1.5 ${stretch ? 'flex-1' : ''}`}>
-        <div className="flex-1 flex flex-col gap-1">
-          <div className={`flex items-center bg-[#0c0c24] border border-white/10 rounded-md overflow-hidden ${stretch ? 'flex-1 min-h-[36px]' : 'h-8'}`}>
-            <button onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))} className="px-2.5 text-white/30 active:text-white transition">
-              <Icon name="Minus" size={14} />
+    <div className="bg-[#12122e] border border-purple-500/10 rounded-xl p-2.5">
+      <div className="flex gap-2">
+        <div className="flex-1 space-y-1.5">
+          <div className="flex items-center bg-[#0c0c24] border border-white/10 rounded-lg overflow-hidden h-11">
+            <button onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))} className="px-3 text-white/40 active:text-white transition">
+              <Icon name="Minus" size={16} />
             </button>
-            <input type="number" value={betInput} onChange={e => setBetInput(e.target.value)} className="flex-1 bg-transparent text-white text-center font-bold text-base outline-none min-w-0" min={minBet} />
-            <button onClick={() => setBetInput(String(Math.min(bal, +(parseFloat(betInput) || 0) + step)))} className="px-2.5 text-white/30 active:text-white transition">
-              <Icon name="Plus" size={14} />
+            <input type="number" value={betInput} onChange={e => setBetInput(e.target.value)} className="flex-1 bg-transparent text-white text-center font-bold text-lg outline-none min-w-0" min={minBet} />
+            <button onClick={() => setBetInput(String(Math.min(bal, +(parseFloat(betInput) || 0) + step)))} className="px-3 text-white/40 active:text-white transition">
+              <Icon name="Plus" size={16} />
             </button>
           </div>
-          <div className="flex gap-0.5">
+          <div className="flex gap-1">
             {quickBets.map(q => (
-              <button key={q} onClick={() => setBetInput(String(q))} className={`flex-1 rounded bg-white/5 text-white/40 text-[10px] font-bold active:bg-white/10 transition ${stretch ? 'py-1' : 'py-0.5'}`}>
+              <button key={q} onClick={() => setBetInput(String(q))} className="flex-1 py-1.5 rounded-lg bg-white/5 border border-white/8 text-white/50 text-[11px] font-bold active:bg-white/10 transition">
                 {q >= 1000 ? `${q / 1000}K` : q}
               </button>
             ))}
           </div>
         </div>
         {isFlying && hasBet ? (
-          <button onClick={cashOut} className="w-[90px] rounded-md bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-sm active:scale-[0.96] transition-transform flex flex-col items-center justify-center">
+          <button onClick={cashOut} className="w-20 shrink-0 rounded-xl bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-xs active:scale-[0.96] transition-transform flex flex-col items-center justify-center">
             <span>ЗАБРАТЬ</span>
             <span className="text-[10px] font-bold opacity-80">{currentWin.toFixed(2)}{sym}</span>
           </button>
         ) : (isWaiting || (isFlying && !hasBet)) && !hasBet ? (
-          <button onClick={placeBet} disabled={betVal < minBet || betVal > bal} className="w-[90px] rounded-md bg-gradient-to-b from-purple-500 to-purple-700 text-white font-extrabold text-sm active:scale-[0.96] transition-transform disabled:opacity-40">
+          <button onClick={placeBet} disabled={betVal < minBet || betVal > bal} className="w-20 shrink-0 rounded-xl bg-gradient-to-b from-purple-500 to-purple-700 text-white font-extrabold text-xs active:scale-[0.96] transition-transform disabled:opacity-40">
             СТАВКА
           </button>
         ) : (
-          <button disabled className="w-[90px] rounded-md bg-white/5 text-white/20 font-bold text-[11px]">ЖДИТЕ...</button>
+          <button disabled className="w-20 shrink-0 rounded-xl bg-white/5 text-white/20 font-bold text-[10px]">ЖДИТЕ...</button>
         )}
       </div>
     </div>
@@ -288,7 +288,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const isWaiting = phase === "roundWait";
   const hasBet = betPlaced > 0;
 
-  const panelProps = { cur, betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, isCrashed, isCashedOut, isWaiting, currentWin, onNewRound };
+  const panelProps = { cur, betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, isWaiting, currentWin };
 
   return (
     <div className="fixed inset-0 z-[200] bg-[#0c0c24] flex flex-col">
@@ -363,9 +363,9 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         )}
       </div>
 
-      <div className="px-3 pt-2 pb-2 gap-2 flex-1 flex flex-col min-h-0">
-        <div className="flex-1"><BetPanel {...panelProps} stretch /></div>
-        <div className="flex-1"><BetPanel {...panelProps} stretch /></div>
+      <div className="px-3 pt-2 pb-2 space-y-2">
+        <BetPanel {...panelProps} />
+        <BetPanel {...panelProps} />
       </div>
 
       <div className="px-3 py-1 shrink-0">

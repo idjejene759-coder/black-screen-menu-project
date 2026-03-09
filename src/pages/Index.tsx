@@ -28,6 +28,7 @@ const WITHDRAWAL_URL = "https://functions.poehali.dev/9cfe3eb3-a1dd-4e28-806b-44
 const VOUCHER_URL = "https://functions.poehali.dev/67465d27-c387-428b-a82c-c47b677094b2";
 
 const USDT_ICON = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/521d6370-ca4b-47aa-9be0-a7e2edc0027f.jpg";
+const TG_STARS_ICON = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/182f0046-3f4d-43a9-b878-2bbee30070c6.jpg";
 
 const WITHDRAW_NETWORKS = [
   { id: "ERC20", name: "Tether ERC20", label: "ERC20", color: "#50AF95" },
@@ -72,6 +73,10 @@ const Index = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [cryptoPayOpen, setCryptoPayOpen] = useState(false);
+  const [tgStarsOpen, setTgStarsOpen] = useState(false);
+  const [tgStarsAmount, setTgStarsAmount] = useState("50");
+  const [tgStarsError, setTgStarsError] = useState("");
+  const [tgStarsLoading, setTgStarsLoading] = useState(false);
   const [bonusOpen, setBonusOpen] = useState(false);
   const [voucherOpen, setVoucherOpen] = useState(false);
   const [voucherCode, setVoucherCode] = useState("");
@@ -394,6 +399,29 @@ const Index = () => {
               </div>
               <Icon name="ChevronRight" size={18} className="text-white/30 shrink-0" />
             </button>
+
+            <button
+              onClick={() => { setDepositOpen(false); setTgStarsOpen(true); setTgStarsAmount("50"); }}
+              className="w-full flex items-center gap-3 bg-[#1a1a1a] border border-white/10 rounded-2xl px-4 py-3 active:bg-white/5 transition-colors relative"
+            >
+              <div className="absolute top-2.5 left-2.5">
+                <div className="w-5 h-5 rounded-md bg-[#f5a623]/15 flex items-center justify-center">
+                  <Icon name="Star" size={12} className="text-[#f5a623]" />
+                </div>
+              </div>
+              <div className="w-[52px] h-[52px] rounded-xl bg-[#2a2a2a] flex items-center justify-center shrink-0 overflow-hidden">
+                <img
+                  src={TG_STARS_ICON}
+                  alt="Telegram Stars"
+                  className="w-[36px] h-[36px] rounded-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col items-start flex-1 min-w-0">
+                <span className="text-white font-bold text-[15px]">Телеграм Звёзды</span>
+                <span className="text-white/40 text-[12px]">от 50 до 10000</span>
+              </div>
+              <Icon name="ChevronRight" size={18} className="text-white/30 shrink-0" />
+            </button>
           </div>
         </div>
       )}
@@ -513,6 +541,117 @@ const Index = () => {
             >
               {depositLoading ? "Создаём платёж..." : `Пополнить ${depositAmount || "0"} USDT`}
             </button>
+          </div>
+        </div>
+      )}
+
+      {tgStarsOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col overflow-y-auto">
+          <div className="flex items-center justify-between px-5 pt-4 pb-2">
+            <button
+              onClick={() => { setTgStarsOpen(false); setDepositOpen(true); }}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+            >
+              <Icon name="ArrowLeft" size={16} className="text-white/60" />
+            </button>
+            <h1 className="text-[18px] font-bold text-white">Пополнение</h1>
+            <button
+              onClick={() => setTgStarsOpen(false)}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+            >
+              <Icon name="X" size={16} className="text-white/60" />
+            </button>
+          </div>
+
+          <div className="px-4 pt-4">
+            <div className="bg-[#111] border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-3">
+              <div className="w-[52px] h-[52px] rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
+                <img
+                  src={TG_STARS_ICON}
+                  alt="Telegram Stars"
+                  className="w-[36px] h-[36px] rounded-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-[15px]">Телеграм Звёзды</span>
+                <span className="text-white/40 text-[13px]">от 50 до 10000 звёзд</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-4 pt-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-white/70 text-[14px] font-medium">Вы платите</span>
+              <span className="text-white/30 text-[12px]">Минимум: 50 звёзд</span>
+            </div>
+            <div className="bg-[#111] border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#f5a623]/20 flex items-center justify-center shrink-0">
+                <Icon name="Star" size={16} className="text-[#f5a623]" />
+              </div>
+              <span className="text-white font-bold text-[15px]">Stars</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={tgStarsAmount}
+                onChange={(e) => { setTgStarsAmount(e.target.value); setTgStarsError(""); }}
+                className="ml-auto bg-transparent text-white text-right text-[20px] font-bold w-[120px] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                min="50"
+                max="10000"
+              />
+            </div>
+            {tgStarsError && (
+              <div className="mt-2 text-red-400 text-[13px] font-medium">{tgStarsError}</div>
+            )}
+          </div>
+
+          <div className="px-4 pt-6">
+            <button
+              disabled={tgStarsLoading}
+              onClick={async () => {
+                const amount = parseInt(tgStarsAmount);
+                if (!tgStarsAmount || isNaN(amount)) {
+                  setTgStarsError("Введите количество звёзд");
+                  return;
+                }
+                if (amount < 50) {
+                  setTgStarsError("Минимальное количество — 50 звёзд");
+                  return;
+                }
+                if (amount > 10000) {
+                  setTgStarsError("Максимальное количество — 10000 звёзд");
+                  return;
+                }
+                const currentUserId = tgAuth.user?.id;
+                if (!currentUserId) {
+                  setTgStarsError("Ошибка идентификации. Перезайдите в аккаунт");
+                  return;
+                }
+                setTgStarsError("");
+                setTgStarsLoading(true);
+                try {
+                  window.open(`https://t.me/${TG_BOT_USERNAME}?start=stars_${amount}_${currentUserId}`, "_blank");
+                  const pollBalance = setInterval(async () => {
+                    await fetchBalance();
+                  }, 5000);
+                  setTimeout(() => clearInterval(pollBalance), 300000);
+                } catch {
+                  setTgStarsError("Ошибка соединения");
+                } finally {
+                  setTgStarsLoading(false);
+                }
+              }}
+              className="w-full bg-[#f5a623] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#d9911e] transition-colors disabled:opacity-50"
+            >
+              {tgStarsLoading ? "Открываем бота..." : `Пополнить ${tgStarsAmount || "0"} Stars`}
+            </button>
+          </div>
+
+          <div className="px-4 pt-4">
+            <div className="bg-[#111] border border-white/5 rounded-xl px-4 py-3">
+              <p className="text-white/30 text-[12px] leading-relaxed">
+                После нажатия кнопки вы будете перенаправлены в Telegram-бот для оплаты через Телеграм Звёзды. Баланс обновится автоматически после оплаты.
+              </p>
+            </div>
           </div>
         </div>
       )}

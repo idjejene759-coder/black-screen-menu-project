@@ -102,6 +102,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
       setShakeGrid(true);
       setTimeout(() => setShakeGrid(false), 500);
       setPhase("lost");
+      onRefreshBalance();
       return;
     }
     nc[i] = "gem";

@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import JaguarGems from "@/components/JaguarGems";
+import JaguarBalloon from "@/components/JaguarBalloon";
 
 const copyId = (id: string | number) => {
   navigator.clipboard.writeText(String(id));
@@ -118,6 +119,7 @@ const Index = () => {
   const [starsWithdrawLoading, setStarsWithdrawLoading] = useState(false);
   const [starsWithdrawSuccess, setStarsWithdrawSuccess] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
+  const [balloonOpen, setBalloonOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1352,6 +1354,18 @@ const Index = () => {
                   />
                 </div>
               </button>
+              <button
+                onClick={() => setBalloonOpen(true)}
+                className="group flex flex-col bg-[#111820] border border-white/5 rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
+              >
+                <div className="relative aspect-square overflow-hidden rounded-2xl">
+                  <img
+                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/5b8b8e74-258b-4146-9945-cd7fb0cf4847.jpg"
+                    alt="Balloon"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              </button>
             </div>
           </div>
         )}
@@ -1405,6 +1419,20 @@ const Index = () => {
       {gameOpen && (
         <JaguarGems
           onClose={() => { setGameOpen(false); fetchBalance(); }}
+          userId={userId}
+          usdtBalance={userBalance}
+          starsBalance={starsBalance}
+          onBalanceChange={(cur, delta) => {
+            if (cur === "usdt") setUserBalance(prev => +(prev + delta).toFixed(2));
+            else setStarsBalance(prev => +(prev + delta).toFixed(2));
+          }}
+          onRefreshBalance={fetchBalance}
+        />
+      )}
+
+      {balloonOpen && (
+        <JaguarBalloon
+          onClose={() => { setBalloonOpen(false); fetchBalance(); }}
           userId={userId}
           usdtBalance={userBalance}
           starsBalance={starsBalance}

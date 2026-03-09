@@ -1344,10 +1344,10 @@ const Index = () => {
                 onClick={() => setGameOpen(true)}
                 className="group flex flex-col bg-[#111820] border border-white/5 rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
               >
-                <div className="relative aspect-square overflow-hidden rounded-2xl">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
                   <img
-                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/f16f38a7-4c04-4793-9f40-019ef84eae86.jpg"
-                    alt="Jaguar Gems"
+                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/f1e4916f-f48b-4540-9264-37fcf20a1da1.jpg"
+                    alt="Mines"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>

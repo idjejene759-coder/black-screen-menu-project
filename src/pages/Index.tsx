@@ -629,11 +629,15 @@ const Index = () => {
                 setTgStarsError("");
                 setTgStarsLoading(true);
                 try {
-                  window.open(`https://t.me/${TG_BOT_USERNAME}?start=stars_${amount}_${currentUserId}`, "_blank");
-                  const pollBalance = setInterval(async () => {
-                    await fetchBalance();
-                  }, 5000);
-                  setTimeout(() => clearInterval(pollBalance), 300000);
+                  const deepLink = `https://t.me/${TG_BOT_USERNAME}?start=stars_${amount}_${currentUserId}`;
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const tg = (window as unknown as Record<string, any>).Telegram?.WebApp;
+                  if (tg) {
+                    tg.openTelegramLink(deepLink);
+                    setTimeout(() => tg.close(), 300);
+                  } else {
+                    window.open(deepLink, "_blank");
+                  }
                 } catch {
                   setTgStarsError("Ошибка соединения");
                 } finally {
@@ -649,7 +653,7 @@ const Index = () => {
           <div className="px-4 pt-4">
             <div className="bg-[#111] border border-white/5 rounded-xl px-4 py-3">
               <p className="text-white/30 text-[12px] leading-relaxed">
-                После нажатия кнопки вы будете перенаправлены в Telegram-бот для оплаты через Телеграм Звёзды. Баланс обновится автоматически после оплаты.
+                После нажатия приложение закроется и бот отправит вам счёт для оплаты звёздами. Нажмите «Оплатить» — баланс начислится автоматически.
               </p>
             </div>
           </div>

@@ -180,7 +180,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
 
   if (phase === "loading") {
     return (
-      <div className="fixed inset-0 z-[200] bg-[#0a0e14] flex flex-col items-center justify-center">
+      <div className="fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center">
         <button onClick={onClose} className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
           <Icon name="X" size={20} className="text-white/60" />
         </button>
@@ -202,7 +202,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
   }
 
   return (
-    <div className="fixed inset-0 z-[200] bg-[#0a0e14] flex flex-col overflow-auto">
+    <div className="fixed inset-0 z-[200] bg-black flex flex-col overflow-auto">
       <style>{`
         @keyframes cellPop { 0% { transform: scale(0.3) rotate(-10deg); opacity: 0; } 50% { transform: scale(1.15) rotate(3deg); } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
         @keyframes cellBomb { 0% { transform: scale(0.3); opacity: 0; } 40% { transform: scale(1.3); } 100% { transform: scale(1); opacity: 1; } }
@@ -216,11 +216,11 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
         .pulse-glow { animation: pulseGlow 1.5s ease-in-out infinite; }
       `}</style>
 
-      <div className="flex items-center justify-between px-4 py-2.5 bg-[#0d1117]/80 backdrop-blur-lg border-b border-white/5 shrink-0">
-        <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
-          <Icon name="ArrowLeft" size={16} className="text-white/60" />
+      <div className="flex items-center justify-between px-4 py-2.5 bg-black/60 backdrop-blur-lg border-b border-[#4ade80]/10 shrink-0">
+        <button onClick={onClose} className="w-8 h-8 rounded-xl bg-[#4ade80]/[0.06] border border-[#4ade80]/10 flex items-center justify-center">
+          <Icon name="ArrowLeft" size={16} className="text-[#4ade80]/60" />
         </button>
-        <div className="flex bg-white/[0.04] rounded-full p-0.5 border border-white/[0.06]">
+        <div className="flex bg-black/40 rounded-full p-0.5 border border-[#4ade80]/10">
           <button
             onClick={() => { if (phase !== "playing") { setCur("usdt"); setBetInput(MIN_BET_USDT.toFixed(2)); } }}
             className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${cur === "usdt" ? "bg-[#4ade80] text-[#0a0e14]" : "text-white/40"}`}
@@ -230,14 +230,14 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
             className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${cur === "stars" ? "bg-[#4ade80] text-[#0a0e14]" : "text-white/40"}`}
           >Stars ★</button>
         </div>
-        <div className="flex items-center gap-1 bg-white/5 rounded-xl px-2.5 py-1.5">
+        <div className="flex items-center gap-1 bg-[#4ade80]/[0.06] border border-[#4ade80]/10 rounded-xl px-2.5 py-1.5">
           <Icon name="Wallet" size={12} className="text-[#4ade80]" />
-          <span className="text-white text-xs font-semibold">{bal.toFixed(2)} {sym}</span>
+          <span className="text-[#4ade80] text-xs font-semibold">{bal.toFixed(2)} {sym}</span>
         </div>
       </div>
 
       <div className="flex-1 flex flex-col px-3 py-3 gap-2.5 max-w-md mx-auto w-full">
-        <div className={`bg-[#111820] rounded-2xl p-2 border border-white/5 ${shakeGrid ? "grid-shake" : ""}`}>
+        <div className={`bg-black/40 rounded-2xl p-2 border border-[#4ade80]/10 ${shakeGrid ? "grid-shake" : ""}`}>
           <div className="grid grid-cols-5 gap-1">
             {Array.from({ length: CELLS }).map((_, i) => {
               const c = cells[i];
@@ -248,8 +248,8 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
                   disabled={phase !== "playing" || c !== "hidden"}
                   onClick={() => reveal(i)}
                   className={`aspect-square rounded-lg flex items-center justify-center text-lg transition-all duration-150
-                    ${c === "hidden" && phase === "playing" ? "bg-gradient-to-br from-[#1a3a4a] to-[#143040] border border-[#2a5a6a]/30 active:scale-90 cursor-pointer" : ""}
-                    ${c === "hidden" && phase !== "playing" ? "bg-gradient-to-br from-[#1a3a4a]/50 to-[#143040]/50 border border-[#2a5a6a]/15" : ""}
+                    ${c === "hidden" && phase === "playing" ? "bg-gradient-to-br from-[#1a1a1a] to-[#111] border border-[#4ade80]/15 active:scale-90 cursor-pointer hover:border-[#4ade80]/30" : ""}
+                    ${c === "hidden" && phase !== "playing" ? "bg-gradient-to-br from-[#1a1a1a]/50 to-[#111]/50 border border-white/[0.06]" : ""}
                     ${c === "gem" ? "bg-[#4ade80]/10 border border-[#4ade80]/25" : ""}
                     ${c === "bomb" ? "bg-red-500/10 border border-red-500/25" : ""}
                     ${c === "gem" && isJust ? "pulse-glow" : ""}
@@ -296,15 +296,15 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
         )}
 
         <div className="flex gap-2">
-          <div className="flex-1 bg-[#111820] border border-white/5 rounded-xl px-3 py-2">
-            <p className="text-white/20 text-[9px] uppercase tracking-wider">Макс. выигрыш</p>
+          <div className="flex-1 bg-black/30 border border-[#4ade80]/10 rounded-xl px-3 py-2">
+            <p className="text-[#4ade80]/30 text-[9px] uppercase tracking-wider">Макс. выигрыш</p>
             <p className="text-[#4ade80] font-bold text-xs mt-0.5">{maxWin.toFixed(2)} {sym}</p>
           </div>
-          <div className="bg-[#111820] border border-white/5 rounded-xl px-2.5 py-2 flex items-center gap-1.5">
+          <div className="bg-black/30 border border-[#4ade80]/10 rounded-xl px-2.5 py-2 flex items-center gap-1.5">
             <button
               onClick={() => setMines(p => Math.max(1, p - 1))}
               disabled={phase === "playing"}
-              className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center text-white/40 active:bg-white/10 disabled:opacity-20"
+              className="w-6 h-6 rounded-md bg-[#4ade80]/[0.06] flex items-center justify-center text-[#4ade80]/50 active:bg-[#4ade80]/15 disabled:opacity-20"
             ><Icon name="ChevronLeft" size={12} /></button>
             <div className="text-center min-w-[36px]">
               <p className="text-white font-bold text-sm leading-none">{mines}</p>
@@ -313,17 +313,17 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
             <button
               onClick={() => setMines(p => Math.min(MAX_MINES, p + 1))}
               disabled={phase === "playing"}
-              className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center text-white/40 active:bg-white/10 disabled:opacity-20"
+              className="w-6 h-6 rounded-md bg-[#4ade80]/[0.06] flex items-center justify-center text-[#4ade80]/50 active:bg-[#4ade80]/15 disabled:opacity-20"
             ><Icon name="ChevronRight" size={12} /></button>
           </div>
         </div>
 
         {phase !== "playing" && (
           <>
-            <div className="bg-[#111820] border border-white/5 rounded-xl px-2.5 py-2 flex items-center gap-2">
+            <div className="bg-black/30 border border-[#4ade80]/10 rounded-xl px-2.5 py-2 flex items-center gap-2">
               <button
                 onClick={() => setBetInput(Math.max(minBet, betVal - (cur === "stars" ? 10 : 0.5)).toFixed(2))}
-                className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40 active:bg-white/10 text-base font-bold shrink-0"
+                className="w-8 h-8 rounded-lg bg-[#4ade80]/[0.06] flex items-center justify-center text-[#4ade80]/50 active:bg-[#4ade80]/15 text-base font-bold shrink-0"
               >-</button>
               <div className="flex-1 flex items-center justify-center gap-1">
                 <input
@@ -344,7 +344,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
               </div>
               <button
                 onClick={() => setBetInput((betVal + (cur === "stars" ? 10 : 0.5)).toFixed(2))}
-                className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40 active:bg-white/10 text-base font-bold shrink-0"
+                className="w-8 h-8 rounded-lg bg-[#4ade80]/[0.06] flex items-center justify-center text-[#4ade80]/50 active:bg-[#4ade80]/15 text-base font-bold shrink-0"
               >+</button>
             </div>
 
@@ -355,7 +355,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
                 { l: "½", fn: () => setBetInput(Math.max(minBet, betVal / 2).toFixed(2)) },
                 { l: "MAX", fn: () => setBetInput(bal.toFixed(2)) },
               ].map(b => (
-                <button key={b.l} onClick={b.fn} className="flex-1 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05] text-white/25 text-[10px] font-medium active:bg-white/[0.06]">{b.l}</button>
+                <button key={b.l} onClick={b.fn} className="flex-1 py-1.5 rounded-lg bg-[#4ade80]/[0.04] border border-[#4ade80]/10 text-[#4ade80]/40 text-[10px] font-medium active:bg-[#4ade80]/10">{b.l}</button>
               ))}
             </div>
 
@@ -374,7 +374,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
             onClick={cashOut}
             disabled={safe === 0}
             className={`w-full py-3 rounded-xl font-bold text-sm active:scale-[0.98] transition-transform
-              ${safe > 0 ? "bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-[#0a0e14]" : "bg-white/[0.03] border border-white/5 text-white/15"}`}
+              ${safe > 0 ? "bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-[#0a0e14]" : "bg-black/30 border border-[#4ade80]/10 text-[#4ade80]/20"}`}
           >
             {safe > 0 ? `Забрать ${winAmount.toFixed(2)} ${sym} (x${mult.toFixed(1)})` : "Выберите ячейку..."}
           </button>

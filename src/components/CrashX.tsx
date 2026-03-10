@@ -326,7 +326,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       const elapsed = (Date.now() - localStartRef.current) / 1000;
       const m = calcMultiplier(elapsed);
 
-      if (m >= crashRef.current) {
+      if (crashRef.current > 0 && m >= crashRef.current) {
         if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = null;
         const cp = crashRef.current;
@@ -368,6 +368,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     if (!loadingDone) return;
 
     if (phase === "roundWait") {
+      setRoundProgress(0);
       const startTime = Date.now();
       const progInterval = setInterval(() => {
         const p = Math.min(((Date.now() - startTime) / ROUND_WAIT) * 100, 100);

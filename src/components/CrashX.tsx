@@ -343,7 +343,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
       if (state.history) setHistory(state.history);
 
-      if (state.status === "waiting") {
+      if (state.phase === "waiting" || state.status === "waiting") {
         if (serverPhaseRef.current !== "waiting") {
           serverPhaseRef.current = "waiting";
           stopLocalAnimation();
@@ -372,14 +372,14 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
             if (p >= 100) clearInterval(progInterval);
           }, 50);
         }
-      } else if (state.status === "flying") {
+      } else if (state.phase === "flying" || state.status === "flying") {
         if (serverPhaseRef.current !== "flying") {
           serverPhaseRef.current = "flying";
           setPhase("flying");
           setWaitingVisible(false);
           startLocalAnimation();
         }
-      } else if (state.status === "crashed") {
+      } else if (state.phase === "crashed" || state.status === "crashed") {
         if (serverPhaseRef.current !== "crashed") {
           serverPhaseRef.current = "crashed";
           stopLocalAnimation();

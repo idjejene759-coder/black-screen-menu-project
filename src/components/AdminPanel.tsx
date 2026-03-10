@@ -138,10 +138,10 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
 
   // ── Handlers: Players ─────────────────────────────────────────────────────
 
-  const handleBlock = async (player: Player) => {
+  const handleBlock = async (player: Player, reason: string) => {
     setActionLoading(player.id);
     try {
-      await fetch(`${ADMIN_URL}?action=block`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ admin_id: String(adminDisplayId), user_id: String(player.id) }) });
+      await fetch(`${ADMIN_URL}?action=block`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ admin_id: String(adminDisplayId), user_id: String(player.id), reason }) });
       await fetchPlayers(search);
     } catch { /* */ }
     setActionLoading(null);

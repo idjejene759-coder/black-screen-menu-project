@@ -1,15 +1,15 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Player, Stats, ADMIN_URL, formatDate } from "./types";
 
 interface AdminPlayersScreenProps {
-  // Игроки
   players: Player[];
   loading: boolean;
   search: string;
   onSearchChange: (v: string) => void;
   onSearch: () => void;
   actionLoading: number | null;
-  onBlock: (p: Player) => void;
+  onBlock: (p: Player, reason: string) => void;
   onUnblock: (p: Player) => void;
   onEditBalance: (p: Player) => void;
   editingPlayer: Player | null;
@@ -26,9 +26,30 @@ export function AdminPlayersScreen({
   editingPlayer, newBalance, onNewBalanceChange, onSetBalance, onCancelEdit,
   onBack,
 }: AdminPlayersScreenProps) {
+  const [blockingPlayer, setBlockingPlayer] = useState<Player | null>(null);
+  const [blockReason, setBlockReason] = useState("");
+  const [blockError, setBlockError] = useState("");
+
+  const handleBlockSubmit = () => {
+    if (!blockingPlayer) return;
+    if (!blockReason.trim()) {
+      setBlockError("Укажите причину блокировки");
+      return;
+    }
+    onBlock(blockingPlayer, blockReason.trim());
+    setBlockingPlayer(null);
+    setBlockReason("");
+    setBlockError("");
+  };
+
+  const handleCancelBlock = () => {
+    setBlockingPlayer(null);
+    setBlockReason("");
+    setBlockError("");
+  };
+
   return (
     <div className="fixed inset-0 z-[60] bg-[#0a0a0a] flex flex-col overflow-hidden">
-      {/* Шапка */}
       <div className="flex items-center gap-3 px-4 pt-5 pb-4 border-b border-white/[0.06]">
         <button onClick={onBack} className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center active:bg-white/10 transition-colors shrink-0">
           <Icon name="ChevronLeft" size={18} className="text-white/60" />
@@ -36,7 +57,6 @@ export function AdminPlayersScreen({
         <h2 className="text-white font-bold text-[18px]">Игроки</h2>
       </div>
 
-      {/* Поиск */}
       <div className="px-4 py-3">
         <div className="flex gap-2">
           <div className="flex-1 flex items-center bg-white/[0.05] border border-white/[0.08] rounded-xl px-3 gap-2">
@@ -89,6 +109,12 @@ export function AdminPlayersScreen({
                     <div className="text-white/20 text-[10px]">USDT</div>
                   </div>
                 </div>
+                {p.is_blocked && p.block_reason && (
+                  <div className="mt-2 bg-red-500/5 border border-red-500/10 rounded-xl px-3 py-2">
+                    <span className="text-red-400/60 text-[11px]">Причина: </span>
+                    <span className="text-red-400 text-[11px]">{p.block_reason}</span>
+                  </div>
+                )}
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => onEditBalance(p)}
@@ -108,7 +134,7 @@ export function AdminPlayersScreen({
                     </button>
                   ) : (
                     <button
-                      onClick={() => onBlock(p)}
+                      onClick={() => setBlockingPlayer(p)}
                       disabled={actionLoading === p.id}
                       className="flex-1 flex items-center justify-center gap-1.5 bg-red-500/10 text-red-400 text-[12px] font-semibold rounded-xl py-2 active:bg-red-500/20 transition-colors disabled:opacity-40"
                     >
@@ -123,7 +149,41 @@ export function AdminPlayersScreen({
         )}
       </div>
 
-      {/* Модал: баланс */}
+      {blockingPlayer && (
+        <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/60">
+          <div className="bg-[#111] border border-white/[0.08] rounded-t-3xl p-5 w-full">
+            <div className="w-8 h-1 bg-white/10 rounded-full mx-auto mb-5" />
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                <Icon name="Ban" size={20} className="text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-[16px]">Заблокировать</h3>
+                <p className="text-white/35 text-[12px]">{blockingPlayer.name || "Игрок"} · ID {blockingPlayer.display_id}</p>
+              </div>
+            </div>
+            <textarea
+              value={blockReason}
+              onChange={(e) => { setBlockReason(e.target.value); setBlockError(""); }}
+              placeholder="Причина блокировки..."
+              rows={3}
+              className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-[14px] outline-none focus:border-red-500/40 mb-1 placeholder:text-white/20 resize-none"
+            />
+            {blockError && <p className="text-red-400 text-[12px] mb-3">{blockError}</p>}
+            <div className="flex gap-2 mt-3">
+              <button onClick={handleCancelBlock} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-xl py-3">Отмена</button>
+              <button
+                onClick={handleBlockSubmit}
+                disabled={actionLoading === blockingPlayer.id}
+                className="flex-1 bg-red-500 text-white font-bold text-[14px] rounded-xl py-3 disabled:opacity-50"
+              >
+                {actionLoading === blockingPlayer.id ? "..." : "Заблокировать"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {editingPlayer && (
         <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/60">
           <div className="bg-[#111] border border-white/[0.08] rounded-t-3xl p-5 w-full">

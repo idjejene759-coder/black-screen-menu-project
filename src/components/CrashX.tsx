@@ -55,33 +55,33 @@ function BetPanel({
   const blocked = isFlying && !hasBet;
 
   return (
-    <div className="bg-[#1e1b3a] border border-[#2d2755] rounded-2xl p-3 space-y-2.5">
+    <div className="bg-[#0d1a0d] border border-[#1a3a1a] rounded-2xl p-3 space-y-2.5">
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-1.5 cursor-pointer" onClick={() => setAutoBet(!autoBet)}>
           {autoBet ? (
-            <div className="w-8 h-4 bg-purple-600 rounded-full relative">
+            <div className="w-8 h-4 bg-green-600 rounded-full relative">
               <div className="w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 right-0.5" />
             </div>
           ) : (
-            <div className="w-8 h-4 bg-[#2d2755] rounded-full relative">
-              <div className="w-3.5 h-3.5 bg-[#4a4570] rounded-full absolute top-0.5 left-0.5" />
+            <div className="w-8 h-4 bg-[#1a3a1a] rounded-full relative">
+              <div className="w-3.5 h-3.5 bg-[#2a4a2a] rounded-full absolute top-0.5 left-0.5" />
             </div>
           )}
           <span className={`text-xs font-medium ${autoBet ? "text-white" : "text-white/60"}`}>Автоставка</span>
         </label>
         <label className="flex items-center gap-1.5 cursor-pointer" onClick={() => setAutoCashoutOn(!autoCashoutOn)}>
           {autoCashoutOn ? (
-            <div className="w-8 h-4 bg-purple-600 rounded-full relative">
+            <div className="w-8 h-4 bg-green-600 rounded-full relative">
               <div className="w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 right-0.5" />
             </div>
           ) : (
-            <div className="w-8 h-4 bg-[#2d2755] rounded-full relative">
-              <div className="w-3.5 h-3.5 bg-[#4a4570] rounded-full absolute top-0.5 left-0.5" />
+            <div className="w-8 h-4 bg-[#1a3a1a] rounded-full relative">
+              <div className="w-3.5 h-3.5 bg-[#2a4a2a] rounded-full absolute top-0.5 left-0.5" />
             </div>
           )}
           <span className={`text-xs font-medium ${autoCashoutOn ? "text-white" : "text-white/60"}`}>Автовывод</span>
         </label>
-        <div className="ml-auto flex items-center bg-[#2d2755] rounded-lg px-2.5 py-1.5">
+        <div className="ml-auto flex items-center bg-[#1a3a1a] rounded-lg px-2.5 py-1.5">
           <span className="text-white/40 text-xs mr-1">x</span>
           <input
             type="text"
@@ -94,10 +94,10 @@ function BetPanel({
 
       <div className="flex gap-2">
         <div className="flex-1 min-w-0 space-y-2">
-          <div className={`flex items-center bg-[#13112a] border border-[#2d2755] rounded-xl overflow-hidden h-12 ${blocked ? "opacity-40 pointer-events-none" : ""}`}>
+          <div className={`flex items-center bg-[#080e08] border border-[#1a3a1a] rounded-xl overflow-hidden h-12 ${blocked ? "opacity-40 pointer-events-none" : ""}`}>
             <button
               onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))}
-              className="w-12 h-full flex items-center justify-center text-white/50 active:text-white transition border-r border-[#2d2755]"
+              className="w-12 h-full flex items-center justify-center text-white/50 active:text-white transition border-r border-[#1a3a1a]"
             >
               <Icon name="Minus" size={18} />
             </button>
@@ -110,7 +110,7 @@ function BetPanel({
             />
             <button
               onClick={() => setBetInput(String(Math.min(bal, +(parseFloat(betInput) || 0) + step)))}
-              className="w-12 h-full flex items-center justify-center text-white/50 active:text-white transition border-l border-[#2d2755]"
+              className="w-12 h-full flex items-center justify-center text-white/50 active:text-white transition border-l border-[#1a3a1a]"
             >
               <Icon name="Plus" size={18} />
             </button>
@@ -120,7 +120,7 @@ function BetPanel({
               <button
                 key={q}
                 onClick={() => setBetInput(String(q))}
-                className="flex-1 py-1.5 rounded-lg bg-[#2d2755] text-white/60 text-xs font-bold active:bg-[#3d3775] transition"
+                className="flex-1 py-1.5 rounded-lg bg-[#1a3a1a] text-white/60 text-xs font-bold active:bg-[#2a4a2a] transition"
               >
                 {q >= 1000 ? `${q / 1000}K` : q}
               </button>
@@ -136,29 +136,29 @@ function BetPanel({
             <span className="text-sm font-bold opacity-80">{currentWin.toFixed(2)} {sym}</span>
           </button>
         ) : isFlying && hasBet && isCashedOut ? (
-          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#1a3a2a] border border-green-500/30 text-green-400 font-extrabold text-sm flex flex-col items-center justify-center">
+          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#0a1f0a] border border-green-500/30 text-green-400 font-extrabold text-sm flex flex-col items-center justify-center">
             <span>ЗАБРАНО</span>
             <span className="text-xs font-bold opacity-80">+{currentWin.toFixed(2)} {sym}</span>
           </button>
         ) : blocked ? (
-          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#2d2755] text-white/30 font-bold text-sm">
+          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#1a3a1a] text-white/30 font-bold text-sm">
             ЖДИТЕ...
           </button>
         ) : !hasBet ? (
           <button
             onClick={placeBet}
             disabled={betVal < minBet || betVal > bal}
-            className="w-[120px] shrink-0 rounded-xl bg-gradient-to-r from-[#7c3aed] to-[#c026d3] text-white font-extrabold text-lg active:scale-[0.97] transition-transform disabled:opacity-40 shadow-lg shadow-purple-500/20"
+            className="w-[120px] shrink-0 rounded-xl bg-gradient-to-r from-[#16a34a] to-[#22c55e] text-white font-extrabold text-lg active:scale-[0.97] transition-transform disabled:opacity-40 shadow-lg shadow-green-500/20"
           >
             СТАВКА
           </button>
         ) : (
-          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#2d2755] text-white/30 font-bold text-sm">
+          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#1a3a1a] text-white/30 font-bold text-sm">
             ЖДИТЕ...
           </button>
         )}
       </div>
-      <div className="h-1 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] opacity-60" />
+      <div className="h-1 rounded-full bg-gradient-to-r from-[#16a34a] to-[#22c55e] opacity-60" />
     </div>
   );
 }
@@ -182,8 +182,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [cashedOut2, setCashedOut2] = useState(false);
   const [loadingDone, setLoadingDone] = useState(false);
   const [waitingVisible, setWaitingVisible] = useState(false);
-
-  // Autobet / autocashout state
   const [autoBet1, setAutoBet1] = useState(false);
   const [autoBet2, setAutoBet2] = useState(false);
   const [autoCashoutOn1, setAutoCashoutOn1] = useState(false);
@@ -191,48 +189,32 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [autoCashout1, setAutoCashout1] = useState("2.00");
   const [autoCashout2, setAutoCashout2] = useState("2.00");
 
-  const animRef = useRef<number>(0);
+  const onRefreshBalanceRef = useRef(onRefreshBalance);
+  useEffect(() => { onRefreshBalanceRef.current = onRefreshBalance; }, [onRefreshBalance]);
+
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+  const crashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const betResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const crashRef = useRef(0);
-  const cashedOut1Ref = useRef(false);
-  const cashedOut2Ref = useRef(false);
+  const serverPhaseRef = useRef("");
+  const localMultRef = useRef(1.0);
+  const localStartRef = useRef(0);
   const bet1Ref = useRef(0);
   const bet2Ref = useRef(0);
+  const cashedOut1Ref = useRef(false);
+  const cashedOut2Ref = useRef(false);
   const betInput1Ref = useRef(betInput1);
   const betInput2Ref = useRef(betInput2);
-
-  const serverStartedAtRef = useRef(0);
-  const timeOffsetRef = useRef(0);
-  const roundIdRef = useRef(0);
-  const phaseRef = useRef<string>("loading");
-  const pollIntervalRef = useRef<ReturnType<typeof setInterval>>();
-  const animatingRef = useRef(false);
-  const crashTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const betResetTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const onRefreshBalanceRef = useRef(onRefreshBalance);
-
-  // Autobet / autocashout refs (avoid stale closures)
-  const autoBet1Ref = useRef(false);
-  const autoBet2Ref = useRef(false);
-  const autoCashoutOn1Ref = useRef(false);
-  const autoCashoutOn2Ref = useRef(false);
-  const autoCashout1Ref = useRef("2.00");
-  const autoCashout2Ref = useRef("2.00");
-
-  const bal = cur === "usdt" ? usdtBalance : starsBalance;
-  const betVal1 = parseFloat(betInput1) || 0;
-  const betVal2 = parseFloat(betInput2) || 0;
-  const sym = cur === "usdt" ? "$" : "★";
-  const minBet = cur === "usdt" ? MIN_BET_USDT : MIN_BET_STARS;
-  const quickBets = cur === "usdt" ? QUICK_BETS_USDT : QUICK_BETS_STARS;
-  const step = cur === "usdt" ? 1 : 5;
+  const autoBet1Ref = useRef(autoBet1);
+  const autoBet2Ref = useRef(autoBet2);
+  const autoCashoutOn1Ref = useRef(autoCashoutOn1);
+  const autoCashoutOn2Ref = useRef(autoCashoutOn2);
+  const autoCashout1Ref = useRef(autoCashout1);
+  const autoCashout2Ref = useRef(autoCashout2);
 
   useEffect(() => { betInput1Ref.current = betInput1; }, [betInput1]);
   useEffect(() => { betInput2Ref.current = betInput2; }, [betInput2]);
-  useEffect(() => { bet1Ref.current = bet1Placed; }, [bet1Placed]);
-  useEffect(() => { bet2Ref.current = bet2Placed; }, [bet2Placed]);
-  useEffect(() => { onRefreshBalanceRef.current = onRefreshBalance; }, [onRefreshBalance]);
-
-  // Sync autobet/autocashout refs
   useEffect(() => { autoBet1Ref.current = autoBet1; }, [autoBet1]);
   useEffect(() => { autoBet2Ref.current = autoBet2; }, [autoBet2]);
   useEffect(() => { autoCashoutOn1Ref.current = autoCashoutOn1; }, [autoCashoutOn1]);
@@ -240,7 +222,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   useEffect(() => { autoCashout1Ref.current = autoCashout1; }, [autoCashout1]);
   useEffect(() => { autoCashout2Ref.current = autoCashout2; }, [autoCashout2]);
 
-  /* ---------- Loading phase ---------- */
   useEffect(() => {
     if (loadingDone) return;
     const t = setInterval(() => {
@@ -258,7 +239,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     return () => clearInterval(t);
   }, [loadingDone]);
 
-  // Define placeBet / cashOut before the polling effect so refs can be created
   const placeBet1 = useCallback(async () => {
     const bv = parseFloat(betInput1Ref.current) || 0;
     const b = cur === "usdt" ? usdtBalance : starsBalance;
@@ -268,7 +248,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     if (!res || !res.ok) return;
     onBalanceChange(cur, -bv);
     setBet1Placed(bv);
-    setCurrentWin1(0);
+    bet1Ref.current = bv;
   }, [cur, usdtBalance, starsBalance, userId, onBalanceChange]);
 
   const placeBet2 = useCallback(async () => {
@@ -280,176 +260,129 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     if (!res || !res.ok) return;
     onBalanceChange(cur, -bv);
     setBet2Placed(bv);
-    setCurrentWin2(0);
+    bet2Ref.current = bv;
   }, [cur, usdtBalance, starsBalance, userId, onBalanceChange]);
 
   const cashOut1 = useCallback(async () => {
-    if (phaseRef.current !== "flying" || cashedOut1Ref.current || bet1Ref.current <= 0) return;
+    if (cashedOut1Ref.current || bet1Ref.current <= 0) return;
     cashedOut1Ref.current = true;
     setCashedOut1(true);
-    const winnings = +(bet1Ref.current * multiplier).toFixed(2);
-    setCurrentWin1(winnings);
-    apiBalance(userId, "win", winnings, cur);
-    onBalanceChange(cur, winnings);
-    onRefreshBalance();
-  }, [multiplier, cur, userId, onBalanceChange, onRefreshBalance]);
+    const w = +(bet1Ref.current * localMultRef.current).toFixed(2);
+    setCurrentWin1(w);
+    await apiBalance(userId, "win", w, cur);
+    onBalanceChange(cur, w);
+  }, [userId, cur, onBalanceChange]);
 
   const cashOut2 = useCallback(async () => {
-    if (phaseRef.current !== "flying" || cashedOut2Ref.current || bet2Ref.current <= 0) return;
+    if (cashedOut2Ref.current || bet2Ref.current <= 0) return;
     cashedOut2Ref.current = true;
     setCashedOut2(true);
-    const winnings = +(bet2Ref.current * multiplier).toFixed(2);
-    setCurrentWin2(winnings);
-    apiBalance(userId, "win", winnings, cur);
-    onBalanceChange(cur, winnings);
-    onRefreshBalance();
-  }, [multiplier, cur, userId, onBalanceChange, onRefreshBalance]);
+    const w = +(bet2Ref.current * localMultRef.current).toFixed(2);
+    setCurrentWin2(w);
+    await apiBalance(userId, "win", w, cur);
+    onBalanceChange(cur, w);
+  }, [userId, cur, onBalanceChange]);
 
-  // Refs for placeBet / cashOut functions (to avoid stale closures in animation & polling)
   const placeBet1Ref = useRef(placeBet1);
   const placeBet2Ref = useRef(placeBet2);
   const cashOut1Ref_fn = useRef(cashOut1);
   const cashOut2Ref_fn = useRef(cashOut2);
-
   useEffect(() => { placeBet1Ref.current = placeBet1; }, [placeBet1]);
   useEffect(() => { placeBet2Ref.current = placeBet2; }, [placeBet2]);
   useEffect(() => { cashOut1Ref_fn.current = cashOut1; }, [cashOut1]);
   useEffect(() => { cashOut2Ref_fn.current = cashOut2; }, [cashOut2]);
 
-  /* ---------- Server polling ---------- */
+  const bal = cur === "usdt" ? usdtBalance : starsBalance;
+  const sym = cur === "usdt" ? "$" : "★";
+  const minBet = cur === "usdt" ? MIN_BET_USDT : MIN_BET_STARS;
+  const quickBets = cur === "usdt" ? QUICK_BETS_USDT : QUICK_BETS_STARS;
+  const step = cur === "usdt" ? 1 : 5;
+  const betVal1 = parseFloat(betInput1) || 0;
+  const betVal2 = parseFloat(betInput2) || 0;
+
+  const stopLocalAnimation = useCallback(() => {
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    animFrameRef.current = null;
+  }, []);
+
+  const startLocalAnimation = useCallback(() => {
+    stopLocalAnimation();
+    localStartRef.current = Date.now();
+    localMultRef.current = 1.0;
+    const tick = () => {
+      const elapsed = (Date.now() - localStartRef.current) / 1000;
+      const m = Math.pow(Math.E, 0.07 * elapsed);
+      localMultRef.current = m;
+      setMultiplier(+m.toFixed(2));
+      const xProg = Math.min(elapsed * 2.5, 100);
+      const yProg = Math.max(100 - elapsed * 4, 5);
+      setRocketPos({ x: xProg, y: yProg });
+      setCurrentWin1(+(bet1Ref.current * m).toFixed(2));
+      setCurrentWin2(+(bet2Ref.current * m).toFixed(2));
+
+      const ac1 = parseFloat(autoCashout1Ref.current) || 0;
+      if (autoCashoutOn1Ref.current && ac1 > 1 && m >= ac1 && bet1Ref.current > 0 && !cashedOut1Ref.current) {
+        cashOut1Ref_fn.current();
+      }
+      const ac2 = parseFloat(autoCashout2Ref.current) || 0;
+      if (autoCashoutOn2Ref.current && ac2 > 1 && m >= ac2 && bet2Ref.current > 0 && !cashedOut2Ref.current) {
+        cashOut2Ref_fn.current();
+      }
+
+      animFrameRef.current = requestAnimationFrame(tick);
+    };
+    animFrameRef.current = requestAnimationFrame(tick);
+  }, [stopLocalAnimation]);
+
   useEffect(() => {
     if (!loadingDone) return;
-
-    function startLocalAnimation() {
-      if (animatingRef.current) return;
-      animatingRef.current = true;
-
-      const animate = () => {
-        if (!animatingRef.current) return;
-
-        const now = Date.now() / 1000;
-        const localElapsed = Math.max(0, (now - serverStartedAtRef.current) + timeOffsetRef.current);
-        const THRESHOLD = Math.log(50) / 0.15;
-        const m = +(localElapsed <= THRESHOLD
-          ? Math.pow(Math.E, localElapsed * 0.15)
-          : 50 * Math.pow(Math.E, (localElapsed - THRESHOLD) * 0.35)
-        ).toFixed(2);
-
-        const yBase = Math.max(100 - localElapsed * 8, 25);
-        const wobble = Math.sin(localElapsed * 3) * 2.5;
-        const yPct = Math.max(yBase + wobble, 22);
-        const xPct = yBase <= 25
-          ? Math.min((localElapsed / 20) * 80 + (localElapsed * 2), 95)
-          : Math.min((localElapsed / 20) * 80, 80);
-        setRocketPos({ x: xPct, y: yPct });
-
-        if (crashRef.current > 0 && m >= crashRef.current) {
-          setMultiplier(crashRef.current);
-          setFlyAway(true);
-          animatingRef.current = false;
-          return;
-        }
-
-        // Auto cashout panel 1
-        if (autoCashoutOn1Ref.current && bet1Ref.current > 0 && !cashedOut1Ref.current) {
-          const target = parseFloat(autoCashout1Ref.current) || 0;
-          if (target > 1 && m >= target) {
-            cashOut1Ref_fn.current();
-          }
-        }
-        // Auto cashout panel 2
-        if (autoCashoutOn2Ref.current && bet2Ref.current > 0 && !cashedOut2Ref.current) {
-          const target = parseFloat(autoCashout2Ref.current) || 0;
-          if (target > 1 && m >= target) {
-            cashOut2Ref_fn.current();
-          }
-        }
-
-        if (bet1Ref.current > 0 && !cashedOut1Ref.current) setCurrentWin1(+(bet1Ref.current * m).toFixed(2));
-        if (bet2Ref.current > 0 && !cashedOut2Ref.current) setCurrentWin2(+(bet2Ref.current * m).toFixed(2));
-        setMultiplier(m);
-        animRef.current = requestAnimationFrame(animate);
-      };
-      animRef.current = requestAnimationFrame(animate);
-    }
-
-    function stopLocalAnimation() {
-      animatingRef.current = false;
-      cancelAnimationFrame(animRef.current);
-    }
 
     const poll = async () => {
       const state = await pollServerState();
       if (!state) return;
 
-      const now = Date.now() / 1000;
-      timeOffsetRef.current = state.server_time - now;
+      if (state.history) setHistory(state.history);
 
-      if (state.history) setHistory(state.history.slice(0, 30));
-
-      const serverPhase: string = state.phase;
-      const currentPhase = phaseRef.current;
-
-      if (serverPhase === "waiting") {
-        stopLocalAnimation();
-
-        if (currentPhase !== "roundWait") {
-          if (crashTimeoutRef.current) clearTimeout(crashTimeoutRef.current);
-          if (betResetTimeoutRef.current) clearTimeout(betResetTimeoutRef.current);
-          phaseRef.current = "roundWait";
-          setWaitingVisible(false);
-          setPhase("roundWait");
-          setMultiplier(1.0);
-          setRocketPos({ x: 0, y: 100 });
+      if (state.status === "waiting") {
+        if (serverPhaseRef.current !== "waiting") {
+          serverPhaseRef.current = "waiting";
+          stopLocalAnimation();
           setFlyAway(false);
-          setCurrentWin1(0);
-          setCurrentWin2(0);
-          setBet1Placed(0);
-          setBet2Placed(0);
-          setTimeout(() => setWaitingVisible(true), 50);
+          crashRef.current = 0;
 
-          // New round detected — trigger autobet
-          if (state.round_id !== roundIdRef.current) {
-            roundIdRef.current = state.round_id;
-            setTimeout(() => {
-              if (autoBet1Ref.current) placeBet1Ref.current();
-              if (autoBet2Ref.current) placeBet2Ref.current();
-            }, 500);
-          } else {
-            roundIdRef.current = state.round_id;
-          }
+          betResetTimeoutRef.current = setTimeout(() => {
+            setBet1Placed(0); setBet2Placed(0);
+            bet1Ref.current = 0; bet2Ref.current = 0;
+            setCashedOut1(false); setCashedOut2(false);
+            cashedOut1Ref.current = false; cashedOut2Ref.current = false;
+            setCurrentWin1(0); setCurrentWin2(0);
+            setRocketPos({ x: 0, y: 100 });
+            setMultiplier(1.0);
+            setPhase("roundWait");
+            setWaitingVisible(true);
+
+            if (autoBet1Ref.current) setTimeout(() => placeBet1Ref.current(), 200);
+            if (autoBet2Ref.current) setTimeout(() => placeBet2Ref.current(), 200);
+          }, 500);
+
+          const startTime = Date.now();
+          const progInterval = setInterval(() => {
+            const p = Math.min(((Date.now() - startTime) / ROUND_WAIT) * 100, 100);
+            setRoundProgress(p);
+            if (p >= 100) clearInterval(progInterval);
+          }, 50);
         }
-
-        const progress = Math.min((state.elapsed / (ROUND_WAIT / 1000)) * 100, 100);
-        setRoundProgress(progress);
-
-      } else if (serverPhase === "flying") {
-        crashRef.current = state.crash_point;
-        serverStartedAtRef.current = state.started_at;
-
-        if (currentPhase !== "flying") {
-          if (crashTimeoutRef.current) clearTimeout(crashTimeoutRef.current);
-          if (betResetTimeoutRef.current) clearTimeout(betResetTimeoutRef.current);
-          phaseRef.current = "flying";
-          roundIdRef.current = state.round_id;
+      } else if (state.status === "flying") {
+        if (serverPhaseRef.current !== "flying") {
+          serverPhaseRef.current = "flying";
           setPhase("flying");
-          cashedOut1Ref.current = false;
-          cashedOut2Ref.current = false;
-          setCashedOut1(false);
-          setCashedOut2(false);
-          setFlyAway(false);
-          setMultiplier(1.0);
-          setRocketPos({ x: 0, y: 100 });
-          setCurrentWin1(0);
-          setCurrentWin2(0);
+          setWaitingVisible(false);
           startLocalAnimation();
         }
-
-      } else if (serverPhase === "crashed") {
-        stopLocalAnimation();
-
-        if (currentPhase === "flying") {
-          phaseRef.current = "crashed";
+      } else if (state.status === "crashed") {
+        if (serverPhaseRef.current !== "crashed") {
+          serverPhaseRef.current = "crashed";
+          stopLocalAnimation();
           const cp = state.crash_point;
           setMultiplier(cp);
           crashRef.current = cp;
@@ -458,13 +391,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
             setPhase("crashed");
             onRefreshBalanceRef.current();
           }, 500);
-          betResetTimeoutRef.current = setTimeout(() => {
-            setBet1Placed(0);
-            setBet2Placed(0);
-          }, 1700);
-        } else if (currentPhase !== "crashed") {
-          phaseRef.current = "crashed";
-          setPhase("crashed");
+        } else if (phase !== "crashed") {
           const cp = state.crash_point;
           setMultiplier(cp);
           crashRef.current = cp;
@@ -474,7 +401,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     };
 
     poll();
-    pollIntervalRef.current = setInterval(poll, 500);
+    pollIntervalRef.current = setInterval(poll, 1200);
 
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
@@ -483,15 +410,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       if (betResetTimeoutRef.current) clearTimeout(betResetTimeoutRef.current);
     };
   }, [loadingDone]);
-
-  useEffect(() => {
-    return () => {
-      cancelAnimationFrame(animRef.current);
-      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-      if (crashTimeoutRef.current) clearTimeout(crashTimeoutRef.current);
-      if (betResetTimeoutRef.current) clearTimeout(betResetTimeoutRef.current);
-    };
-  }, []);
 
   const renderGraph = () => {
     const w = 360;
@@ -508,12 +426,12 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "hidden" }}>
         <defs>
           <linearGradient id="lineGrad" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stopColor="#7c3aed" />
-            <stop offset="100%" stopColor="#a855f7" />
+            <stop offset="0%" stopColor="#16a34a" />
+            <stop offset="100%" stopColor="#4ade80" />
           </linearGradient>
           <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.15" />
-            <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
+            <stop offset="0%" stopColor="#22c55e" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
           </linearGradient>
           <filter id="glow"><feGaussianBlur stdDeviation="3" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
         </defs>
@@ -528,7 +446,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         )}
         {!isCrashedOrAway && (
           <g style={{ transform: `translate(${rocketX}px, ${py - 16}px)` }}>
-            <text x="0" y="0" fontSize="28" textAnchor="middle" style={{ filter: "drop-shadow(0 0 8px rgba(124,58,237,0.6))" }}>🚀</text>
+            <text x="0" y="0" fontSize="28" textAnchor="middle" style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }}>🚀</text>
           </g>
         )}
       </svg>
@@ -537,12 +455,12 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
   if (phase === "loading") {
     return (
-      <div className="fixed inset-0 z-[200] bg-[#13112a] flex flex-col items-center justify-center">
+      <div className="fixed inset-0 z-[200] bg-[#080e08] flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="text-5xl animate-bounce">🚀</div>
-          <span className="text-purple-400 font-extrabold text-2xl tracking-widest">JAGUAR GEMS</span>
+          <span className="text-green-400 font-extrabold text-2xl tracking-widest">JAGUAR GEMS</span>
           <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] rounded-full transition-all" style={{ width: `${Math.min(loadProg, 100)}%` }} />
+            <div className="h-full bg-gradient-to-r from-[#16a34a] to-[#22c55e] rounded-full transition-all" style={{ width: `${Math.min(loadProg, 100)}%` }} />
           </div>
         </div>
       </div>
@@ -569,7 +487,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-[#13112a] flex flex-col overflow-auto">
+    <div className="fixed inset-0 z-[200] bg-[#080e08] flex flex-col overflow-auto">
       <div className="flex items-center justify-between px-3 py-2.5 shrink-0">
         <button onClick={onClose} className="flex items-center gap-1 text-white/60 active:scale-95">
           <Icon name="ChevronLeft" size={20} />
@@ -581,7 +499,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         </div>
         <button
           onClick={() => { setCur(c => c === "usdt" ? "stars" : "usdt"); setBetInput1(cur === "usdt" ? "5" : "1"); setBetInput2(cur === "usdt" ? "5" : "1"); }}
-          className="bg-[#2d2755] rounded-xl px-3 py-1.5 text-xs text-white/60 font-medium active:scale-95"
+          className="bg-[#1a3a1a] rounded-xl px-3 py-1.5 text-xs text-white/60 font-medium active:scale-95"
         >
           {cur === "usdt" ? "★ Stars" : "$ USDT"}
         </button>
@@ -591,20 +509,20 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
           {history.slice(0, 10).map((h, i) => (
             <span key={i} className={`shrink-0 text-xs font-bold px-2.5 py-1 rounded-lg ${
-              h < 1.5 ? "bg-[#1e3a5f] text-blue-400" : h < 2 ? "bg-[#2d2755] text-purple-300" : h < 5 ? "bg-[#3d2755] text-pink-300" : "bg-[#2d4035] text-green-400"
+              h < 1.5 ? "bg-[#0a1f0a] text-green-300" : h < 2 ? "bg-[#1a3a1a] text-green-200" : h < 5 ? "bg-[#1a3a1a] text-emerald-300" : "bg-[#0d2a0d] text-green-400"
             }`}>
               {h.toFixed(2)}x
             </span>
           ))}
-          <button className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg bg-[#2d2755]">
+          <button className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg bg-[#1a3a1a]">
             <Icon name="Clock" size={14} className="text-white/30" />
           </button>
         </div>
       </div>
 
-      <div className="mx-3 mt-1 rounded-2xl border border-[#2d2755] bg-[#1a1535] relative overflow-hidden shrink-0" style={{ height: "30vh", minHeight: 180, maxHeight: 260 }}>
+      <div className="mx-3 mt-1 rounded-2xl border border-[#1a3a1a] bg-[#0a140a] relative overflow-hidden shrink-0" style={{ height: "30vh", minHeight: 180, maxHeight: 260 }}>
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#1a1535] to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#0a140a] to-transparent" />
           {[...Array(5)].map((_, i) => (
             <div key={i} className="absolute w-0.5 h-0.5 bg-white/20 rounded-full animate-pulse" style={{ left: `${15 + i * 20}%`, top: `${10 + i * 12}%`, animationDelay: `${i * 0.5}s` }} />
           ))}
@@ -618,7 +536,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
             <div className="text-5xl mb-3 animate-bounce">🚀</div>
             <span className="text-white font-extrabold text-sm tracking-wider uppercase">Ожидание раунда</span>
             <div className="w-40 h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] rounded-full transition-all duration-100" style={{ width: `${roundProgress}%` }} />
+              <div className="h-full bg-gradient-to-r from-[#16a34a] to-[#22c55e] rounded-full transition-all duration-100" style={{ width: `${roundProgress}%` }} />
             </div>
           </div>
         )}
@@ -626,7 +544,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           <div className="absolute inset-0 z-10">
             {renderGraph()}
             <div className="absolute top-4 left-4">
-              <div className="text-white font-extrabold text-4xl leading-none" style={{ textShadow: "0 0 20px rgba(124,58,237,0.5)" }}>
+              <div className="text-white font-extrabold text-4xl leading-none" style={{ textShadow: "0 0 20px rgba(34,197,94,0.5)" }}>
                 x{multiplier.toFixed(2)}
               </div>
             </div>

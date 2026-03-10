@@ -96,6 +96,7 @@ def handler(event, context):
                 cur.execute("UPDATE crash_game_state SET phase = 'crashed', updated_at = NOW() WHERE id = 1")
                 conn.commit()
                 phase = 'crashed'
+                updated_at = now
 
         if phase == 'crashed':
             crashed_elapsed = now - float(updated_at) if updated_at else 0

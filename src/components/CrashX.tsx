@@ -200,6 +200,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const serverPhaseRef = useRef("");
   const localMultRef = useRef(1.0);
   const localStartRef = useRef(0);
+  const serverElapsedOffsetRef = useRef(0);
   const bet1Ref = useRef(0);
   const bet2Ref = useRef(0);
   const cashedOut1Ref = useRef(false);
@@ -306,16 +307,27 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     animFrameRef.current = null;
   }, []);
 
-  const startLocalAnimation = useCallback(() => {
+  const calcMultiplier = useCallback((elapsed: number) => {
+    const threshold = Math.log(50) / 0.15;
+    if (elapsed <= threshold) {
+      return Math.pow(Math.E, 0.15 * elapsed);
+    }
+    return 50 * Math.pow(Math.E, 0.35 * (elapsed - threshold));
+  }, []);
+
+  const startLocalAnimation = useCallback((serverElapsed?: number) => {
     stopLocalAnimation();
     localStartRef.current = Date.now();
+    serverElapsedOffsetRef.current = serverElapsed || 0;
     localMultRef.current = 1.0;
     const tick = () => {
-      const elapsed = (Date.now() - localStartRef.current) / 1000;
-      const m = Math.pow(Math.E, 0.07 * elapsed);
+      const localElapsed = (Date.now() - localStartRef.current) / 1000;
+      const elapsed = serverElapsedOffsetRef.current + localElapsed;
+      const m = calcMultiplier(elapsed);
       localMultRef.current = m;
       setMultiplier(+m.toFixed(2));
-      const xProg = Math.min(elapsed * 2.5, 100);
+      const speed = m < 10 ? 2.5 : m < 100 ? 1.5 : 0.8;
+      const xProg = Math.min(elapsed * speed, 100);
       const yProg = Math.max(100 - elapsed * 4, 5);
       setRocketPos({ x: xProg, y: yProg });
       setCurrentWin1(+(bet1Ref.current * m).toFixed(2));
@@ -333,7 +345,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       animFrameRef.current = requestAnimationFrame(tick);
     };
     animFrameRef.current = requestAnimationFrame(tick);
-  }, [stopLocalAnimation]);
+  }, [stopLocalAnimation, calcMultiplier]);
 
   useEffect(() => {
     if (!loadingDone) return;
@@ -378,7 +390,10 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           serverPhaseRef.current = "flying";
           setPhase("flying");
           setWaitingVisible(false);
-          startLocalAnimation();
+          startLocalAnimation(state.elapsed || 0);
+        } else if (state.elapsed) {
+          serverElapsedOffsetRef.current = state.elapsed;
+          localStartRef.current = Date.now();
         }
       } else if (state.phase === "crashed" || state.status === "crashed") {
         if (serverPhaseRef.current !== "crashed") {
@@ -402,13 +417,21 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     };
 
     poll();
-    pollIntervalRef.current = setInterval(poll, 1200);
+    pollIntervalRef.current = setInterval(poll, 800);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        poll();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
       stopLocalAnimation();
       if (crashTimeoutRef.current) clearTimeout(crashTimeoutRef.current);
       if (betResetTimeoutRef.current) clearTimeout(betResetTimeoutRef.current);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [loadingDone]);
 

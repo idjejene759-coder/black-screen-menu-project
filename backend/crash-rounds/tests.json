@@ -1,1 +1,1 @@
-{"tests": [{"name": "Get history", "method": "GET", "path": "/", "expectedStatus": 200, "expectedBody": {"history": "array"}, "bodyMatcher": "partial"}]}
+{"tests": [{"name": "Get game state", "method": "GET", "path": "/?action=state", "expectedStatus": 200, "expectedBody": {"phase": "string"}, "bodyMatcher": "partial"}]}

@@ -201,6 +201,8 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const crashRef = useRef(0);
   const localMultRef = useRef(1.0);
   const localStartRef = useRef(0);
+  const phaseRef = useRef<Phase>("loading");
+  const startAnimRef = useRef<() => void>(() => {});
   const bet1Ref = useRef(0);
   const bet2Ref = useRef(0);
   const cashedOut1Ref = useRef(false);

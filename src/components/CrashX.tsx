@@ -181,6 +181,10 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [cashedOut1, setCashedOut1] = useState(false);
   const [cashedOut2, setCashedOut2] = useState(false);
   const [loadingDone, setLoadingDone] = useState(false);
+  const [crashDisplay, setCrashDisplay] = useState(false);
+  const [crashDisplayMult, setCrashDisplayMult] = useState(1.0);
+  const [waitingVisible, setWaitingVisible] = useState(false);
+  const crashDisplayTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Autobet / autocashout state
   const [autoBet1, setAutoBet1] = useState(false);
@@ -396,6 +400,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           if (crashTimeoutRef.current) clearTimeout(crashTimeoutRef.current);
           if (betResetTimeoutRef.current) clearTimeout(betResetTimeoutRef.current);
           phaseRef.current = "roundWait";
+          setWaitingVisible(false);
           setPhase("roundWait");
           setMultiplier(1.0);
           setRocketPos({ x: 0, y: 100 });
@@ -404,6 +409,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           setCurrentWin2(0);
           setBet1Placed(0);
           setBet2Placed(0);
+          setTimeout(() => setWaitingVisible(true), 50);
 
           // New round detected — trigger autobet
           if (state.round_id !== roundIdRef.current) {
@@ -447,12 +453,19 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
         if (currentPhase === "flying") {
           phaseRef.current = "crashed";
-          setMultiplier(state.crash_point);
-          crashRef.current = state.crash_point;
+          const cp = state.crash_point;
+          setMultiplier(cp);
+          crashRef.current = cp;
           setFlyAway(true);
           crashTimeoutRef.current = setTimeout(() => {
             setPhase("crashed");
             onRefreshBalanceRef.current();
+            setCrashDisplayMult(cp);
+            setCrashDisplay(true);
+            if (crashDisplayTimeoutRef.current) clearTimeout(crashDisplayTimeoutRef.current);
+            crashDisplayTimeoutRef.current = setTimeout(() => {
+              setCrashDisplay(false);
+            }, 3000);
           }, 500);
           betResetTimeoutRef.current = setTimeout(() => {
             setBet1Placed(0);
@@ -461,8 +474,9 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         } else if (currentPhase !== "crashed") {
           phaseRef.current = "crashed";
           setPhase("crashed");
-          setMultiplier(state.crash_point);
-          crashRef.current = state.crash_point;
+          const cp = state.crash_point;
+          setMultiplier(cp);
+          crashRef.current = cp;
           setFlyAway(true);
         }
       }
@@ -476,6 +490,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       stopLocalAnimation();
       if (crashTimeoutRef.current) clearTimeout(crashTimeoutRef.current);
       if (betResetTimeoutRef.current) clearTimeout(betResetTimeoutRef.current);
+      if (crashDisplayTimeoutRef.current) clearTimeout(crashDisplayTimeoutRef.current);
     };
   }, [loadingDone]);
 
@@ -606,7 +621,10 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         </div>
 
         {isWaiting && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-all duration-500"
+            style={{ opacity: waitingVisible ? 1 : 0, transform: waitingVisible ? "scale(1)" : "scale(0.95)" }}
+          >
             <div className="text-5xl mb-3 animate-bounce">🚀</div>
             <span className="text-white font-extrabold text-sm tracking-wider uppercase">Ожидание раунда</span>
             <div className="w-40 h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
@@ -624,10 +642,31 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
             </div>
           </div>
         )}
-        {isCrashed && (
+        {isCrashed && !crashDisplay && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
             <div className="text-red-500 font-extrabold text-5xl leading-none animate-pulse">x{multiplier.toFixed(2)}</div>
             <div className="text-red-400 font-bold text-base mt-2 uppercase tracking-wider">Улетел!</div>
+          </div>
+        )}
+        {crashDisplay && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-20 animate-in fade-in duration-300"
+            style={{ background: "radial-gradient(ellipse at center, rgba(239,68,68,0.18) 0%, rgba(19,17,42,0.95) 70%)" }}
+          >
+            <div className="text-6xl mb-1">💥</div>
+            <div
+              className="font-extrabold leading-none mt-2"
+              style={{
+                fontSize: "clamp(3rem, 12vw, 5rem)",
+                background: "linear-gradient(135deg, #f87171, #ef4444)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                textShadow: "none",
+                filter: "drop-shadow(0 0 20px rgba(239,68,68,0.6))",
+              }}
+            >
+              x{crashDisplayMult.toFixed(2)}
+            </div>
+            <div className="text-white/70 font-bold text-xl mt-2 uppercase tracking-[0.2em]">Улетел!</div>
           </div>
         )}
       </div>

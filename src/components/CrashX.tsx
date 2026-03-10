@@ -230,7 +230,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           clearInterval(t);
           setTimeout(() => {
             setLoadingDone(true);
-            setPhase("roundWait");
           }, 300);
           return 100;
         }

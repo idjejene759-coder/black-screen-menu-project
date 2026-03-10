@@ -143,8 +143,6 @@ const Index = () => {
   const isAuthed = tgAuth.isAuthenticated;
   const isLoadingAuth = tgAuth.isLoading;
   const currentUser = tgAuth.user;
-  const [userBlocked, setUserBlocked] = useState(false);
-  const [userBlockReason, setUserBlockReason] = useState("");
 
   const userId = currentUser?.id != null ? String(currentUser.id) : "";
 
@@ -163,30 +161,6 @@ const Index = () => {
   useEffect(() => {
     if (isAuthed && userId) fetchBalance();
   }, [isAuthed, userId, fetchBalance]);
-
-  useEffect(() => {
-    if (tgAuth.isBlocked) {
-      setUserBlocked(true);
-      setUserBlockReason(tgAuth.blockReason);
-    }
-  }, [tgAuth.isBlocked, tgAuth.blockReason]);
-
-  useEffect(() => {
-    if (!isAuthed || !userId) return;
-    const checkBlock = async () => {
-      try {
-        const res = await fetch(`${ADMIN_CHECK_URL}?action=check_block&user_id=${userId}`);
-        const data = await res.json();
-        if (data.is_blocked) {
-          setUserBlocked(true);
-          setUserBlockReason(data.block_reason || "");
-        }
-      } catch { /* */ }
-    };
-    checkBlock();
-    const interval = setInterval(checkBlock, 30000);
-    return () => clearInterval(interval);
-  }, [isAuthed, userId]);
 
   useEffect(() => {
     if (!isAuthed || !currentUser?.display_id) return;
@@ -233,34 +207,6 @@ const Index = () => {
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-[#4ade80] font-extrabold text-2xl tracking-wide uppercase animate-pulse">
           Jaguar
-        </div>
-      </div>
-    );
-  }
-
-  if (userBlocked) {
-    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center px-6">
-        <div className="w-full max-w-sm flex flex-col items-center text-center">
-          <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
-            <Icon name="Ban" size={40} className="text-red-500" />
-          </div>
-          <h1 className="text-white font-bold text-[22px] mb-2">Аккаунт заблокирован</h1>
-          <p className="text-white/40 text-[14px] mb-5">Ваш аккаунт был заблокирован администрацией</p>
-          {userBlockReason && (
-            <div className="w-full bg-red-500/5 border border-red-500/15 rounded-2xl px-5 py-4 mb-6">
-              <p className="text-red-400/50 text-[12px] mb-1.5 uppercase tracking-wider font-semibold">Причина</p>
-              <p className="text-white/70 text-[14px] leading-relaxed">{userBlockReason}</p>
-            </div>
-          )}
-          <p className="text-white/25 text-[12px]">Для обжалования обратитесь в поддержку</p>
-          <button
-            onClick={() => window.open("https://t.me/Jaguar_helpi_bot", "_blank")}
-            className="mt-4 flex items-center gap-2 bg-white/[0.06] border border-white/[0.08] text-white/60 font-semibold text-[13px] rounded-xl px-5 py-3 active:bg-white/10 transition-colors"
-          >
-            <Icon name="Headphones" size={16} />
-            Поддержка
-          </button>
         </div>
       </div>
     );

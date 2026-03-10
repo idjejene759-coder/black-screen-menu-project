@@ -27,7 +27,6 @@ export interface Player {
   name: string;
   telegram_id: string;
   is_blocked: boolean;
-  block_reason: string;
   created_at: string | null;
   balance: number;
 }

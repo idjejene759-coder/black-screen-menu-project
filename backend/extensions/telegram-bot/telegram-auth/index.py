@@ -122,7 +122,7 @@ def find_user_by_telegram_id(cursor, telegram_id: str) -> Optional[dict]:
     """Find user by Telegram ID."""
     schema = get_schema()
     cursor.execute(f"""
-        SELECT id, email, name, avatar_url, telegram_id, display_id, is_blocked, block_reason
+        SELECT id, email, name, avatar_url, telegram_id, display_id
         FROM {schema}users
         WHERE telegram_id = %s
     """, (telegram_id,))
@@ -136,8 +136,6 @@ def find_user_by_telegram_id(cursor, telegram_id: str) -> Optional[dict]:
             "avatar_url": row[3],
             "telegram_id": row[4],
             "display_id": row[5],
-            "is_blocked": row[6],
-            "block_reason": row[7],
         }
     return None
 
@@ -173,14 +171,14 @@ def create_or_update_user(
                 last_login_at = NOW(),
                 updated_at = NOW()
             WHERE telegram_id = %s
-            RETURNING id, email, name, avatar_url, telegram_id, display_id, is_blocked, block_reason
+            RETURNING id, email, name, avatar_url, telegram_id, display_id
         """, (display_name, photo_url, telegram_id))
     else:
         # Create new user
         cursor.execute(f"""
             INSERT INTO {schema}users (telegram_id, name, avatar_url, email_verified, password_hash, created_at, updated_at, last_login_at)
             VALUES (%s, %s, %s, TRUE, '', NOW(), NOW(), NOW())
-            RETURNING id, email, name, avatar_url, telegram_id, display_id, is_blocked, block_reason
+            RETURNING id, email, name, avatar_url, telegram_id, display_id
         """, (telegram_id, display_name, photo_url))
 
     row = cursor.fetchone()
@@ -191,8 +189,6 @@ def create_or_update_user(
         "avatar_url": row[3],
         "telegram_id": row[4],
         "display_id": row[5],
-        "is_blocked": row[6],
-        "block_reason": row[7],
     }
 
 
@@ -230,7 +226,7 @@ def get_user_by_id(cursor, user_id: int) -> Optional[dict]:
     """Get user by ID."""
     schema = get_schema()
     cursor.execute(f"""
-        SELECT id, email, name, avatar_url, telegram_id, display_id, is_blocked, block_reason
+        SELECT id, email, name, avatar_url, telegram_id, display_id
         FROM {schema}users WHERE id = %s
     """, (user_id,))
 
@@ -243,8 +239,6 @@ def get_user_by_id(cursor, user_id: int) -> Optional[dict]:
             "avatar_url": row[3],
             "telegram_id": row[4],
             "display_id": row[5],
-            "is_blocked": row[6],
-            "block_reason": row[7],
         }
     return None
 
@@ -335,10 +329,6 @@ def handle_callback(cursor, body: dict) -> dict:
         photo_url=token_data["telegram_photo_url"],
     )
 
-    if user.get("is_blocked"):
-        mark_token_used(cursor, token)
-        return cors_response(403, {"error": "blocked", "block_reason": user.get("block_reason") or ""})
-
     # Mark token as used
     mark_token_used(cursor, token)
 
@@ -428,9 +418,6 @@ def handle_webapp(cursor, body: dict) -> dict:
         photo_url=photo_url,
     )
 
-    if user.get("is_blocked"):
-        return cors_response(403, {"error": "blocked", "block_reason": user.get("block_reason") or ""})
-
     access_token = create_jwt(user["id"], jwt_secret)
     refresh_token = generate_token(48)
     refresh_token_hash = hash_token(refresh_token)
@@ -465,11 +452,6 @@ def handle_refresh(cursor, body: dict) -> dict:
     user = get_user_by_id(cursor, token_data["user_id"])
     if not user:
         return cors_response(401, {"error": "User not found"})
-
-    if user.get("is_blocked"):
-        token_hash_del = hash_token(refresh_token)
-        delete_refresh_token(cursor, token_hash_del)
-        return cors_response(403, {"error": "blocked", "block_reason": user.get("block_reason") or ""})
 
     # Generate new access token
     access_token = create_jwt(user["id"], jwt_secret)

@@ -42,6 +42,8 @@ interface UseTelegramAuthReturn {
   isLoading: boolean;
   error: string | null;
   accessToken: string | null;
+  isBlocked: boolean;
+  blockReason: string;
   /** Opens Telegram bot in new tab */
   login: () => void;
   /** Exchange token for JWT (call from callback page) */
@@ -87,6 +89,8 @@ export function useTelegramAuth(options: UseTelegramAuthOptions): UseTelegramAut
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockReason, setBlockReason] = useState("");
 
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -131,6 +135,16 @@ export function useTelegramAuth(options: UseTelegramAuthOptions): UseTelegramAut
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh_token: storedRefreshToken }),
       });
+
+      if (response.status === 403) {
+        const data = await response.json();
+        if (data.error === "blocked") {
+          setIsBlocked(true);
+          setBlockReason(data.block_reason || "");
+          clearAuth();
+          return false;
+        }
+      }
 
       if (!response.ok) {
         clearAuth();
@@ -196,13 +210,19 @@ export function useTelegramAuth(options: UseTelegramAuthOptions): UseTelegramAut
 
       const data = await response.json();
 
+      if (response.status === 403 && data.error === "blocked") {
+        setIsBlocked(true);
+        setBlockReason(data.block_reason || "");
+        setIsLoading(false);
+        return false;
+      }
+
       if (!response.ok) {
         setError(data.error || "Authentication failed");
         setIsLoading(false);
         return false;
       }
 
-      // Set auth data
       setAccessToken(data.access_token);
       setUser(data.user);
       setStoredRefreshToken(data.refresh_token);
@@ -249,6 +269,8 @@ export function useTelegramAuth(options: UseTelegramAuthOptions): UseTelegramAut
     isLoading,
     error,
     accessToken,
+    isBlocked,
+    blockReason,
     login,
     handleCallback,
     logout,

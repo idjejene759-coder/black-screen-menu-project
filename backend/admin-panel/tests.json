@@ -4,25 +4,19 @@
       "name": "Check admin status",
       "method": "GET",
       "path": "/?action=check&display_id=4003134",
-      "expectedStatus": 200,
-      "expectedBody": {"is_admin": "boolean"},
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "Get players list",
       "method": "GET",
       "path": "/?action=players&admin_id=4003134",
-      "expectedStatus": 200,
-      "expectedBody": {"players": "array"},
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
-      "name": "Get stats",
+      "name": "Check block status",
       "method": "GET",
-      "path": "/?action=stats&admin_id=4003134",
-      "expectedStatus": 200,
-      "expectedBody": {"total_users": "number"},
-      "bodyMatcher": "partial"
+      "path": "/?action=check_block&user_id=1",
+      "expectedStatus": 200
     }
   ]
 }

@@ -38,6 +38,7 @@ def handler(event, context):
 
     actions = {
         "check": lambda: handle_check(qs),
+        "check_block": lambda: handle_check_block(qs),
         "players": lambda: handle_players(qs),
         "block": lambda: handle_block(event),
         "unblock": lambda: handle_unblock(event),
@@ -97,6 +98,22 @@ def handle_check(qs):
     }
 
 
+def handle_check_block(qs):
+    user_id = qs.get("user_id", "")
+    if not user_id:
+        return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "user_id обязателен"})}
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT is_blocked, block_reason FROM users WHERE id = %s", (int(user_id),))
+        row = cur.fetchone()
+        if not row:
+            return {"statusCode": 404, "headers": CORS, "body": json.dumps({"error": "Пользователь не найден"})}
+        return {"statusCode": 200, "headers": CORS, "body": json.dumps({"is_blocked": row[0], "block_reason": row[1] or ""})}
+    finally:
+        conn.close()
+
+
 def handle_stats(qs):
     admin_id = qs.get("admin_id", "")
     _, err = require_role(admin_id, ROLE_TECH)
@@ -142,7 +159,7 @@ def handle_players(qs):
         if search:
             cur.execute(
                 """SELECT u.id, u.display_id, u.name, u.telegram_id, u.is_blocked, u.created_at,
-                          COALESCE(b.balance, 0) as balance
+                          COALESCE(b.balance, 0) as balance, u.block_reason
                    FROM users u
                    LEFT JOIN user_balances b ON b.user_id = CAST(u.id AS TEXT)
                    WHERE CAST(u.display_id AS TEXT) LIKE %s
@@ -155,7 +172,7 @@ def handle_players(qs):
         else:
             cur.execute(
                 """SELECT u.id, u.display_id, u.name, u.telegram_id, u.is_blocked, u.created_at,
-                          COALESCE(b.balance, 0) as balance
+                          COALESCE(b.balance, 0) as balance, u.block_reason
                    FROM users u
                    LEFT JOIN user_balances b ON b.user_id = CAST(u.id AS TEXT)
                    ORDER BY u.created_at DESC
@@ -172,6 +189,7 @@ def handle_players(qs):
                 "is_blocked": r[4],
                 "created_at": r[5].isoformat() if r[5] else None,
                 "balance": float(r[6]),
+                "block_reason": r[7] or "",
             })
     finally:
         conn.close()
@@ -183,16 +201,19 @@ def handle_block(event):
     body = json.loads(event.get("body") or "{}")
     admin_id = body.get("admin_id", "")
     user_id = body.get("user_id", "")
+    reason = body.get("reason", "").strip()
     _, err = require_role(admin_id, ROLE_ADMIN)
     if err:
         return err
     if not user_id:
         return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "user_id обязателен"})}
+    if not reason:
+        return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Укажите причину блокировки"})}
 
     conn = get_db()
     try:
         cur = conn.cursor()
-        cur.execute("UPDATE users SET is_blocked = true WHERE id = %s", (int(user_id),))
+        cur.execute("UPDATE users SET is_blocked = true, block_reason = %s WHERE id = %s", (reason, int(user_id)))
         conn.commit()
     finally:
         conn.close()
@@ -213,7 +234,7 @@ def handle_unblock(event):
     conn = get_db()
     try:
         cur = conn.cursor()
-        cur.execute("UPDATE users SET is_blocked = false WHERE id = %s", (int(user_id),))
+        cur.execute("UPDATE users SET is_blocked = false, block_reason = NULL WHERE id = %s", (int(user_id),))
         conn.commit()
     finally:
         conn.close()

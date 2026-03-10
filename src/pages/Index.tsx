@@ -1343,7 +1343,7 @@ const Index = () => {
                 >
                   <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
                     <img
-                      src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/f1e4916f-f48b-4540-9264-37fcf20a1da1.jpg"
+                      src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/cb195de8-5100-45cf-92ad-c9605c1702b5.jpg"
                       alt="Mines"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -1355,8 +1355,8 @@ const Index = () => {
                 >
                   <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
                     <img
-                      src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/31800339-f971-426e-83e0-567f722a924c.jpg"
-                      alt="Crash X"
+                      src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/4b477fa9-ab24-4f30-80ec-1401141f5f76.jpg"
+                      alt="Jaguar Gems"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
@@ -1385,7 +1385,7 @@ const Index = () => {
               >
                 <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
                   <img
-                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/f1e4916f-f48b-4540-9264-37fcf20a1da1.jpg"
+                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/cb195de8-5100-45cf-92ad-c9605c1702b5.jpg"
                     alt="Mines"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -1397,8 +1397,8 @@ const Index = () => {
               >
                 <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
                   <img
-                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/31800339-f971-426e-83e0-567f722a924c.jpg"
-                    alt="Crash X"
+                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/4b477fa9-ab24-4f30-80ec-1401141f5f76.jpg"
+                    alt="Jaguar Gems"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>

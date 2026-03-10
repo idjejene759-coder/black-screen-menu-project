@@ -332,8 +332,8 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       const xProg = Math.min(elapsed * speed, 100);
       const yProg = Math.max(100 - elapsed * 6, 25);
       setRocketPos({ x: xProg, y: yProg });
-      setCurrentWin1(+(bet1Ref.current * m).toFixed(2));
-      setCurrentWin2(+(bet2Ref.current * m).toFixed(2));
+      if (!cashedOut1Ref.current) setCurrentWin1(+(bet1Ref.current * m).toFixed(2));
+      if (!cashedOut2Ref.current) setCurrentWin2(+(bet2Ref.current * m).toFixed(2));
 
       const ac1 = parseFloat(autoCashout1Ref.current) || 0;
       if (autoCashoutOn1Ref.current && ac1 > 1 && m >= ac1 && bet1Ref.current > 0 && !cashedOut1Ref.current) {

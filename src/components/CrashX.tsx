@@ -328,7 +328,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       setMultiplier(+m.toFixed(2));
       const speed = m < 10 ? 2.5 : m < 100 ? 1.5 : 0.8;
       const xProg = Math.min(elapsed * speed, 100);
-      const yProg = Math.max(100 - elapsed * 4, 5);
+      const yProg = Math.max(100 - elapsed * 6, 25);
       setRocketPos({ x: xProg, y: yProg });
       setCurrentWin1(+(bet1Ref.current * m).toFixed(2));
       setCurrentWin2(+(bet2Ref.current * m).toFixed(2));
@@ -446,6 +446,9 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const rocketX = Math.min(rawX, maxRocketX);
     const scrollOffset = rawX > maxRocketX ? rawX - maxRocketX : 0;
 
+    const altitude = 1 - rocketPos.y / 100;
+    const starSpeed = scrollOffset * 0.8;
+
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "hidden" }}>
         <defs>
@@ -458,9 +461,32 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
             <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
           </linearGradient>
           <filter id="glow"><feGaussianBlur stdDeviation="3" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+          <filter id="starGlow"><feGaussianBlur stdDeviation="1.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
         </defs>
+        {!isCrashedOrAway && altitude > 0.3 && (
+          <g>
+            {[...Array(20)].map((_, i) => {
+              const sx = ((i * 53 + 17) % w + w - starSpeed * (0.3 + (i % 3) * 0.3)) % (w + 40) - 20;
+              const sy = (i * 37 + 11) % h;
+              const size = 0.5 + (i % 4) * 0.4;
+              const op = Math.min((altitude - 0.3) * 2, 1) * (0.2 + (i % 3) * 0.15);
+              return <circle key={`s${i}`} cx={sx} cy={sy} r={size} fill="white" opacity={op} filter={size > 1 ? "url(#starGlow)" : undefined} />;
+            })}
+          </g>
+        )}
+        {!isCrashedOrAway && altitude > 0.5 && (
+          <g>
+            {[...Array(8)].map((_, i) => {
+              const lx = ((i * 89 + 30) % w + w - starSpeed * (1.5 + i * 0.4)) % (w + 60) - 30;
+              const ly = (i * 43 + 20) % h;
+              const op = Math.min((altitude - 0.5) * 3, 1) * 0.12;
+              const len = 8 + i * 3;
+              return <line key={`l${i}`} x1={lx} y1={ly} x2={lx - len} y2={ly} stroke="white" strokeWidth="0.5" opacity={op} />;
+            })}
+          </g>
+        )}
         {[0.25, 0.5, 0.75].map(f => (
-          <line key={f} x1="0" y1={h * f} x2={w} y2={h * f} stroke="white" strokeOpacity="0.03" strokeDasharray="4 4" />
+          <line key={f} x1="0" y1={h * f} x2={w} y2={h * f} stroke="white" strokeOpacity={isCrashedOrAway ? 0.03 : Math.max(0.03 - altitude * 0.03, 0)} strokeDasharray="4 4" />
         ))}
         {!isCrashedOrAway && (
           <g style={{ transform: `translateX(${-scrollOffset}px)` }}>
@@ -544,7 +570,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         </div>
       </div>
 
-      <div className="mx-3 mt-1 rounded-2xl border border-[#1a3a1a] bg-[#0a140a] relative overflow-hidden shrink-0" style={{ height: "30vh", minHeight: 180, maxHeight: 260 }}>
+      <div className="mx-3 mt-1 rounded-2xl border border-[#1a3a1a] relative overflow-hidden shrink-0 transition-colors duration-700" style={{ height: "30vh", minHeight: 180, maxHeight: 260, background: isFlying ? `linear-gradient(180deg, #020808 0%, #0a140a ${Math.max(100 - (1 - rocketPos.y / 100) * 80, 30)}%)` : "#0a140a" }}>
         <div className="absolute inset-0 opacity-30">
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#0a140a] to-transparent" />
           {[...Array(5)].map((_, i) => (

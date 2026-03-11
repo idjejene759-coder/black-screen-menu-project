@@ -2,23 +2,14 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 
 const GAME_API = "https://functions.poehali.dev/64bf4a3e-c7fb-44f5-a1a9-b70cae660400";
+const CRASH_ROUNDS_API = "https://functions.poehali.dev/4b4863cc-1fcf-4bb2-a60a-c1790179ef74";
 const MIN_BET_USDT = 1;
 const MIN_BET_STARS = 5;
 const QUICK_BETS_USDT = [1, 5, 10, 50];
 const QUICK_BETS_STARS = [5, 25, 50, 100];
-const ROUND_WAIT = 5000;
 
 type Cur = "usdt" | "stars";
 type Phase = "loading" | "roundWait" | "flying" | "crashed" | "cashedOut";
-
-function generateCrashPoint(): number {
-  const r = Math.random();
-  if (r < 0.35) return +(1 + Math.random() * 0.5).toFixed(2);
-  if (r < 0.6) return +(1.5 + Math.random() * 1.5).toFixed(2);
-  if (r < 0.8) return +(3 + Math.random() * 5).toFixed(2);
-  if (r < 0.95) return +(8 + Math.random() * 15).toFixed(2);
-  return +(23 + Math.random() * 80).toFixed(2);
-}
 
 async function apiBalance(userId: string, action: "bet" | "win", amount: number, currency: Cur) {
   try {
@@ -203,6 +194,12 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const localStartRef = useRef(0);
   const phaseRef = useRef<Phase>("loading");
   const startAnimRef = useRef<() => void>(() => {});
+  const serverTimeOffsetRef = useRef(0);
+  const serverStartedAtRef = useRef(0);
+  const serverRoundIdRef = useRef(0);
+  const lastServerPhaseRef = useRef<string>("");
+  const pollActiveRef = useRef(false);
+  const autoBetPlacedRef = useRef(false);
   const bet1Ref = useRef(0);
   const bet2Ref = useRef(0);
   const cashedOut1Ref = useRef(false);
@@ -320,10 +317,13 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
   const startLocalAnimation = useCallback(() => {
     stopLocalAnimation();
-    localStartRef.current = Date.now();
     localMultRef.current = 1.0;
     const tick = () => {
-      const elapsed = (Date.now() - localStartRef.current) / 1000;
+      const elapsed = Date.now() / 1000 - serverStartedAtRef.current + serverTimeOffsetRef.current;
+      if (elapsed < 0) {
+        animFrameRef.current = requestAnimationFrame(tick);
+        return;
+      }
       const m = calcMultiplier(elapsed);
 
       if (crashRef.current > 0 && m >= crashRef.current) {
@@ -333,11 +333,9 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         localMultRef.current = cp;
         setMultiplier(cp);
         setFlyAway(true);
-        setHistory(prev => [cp, ...prev].slice(0, 30));
-        crashTimeoutRef.current = setTimeout(() => {
-          setPhase("crashed");
-          onRefreshBalanceRef.current();
-        }, 500);
+        phaseRef.current = "crashed";
+        setPhase("crashed");
+        onRefreshBalanceRef.current();
         return;
       }
 
@@ -364,54 +362,146 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     animFrameRef.current = requestAnimationFrame(tick);
   }, [stopLocalAnimation, calcMultiplier]);
 
+  // Load initial history from server
+  useEffect(() => {
+    fetch(CRASH_ROUNDS_API)
+      .then(r => r.json())
+      .then(data => {
+        if (data && Array.isArray(data.history) && data.history.length > 0) {
+          setHistory(data.history.slice(0, 30));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Server polling for round state
   useEffect(() => {
     if (!loadingDone) return;
+    pollActiveRef.current = true;
 
-    if (phase === "roundWait") {
-      setRoundProgress(0);
-      const startTime = Date.now();
-      const progInterval = setInterval(() => {
-        const p = Math.min(((Date.now() - startTime) / ROUND_WAIT) * 100, 100);
-        setRoundProgress(p);
-        if (p >= 100) clearInterval(progInterval);
-      }, 50);
+    const resetRound = () => {
+      setBet1Placed(0); setBet2Placed(0);
+      bet1Ref.current = 0; bet2Ref.current = 0;
+      setCashedOut1(false); setCashedOut2(false);
+      cashedOut1Ref.current = false; cashedOut2Ref.current = false;
+      setCurrentWin1(0); setCurrentWin2(0);
+      setRocketPos({ x: 0, y: 100 });
+      setMultiplier(1.0);
+      setFlyAway(false);
+      crashRef.current = 0;
+      autoBetPlacedRef.current = false;
+    };
 
-      const flyTimer = setTimeout(() => {
-        crashRef.current = generateCrashPoint();
-        setPhase("flying");
-        setWaitingVisible(false);
-        setCashoutLocked(true);
-        setTimeout(() => setCashoutLocked(false), 600);
-        startLocalAnimation();
-      }, ROUND_WAIT);
+    const pollServer = async () => {
+      if (!pollActiveRef.current) return;
+      try {
+        const res = await fetch(`${CRASH_ROUNDS_API}?action=state`);
+        const data = await res.json();
+        if (!data || !data.phase) return;
 
-      return () => {
-        clearInterval(progInterval);
-        clearTimeout(flyTimer);
-      };
-    }
+        const { phase: serverPhase, crash_point, started_at, server_time, elapsed, history: serverHistory, round_id } = data;
 
-    if (phase === "crashed") {
-      const resetTimer = setTimeout(() => {
-        setBet1Placed(0); setBet2Placed(0);
-        bet1Ref.current = 0; bet2Ref.current = 0;
-        setCashedOut1(false); setCashedOut2(false);
-        cashedOut1Ref.current = false; cashedOut2Ref.current = false;
-        setCurrentWin1(0); setCurrentWin2(0);
-        setRocketPos({ x: 0, y: 100 });
-        setMultiplier(1.0);
-        setFlyAway(false);
-        crashRef.current = 0;
-        setPhase("roundWait");
-        setWaitingVisible(true);
+        // Calculate time offset between client and server
+        const clientNow = Date.now() / 1000;
+        serverTimeOffsetRef.current = server_time - clientNow;
+        serverStartedAtRef.current = started_at;
 
-        if (autoBet1Ref.current) setTimeout(() => placeBet1Ref.current(), 200);
-        if (autoBet2Ref.current) setTimeout(() => placeBet2Ref.current(), 200);
-      }, 2000);
+        // Update history from server
+        if (serverHistory && Array.isArray(serverHistory) && serverHistory.length > 0) {
+          setHistory(serverHistory.slice(0, 30));
+        }
 
-      return () => clearTimeout(resetTimer);
-    }
-  }, [phase, loadingDone, startLocalAnimation]);
+        lastServerPhaseRef.current = serverPhase;
+
+        if (serverPhase === "waiting") {
+          // If we were flying or crashed before, this is a new round
+          if (phaseRef.current === "flying" || phaseRef.current === "crashed") {
+            resetRound();
+          }
+          if (phaseRef.current !== "roundWait") {
+            phaseRef.current = "roundWait";
+            setPhase("roundWait");
+            setWaitingVisible(true);
+          }
+          // Update progress bar: elapsed / 5 * 100
+          const prog = Math.min((elapsed / 5) * 100, 100);
+          setRoundProgress(prog);
+
+          // Place auto bets during waiting phase
+          if (!autoBetPlacedRef.current) {
+            autoBetPlacedRef.current = true;
+            if (autoBet1Ref.current) setTimeout(() => placeBet1Ref.current(), 100);
+            if (autoBet2Ref.current) setTimeout(() => placeBet2Ref.current(), 100);
+          }
+        } else if (serverPhase === "flying") {
+          crashRef.current = crash_point;
+          if (phaseRef.current !== "flying") {
+            // Transition to flying
+            if (phaseRef.current === "crashed" || phaseRef.current === "roundWait") {
+              if (phaseRef.current === "crashed") {
+                resetRound();
+              }
+            }
+            phaseRef.current = "flying";
+            setPhase("flying");
+            setWaitingVisible(false);
+            setCashoutLocked(true);
+            setTimeout(() => setCashoutLocked(false), 600);
+            startLocalAnimation();
+          }
+        } else if (serverPhase === "crashed") {
+          if (phaseRef.current === "flying") {
+            // Server says crashed, stop animation
+            stopLocalAnimation();
+            const cp = crash_point;
+            crashRef.current = cp;
+            localMultRef.current = cp;
+            setMultiplier(cp);
+            setFlyAway(true);
+            phaseRef.current = "crashed";
+            setPhase("crashed");
+            onRefreshBalanceRef.current();
+          } else if (phaseRef.current !== "crashed") {
+            // We missed the flying phase, go straight to crashed
+            crashRef.current = crash_point;
+            localMultRef.current = crash_point;
+            setMultiplier(crash_point);
+            phaseRef.current = "crashed";
+            setPhase("crashed");
+          }
+        }
+
+        serverRoundIdRef.current = round_id;
+      } catch {
+        // ignore fetch errors, retry on next poll
+      }
+    };
+
+    // Smooth progress bar animation between polls
+    let progressAnimFrame: number | null = null;
+    const animateProgress = () => {
+      if (!pollActiveRef.current) return;
+      if (phaseRef.current === "roundWait") {
+        const elapsed = Date.now() / 1000 - serverStartedAtRef.current + serverTimeOffsetRef.current;
+        if (elapsed >= 0) {
+          const prog = Math.min((elapsed / 5) * 100, 100);
+          setRoundProgress(prog);
+        }
+      }
+      progressAnimFrame = requestAnimationFrame(animateProgress);
+    };
+    progressAnimFrame = requestAnimationFrame(animateProgress);
+
+    // Start polling immediately
+    pollServer();
+    const pollInterval = setInterval(pollServer, 500);
+
+    return () => {
+      pollActiveRef.current = false;
+      clearInterval(pollInterval);
+      if (progressAnimFrame) cancelAnimationFrame(progressAnimFrame);
+    };
+  }, [loadingDone, startLocalAnimation, stopLocalAnimation]);
 
   useEffect(() => {
     return () => {

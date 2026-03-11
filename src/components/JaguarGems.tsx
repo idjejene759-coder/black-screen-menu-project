@@ -265,8 +265,8 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
         </div>
 
         {phase === "playing" && safe > 0 && (
-          <div className="bg-[#4ade80]/8 border border-[#4ade80]/15 rounded-xl px-3 py-2 flex items-center justify-between">
-            <span className="text-[#4ade80]/70 text-xs">Текущий x{mult.toFixed(1)}</span>
+          <div className="bg-[#4ade80]/10 border border-[#4ade80]/20 rounded-xl px-3 py-2 flex items-center justify-between">
+            <span className="text-[#4ade80] text-xs font-medium">Текущий x{mult.toFixed(1)}</span>
             <span className="text-[#4ade80] font-bold text-sm">{winAmount.toFixed(2)} {sym}</span>
           </div>
         )}
@@ -297,23 +297,23 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
 
         <div className="flex gap-2">
           <div className="flex-1 bg-black/30 border border-[#4ade80]/10 rounded-xl px-3 py-2">
-            <p className="text-[#4ade80]/30 text-[9px] uppercase tracking-wider">Макс. выигрыш</p>
+            <p className="text-[#4ade80]/60 text-[9px] uppercase tracking-wider">Макс. выигрыш</p>
             <p className="text-[#4ade80] font-bold text-xs mt-0.5">{maxWin.toFixed(2)} {sym}</p>
           </div>
           <div className="bg-black/30 border border-[#4ade80]/10 rounded-xl px-2.5 py-2 flex items-center gap-1.5">
             <button
               onClick={() => setMines(p => Math.max(1, p - 1))}
               disabled={phase === "playing"}
-              className="w-6 h-6 rounded-md bg-[#4ade80]/[0.06] flex items-center justify-center text-[#4ade80]/50 active:bg-[#4ade80]/15 disabled:opacity-20"
+              className="w-6 h-6 rounded-md bg-[#4ade80]/10 flex items-center justify-center text-[#4ade80] active:bg-[#4ade80]/20 disabled:opacity-20"
             ><Icon name="ChevronLeft" size={12} /></button>
             <div className="text-center min-w-[36px]">
-              <p className="text-white font-bold text-sm leading-none">{mines}</p>
-              <p className="text-white/20 text-[8px] mt-0.5">ловушек</p>
+              <p className="text-[#4ade80] font-bold text-sm leading-none">{mines}</p>
+              <p className="text-[#4ade80]/50 text-[8px] mt-0.5">ловушек</p>
             </div>
             <button
               onClick={() => setMines(p => Math.min(MAX_MINES, p + 1))}
               disabled={phase === "playing"}
-              className="w-6 h-6 rounded-md bg-[#4ade80]/[0.06] flex items-center justify-center text-[#4ade80]/50 active:bg-[#4ade80]/15 disabled:opacity-20"
+              className="w-6 h-6 rounded-md bg-[#4ade80]/10 flex items-center justify-center text-[#4ade80] active:bg-[#4ade80]/20 disabled:opacity-20"
             ><Icon name="ChevronRight" size={12} /></button>
           </div>
         </div>
@@ -323,7 +323,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
             <div className="bg-black/30 border border-[#4ade80]/10 rounded-xl px-2.5 py-2 flex items-center gap-2">
               <button
                 onClick={() => setBetInput(Math.max(minBet, betVal - (cur === "stars" ? 10 : 0.5)).toFixed(2))}
-                className="w-8 h-8 rounded-lg bg-[#4ade80]/[0.06] flex items-center justify-center text-[#4ade80]/50 active:bg-[#4ade80]/15 text-base font-bold shrink-0"
+                className="w-8 h-8 rounded-lg bg-[#4ade80]/10 flex items-center justify-center text-[#4ade80] active:bg-[#4ade80]/20 text-base font-bold shrink-0"
               >-</button>
               <div className="flex-1 flex items-center justify-center gap-1">
                 <input
@@ -338,13 +338,13 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
                     const v = parseFloat(betInput);
                     setBetInput(isNaN(v) || v < minBet ? minBet.toFixed(2) : v.toFixed(2));
                   }}
-                  className="bg-transparent text-center text-white text-lg font-bold outline-none w-full"
+                  className="bg-transparent text-center text-[#4ade80] text-lg font-bold outline-none w-full"
                 />
-                <span className="text-white/30 text-sm">{sym}</span>
+                <span className="text-[#4ade80]/60 text-sm">{sym}</span>
               </div>
               <button
                 onClick={() => setBetInput((betVal + (cur === "stars" ? 10 : 0.5)).toFixed(2))}
-                className="w-8 h-8 rounded-lg bg-[#4ade80]/[0.06] flex items-center justify-center text-[#4ade80]/50 active:bg-[#4ade80]/15 text-base font-bold shrink-0"
+                className="w-8 h-8 rounded-lg bg-[#4ade80]/10 flex items-center justify-center text-[#4ade80] active:bg-[#4ade80]/20 text-base font-bold shrink-0"
               >+</button>
             </div>
 
@@ -355,7 +355,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
                 { l: "½", fn: () => setBetInput(Math.max(minBet, betVal / 2).toFixed(2)) },
                 { l: "MAX", fn: () => setBetInput(bal.toFixed(2)) },
               ].map(b => (
-                <button key={b.l} onClick={b.fn} className="flex-1 py-1.5 rounded-lg bg-[#4ade80]/[0.04] border border-[#4ade80]/10 text-[#4ade80]/40 text-[10px] font-medium active:bg-[#4ade80]/10">{b.l}</button>
+                <button key={b.l} onClick={b.fn} className="flex-1 py-1.5 rounded-lg bg-[#4ade80]/10 border border-[#4ade80]/20 text-[#4ade80] text-[10px] font-semibold active:bg-[#4ade80]/20">{b.l}</button>
               ))}
             </div>
 
@@ -374,7 +374,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
             onClick={cashOut}
             disabled={safe === 0}
             className={`w-full py-3 rounded-xl font-bold text-sm active:scale-[0.98] transition-transform
-              ${safe > 0 ? "bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-[#0a0e14]" : "bg-black/30 border border-[#4ade80]/10 text-[#4ade80]/20"}`}
+              ${safe > 0 ? "bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-[#0a0e14]" : "bg-black/30 border border-[#4ade80]/15 text-[#4ade80]/50"}`}
           >
             {safe > 0 ? `Забрать ${winAmount.toFixed(2)} ${sym} (x${mult.toFixed(1)})` : "Выберите ячейку..."}
           </button>

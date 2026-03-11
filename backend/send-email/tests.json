@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "Test OPTIONS request",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Test POST with valid data",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "category": "Копровые мачты KGS",
+        "name": "Иван Тестов",
+        "phone": "+7 999 123-45-67",
+        "email": "test@example.com",
+        "answers": {
+          "На какую базовую машину будете навешивать?": "Кран",
+          "Какие сваи планируете забивать?": "300x300"
+        },
+        "message": "Тестовая заявка"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test POST without required fields",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "category": "Тест"
+      },
+      "expectedStatus": 400
+    }
+  ]
+}

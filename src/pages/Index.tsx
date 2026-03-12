@@ -918,13 +918,7 @@ const Index = () => {
       {bonusOpen && (
         <div className="fixed inset-0 z-50 bg-black flex flex-col overflow-y-auto">
           <div className="flex items-center justify-between px-5 pt-4 pb-2">
-            <button
-              onClick={() => { setBonusOpen(false); setProfileOpen(true); }}
-              className="flex items-center gap-1.5 text-[#4ade80] text-[14px] font-medium"
-            >
-              <Icon name="ChevronLeft" size={18} />
-              Назад
-            </button>
+            <h1 className="text-[22px] font-bold text-white">Бонусы</h1>
             <button
               onClick={() => setBonusOpen(false)}
               className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
@@ -932,7 +926,6 @@ const Index = () => {
               <Icon name="X" size={16} className="text-white/60" />
             </button>
           </div>
-          <h1 className="text-[22px] font-bold text-white px-5 pt-1 pb-2">Бонусы</h1>
           <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
             <Icon name="Gift" size={64} className="text-white/20 mb-5" />
             <span className="text-white font-bold text-[18px] mb-2">Бонусов пока нет</span>

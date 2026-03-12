@@ -392,12 +392,16 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       autoBetPlacedRef.current = false;
     };
 
+    let errorCount = 0;
+
     const pollServer = async () => {
       if (!pollActiveRef.current) return;
       try {
         const res = await fetch(`${CRASH_ROUNDS_API}?action=state`);
+        if (!res.ok) { errorCount++; return; }
         const data = await res.json();
-        if (!data || !data.phase) return;
+        if (!data || !data.phase) { errorCount++; return; }
+        errorCount = 0;
 
         const { phase: serverPhase, crash_point, started_at, server_time, elapsed, history: serverHistory, round_id } = data;
 

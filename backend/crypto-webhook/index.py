@@ -19,7 +19,7 @@ def verify_signature(token, body_str, signature):
 
 
 def handler(event, context):
-    """Webhook для приёма уведомлений об оплате от CryptoBot"""
+    """Webhook для приёма уведомлений об оплате от CryptoBot."""
     if event.get("httpMethod") == "OPTIONS":
         return {
             "statusCode": 200,

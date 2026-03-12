@@ -15,7 +15,7 @@ CORS = {
 
 
 def handler(event, context):
-    """Списание/начисление баланса + настройки игр"""
+    """Списание/начисление баланса + настройки игр."""
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": CORS, "body": ""}
 

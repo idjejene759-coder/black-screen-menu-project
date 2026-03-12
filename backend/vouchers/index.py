@@ -1,6 +1,6 @@
 """
 Управление ваучерами: создание (admin), активация (игрок), список (admin).
-"""
+ """
 import json
 import os
 import psycopg2

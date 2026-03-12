@@ -21,7 +21,7 @@ def parse_body(event):
 
 
 def handler(event, context):
-    """Создание инвойса CryptoBot и сохранение платежа в БД"""
+    """Создание инвойса CryptoBot и сохранение платежа в БД."""
     if event.get("httpMethod") == "OPTIONS":
         return {
             "statusCode": 200,

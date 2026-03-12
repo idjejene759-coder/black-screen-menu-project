@@ -8,7 +8,7 @@ def get_db():
 
 
 def handler(event, context):
-    """Получение баланса пользователя (USDT + Stars)"""
+    """Получение баланса пользователя (USDT + Stars)."""
     if event.get("httpMethod") == "OPTIONS":
         return {
             "statusCode": 200,

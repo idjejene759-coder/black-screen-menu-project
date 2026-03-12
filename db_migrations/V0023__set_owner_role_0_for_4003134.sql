@@ -1,0 +1,1 @@
+UPDATE admin_users SET role = 0 WHERE display_id = 4003134;

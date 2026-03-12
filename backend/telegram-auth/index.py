@@ -1,4 +1,7 @@
-"""Авторизация через Telegram бота с токенами."""
+"""
+Telegram Auth — Backend Function
+Авторизация через Telegram бота с токенами.
+"""
 
 import json
 import os

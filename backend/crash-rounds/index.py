@@ -16,22 +16,17 @@ def esc(val):
     return str(val).replace("'", "''")
 
 
-MAX_HISTORY = 30
-
-
 def generate_crash_point_fair():
     r = random.random()
     if r < 0.35:
         return round(1 + random.random() * 0.5, 2)
-    if r < 0.60:
+    if r < 0.6:
         return round(1.5 + random.random() * 1.5, 2)
-    if r < 0.82:
+    if r < 0.8:
         return round(3 + random.random() * 5, 2)
-    if r < 0.96:
-        return round(8 + random.random() * 12, 2)
-    if r < 0.995:
-        return round(20 + random.random() * 10, 2)
-    return round(30 + random.random() * 20, 2)
+    if r < 0.95:
+        return round(8 + random.random() * 15, 2)
+    return round(23 + random.random() * 80, 2)
 
 
 def generate_crash_point_rigged(win_chance):
@@ -41,26 +36,12 @@ def generate_crash_point_rigged(win_chance):
         r = random.random()
         if r < 0.55:
             return round(1.02 + random.random() * 1.5, 2)
-        if r < 0.82:
+        if r < 0.80:
             return round(2.5 + random.random() * 2.5, 2)
-        if r < 0.97:
+        if r < 0.95:
             return round(5 + random.random() * 5, 2)
-        if r < 0.995:
-            return round(10 + random.random() * 10, 2)
-        return round(20 + random.random() * 10, 2)
+        return round(10 + random.random() * 20, 2)
     return generate_crash_point_fair()
-
-
-def cleanup_old_rounds(cur, schema):
-    cur.execute(f"SELECT COUNT(*) FROM {schema}crash_rounds")
-    cnt = cur.fetchone()[0]
-    if cnt > MAX_HISTORY:
-        cur.execute(f"""
-            DELETE FROM {schema}crash_rounds
-            WHERE id NOT IN (
-                SELECT id FROM {schema}crash_rounds ORDER BY created_at DESC LIMIT {MAX_HISTORY}
-            )
-        """)
 
 
 def get_crash_point(conn, schema):
@@ -154,7 +135,6 @@ def handler(event, context):
                 crashed_elapsed = now - float(updated_at) if updated_at else 0
                 if crashed_elapsed >= CRASHED_WAIT_SEC:
                     cur.execute(f"UPDATE {schema}crash_game_state SET phase = 'waiting', round_id = round_id + 1, crash_point = 1.00, started_at = NOW(), updated_at = NOW() WHERE id = 1")
-                    cleanup_old_rounds(cur, schema)
                     conn.commit()
                     phase = 'waiting'
                     elapsed = 0

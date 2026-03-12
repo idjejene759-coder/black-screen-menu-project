@@ -27,7 +27,7 @@ interface AdminsScreenProps {
   adminRole: number;
   actionLoading: number | null;
   onRemove: (a: AdminUser) => void;
-  onChangeRole: (targetDisplayId: number, newRole: number) => void;
+  onChangeRole: (newRole: number) => void;
   onBack: () => void;
   onAddAdmin: (displayId: string, role: number) => Promise<void>;
 }
@@ -198,7 +198,7 @@ export function AdminsScreen({
             <div className="flex gap-2">
               <button onClick={() => setChangeRoleAdmin(null)} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-xl py-3">Отмена</button>
               <button
-                onClick={() => { onChangeRole(changeRoleAdmin.display_id, changeRoleValue); setChangeRoleAdmin(null); }}
+                onClick={() => { onChangeRole(changeRoleValue); setChangeRoleAdmin(null); }}
                 disabled={actionLoading === changeRoleAdmin.id}
                 className="flex-1 bg-[#4ade80] text-black font-bold text-[14px] rounded-xl py-3 disabled:opacity-50"
               >

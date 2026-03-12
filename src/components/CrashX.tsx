@@ -542,31 +542,40 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         </defs>
         {!isCrashedOrAway && altitude > 0.1 && (
           <g>
-            {[...Array(35)].map((_, i) => {
+            {[...Array(30)].map((_, i) => {
               const baseX = (i * 53 + 17) % w;
               const baseY = (i * 37 + 11) % h;
-              const speed = 0.8 + (i % 5) * 0.5;
-              const drift = speed * 0.35;
-              const sy = ((baseY + flowSpeed * speed) % (h + 30)) - 15;
-              const sx = baseX - (flowSpeed * drift * 0.3) % 60;
-              const op = Math.min(altitude * 2, 1) * (0.2 + (i % 3) * 0.15);
-              const len = 3 + speed * 2;
-              return <line key={`s${i}`} x1={sx} y1={sy} x2={sx - len * drift} y2={sy - len} stroke="white" strokeWidth={0.5 + (i % 3) * 0.3} opacity={op} filter={i % 4 === 0 ? "url(#starGlow)" : undefined} />;
+              const speed = 0.5 + (i % 4) * 0.4;
+              const sx = ((baseX + w * 3 - flowSpeed * speed) % (w + 40)) - 20;
+              const sy = baseY;
+              const size = 0.5 + (i % 4) * 0.4;
+              const op = Math.min(altitude * 2, 1) * (0.15 + (i % 3) * 0.15);
+              return <circle key={`s${i}`} cx={sx} cy={sy} r={size} fill="white" opacity={op} filter={size > 1 ? "url(#starGlow)" : undefined} />;
             })}
           </g>
         )}
         {!isCrashedOrAway && altitude > 0.3 && (
           <g>
-            {[...Array(15)].map((_, i) => {
+            {[...Array(12)].map((_, i) => {
               const baseX = (i * 89 + 30) % w;
               const baseY = (i * 43 + 20) % h;
-              const speed = 2.5 + i * 0.6;
-              const drift = speed * 0.3;
-              const sy = ((baseY + flowSpeed * speed * 0.5) % (h + 40)) - 20;
-              const sx = baseX - (flowSpeed * drift * 0.2) % 40;
-              const op = Math.min((altitude - 0.3) * 3, 1) * 0.2;
-              const len = 12 + i * 3;
-              return <line key={`l${i}`} x1={sx} y1={sy} x2={sx - len * 0.3} y2={sy - len} stroke="white" strokeWidth="0.6" opacity={op} />;
+              const speed = 2 + i * 0.5;
+              const lx = ((baseX + w * 5 - flowSpeed * speed * 0.3) % (w + 60)) - 30;
+              const op = Math.min((altitude - 0.3) * 3, 1) * 0.15;
+              const len = 10 + i * 4;
+              return <line key={`l${i}`} x1={lx} y1={baseY} x2={lx - len} y2={baseY} stroke="white" strokeWidth="0.5" opacity={op} />;
+            })}
+          </g>
+        )}
+        {!isCrashedOrAway && altitude > 0.5 && (
+          <g>
+            {[...Array(6)].map((_, i) => {
+              const baseX = (i * 67 + 50) % w;
+              const baseY = (i * 31 + 15) % h;
+              const speed = 3 + i * 0.8;
+              const px = ((baseX + w * 5 - flowSpeed * speed * 0.15) % (w + 80)) - 40;
+              const op = Math.min((altitude - 0.5) * 2, 1) * 0.06;
+              return <circle key={`n${i}`} cx={px} cy={baseY} r={15 + i * 5} fill="white" opacity={op} />;
             })}
           </g>
         )}

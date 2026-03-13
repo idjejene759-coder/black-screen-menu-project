@@ -11,7 +11,7 @@ CORS = {"Access-Control-Allow-Origin": "*"}
 
 
 def handler(event, context):
-    """Создание и управление заявками на вывод средств."""
+    """Создание и управление заявками на вывод средств"""
     if event.get("httpMethod") == "OPTIONS":
         return {
             "statusCode": 200,

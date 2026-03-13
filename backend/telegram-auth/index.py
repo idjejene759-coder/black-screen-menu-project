@@ -1,6 +1,12 @@
 """
 Telegram Auth — Backend Function
-Авторизация через Telegram бота с токенами.
+
+Authentication via Telegram bot with temporary token approach.
+Flow:
+1. User clicks "Login via Telegram" -> redirect to bot
+2. Bot generates unique auth link and sends to user
+3. User clicks link -> frontend exchanges token for JWT
+4. Refresh tokens stored hashed (SHA256) in DB
 """
 
 import json

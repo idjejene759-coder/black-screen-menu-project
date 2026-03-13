@@ -167,7 +167,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [bet1Placed, setBet1Placed] = useState(0);
   const [bet2Placed, setBet2Placed] = useState(0);
   const [roundProgress, setRoundProgress] = useState(0);
-  const [rocketPos, setRocketPos] = useState<{ x: number; y: number; elapsed?: number }>({ x: 0, y: 100 });
+  const [rocketPos, setRocketPos] = useState({ x: 0, y: 100 });
   const [flyAway, setFlyAway] = useState(false);
   const [currentWin1, setCurrentWin1] = useState(0);
   const [currentWin2, setCurrentWin2] = useState(0);
@@ -341,12 +341,10 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
       localMultRef.current = m;
       setMultiplier(+m.toFixed(2));
-      const t = Date.now() / 1000;
-      const wobbleX = Math.sin(t * 2.5) * 2 + Math.sin(t * 1.3) * 1;
-      const wobbleY = Math.cos(t * 2) * 1.5 + Math.sin(t * 3.1) * 0.8;
-      const xBase = Math.min(elapsed * 8, 25);
-      const yBase = Math.max(100 - elapsed * 20, 25);
-      setRocketPos({ x: xBase + (xBase >= 25 ? wobbleX : 0), y: yBase + (yBase <= 25 ? wobbleY : 0), elapsed });
+      const speed = m < 10 ? 2.5 : m < 100 ? 1.5 : 0.8;
+      const xProg = Math.min(elapsed * speed, 100);
+      const yProg = Math.max(100 - elapsed * 6, 25);
+      setRocketPos({ x: xProg, y: yProg });
       if (!cashedOut1Ref.current) setCurrentWin1(+(bet1Ref.current * m).toFixed(2));
       if (!cashedOut2Ref.current) setCurrentWin2(+(bet2Ref.current * m).toFixed(2));
 
@@ -387,23 +385,19 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       setCashedOut1(false); setCashedOut2(false);
       cashedOut1Ref.current = false; cashedOut2Ref.current = false;
       setCurrentWin1(0); setCurrentWin2(0);
-      setRocketPos({ x: 0, y: 100, elapsed: 0 });
+      setRocketPos({ x: 0, y: 100 });
       setMultiplier(1.0);
       setFlyAway(false);
       crashRef.current = 0;
       autoBetPlacedRef.current = false;
     };
 
-    let errorCount = 0;
-
     const pollServer = async () => {
       if (!pollActiveRef.current) return;
       try {
         const res = await fetch(`${CRASH_ROUNDS_API}?action=state`);
-        if (!res.ok) { errorCount++; return; }
         const data = await res.json();
-        if (!data || !data.phase) { errorCount++; return; }
-        errorCount = 0;
+        if (!data || !data.phase) return;
 
         const { phase: serverPhase, crash_point, started_at, server_time, elapsed, history: serverHistory, round_id } = data;
 
@@ -519,12 +513,16 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const renderGraph = () => {
     const w = 360;
     const h = 200;
-    const rX = (rocketPos.x / 100) * w;
-    const rY = (rocketPos.y / 100) * h;
+    const rawX = (rocketPos.x / 100) * w;
+    const py = (rocketPos.y / 100) * h;
     const isCrashedOrAway = phase === "crashed" || flyAway;
-    const el = rocketPos.elapsed || 0;
+
+    const maxRocketX = w * 0.45;
+    const rocketX = Math.min(rawX, maxRocketX);
+    const scrollOffset = rawX > maxRocketX ? rawX - maxRocketX : 0;
+
     const altitude = 1 - rocketPos.y / 100;
-    const flowSpeed = el * 40;
+    const starSpeed = scrollOffset * 0.8;
 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "hidden" }}>
@@ -540,47 +538,39 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           <filter id="glow"><feGaussianBlur stdDeviation="3" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           <filter id="starGlow"><feGaussianBlur stdDeviation="1.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
         </defs>
-        {!isCrashedOrAway && altitude > 0.1 && (
+        {!isCrashedOrAway && altitude > 0.3 && (
           <g>
-            {[...Array(35)].map((_, i) => {
-              const baseX = (i * 53 + 17) % w;
-              const baseY = (i * 37 + 11) % h;
-              const speed = 0.8 + (i % 5) * 0.5;
-              const drift = speed * 0.35;
-              const sy = ((baseY + flowSpeed * speed) % (h + 30)) - 15;
-              const sx = baseX - (flowSpeed * drift * 0.3) % 60;
-              const op = Math.min(altitude * 2, 1) * (0.2 + (i % 3) * 0.15);
-              const len = 3 + speed * 2;
-              return <line key={`s${i}`} x1={sx} y1={sy} x2={sx - len * drift} y2={sy - len} stroke="white" strokeWidth={0.5 + (i % 3) * 0.3} opacity={op} filter={i % 4 === 0 ? "url(#starGlow)" : undefined} />;
+            {[...Array(20)].map((_, i) => {
+              const sx = ((i * 53 + 17) % w + w - starSpeed * (0.3 + (i % 3) * 0.3)) % (w + 40) - 20;
+              const sy = (i * 37 + 11) % h;
+              const size = 0.5 + (i % 4) * 0.4;
+              const op = Math.min((altitude - 0.3) * 2, 1) * (0.2 + (i % 3) * 0.15);
+              return <circle key={`s${i}`} cx={sx} cy={sy} r={size} fill="white" opacity={op} filter={size > 1 ? "url(#starGlow)" : undefined} />;
             })}
           </g>
         )}
-        {!isCrashedOrAway && altitude > 0.3 && (
+        {!isCrashedOrAway && altitude > 0.5 && (
           <g>
-            {[...Array(15)].map((_, i) => {
-              const baseX = (i * 89 + 30) % w;
-              const baseY = (i * 43 + 20) % h;
-              const speed = 2.5 + i * 0.6;
-              const drift = speed * 0.3;
-              const sy = ((baseY + flowSpeed * speed * 0.5) % (h + 40)) - 20;
-              const sx = baseX - (flowSpeed * drift * 0.2) % 40;
-              const op = Math.min((altitude - 0.3) * 3, 1) * 0.2;
-              const len = 12 + i * 3;
-              return <line key={`l${i}`} x1={sx} y1={sy} x2={sx - len * 0.3} y2={sy - len} stroke="white" strokeWidth="0.6" opacity={op} />;
+            {[...Array(8)].map((_, i) => {
+              const lx = ((i * 89 + 30) % w + w - starSpeed * (1.5 + i * 0.4)) % (w + 60) - 30;
+              const ly = (i * 43 + 20) % h;
+              const op = Math.min((altitude - 0.5) * 3, 1) * 0.12;
+              const len = 8 + i * 3;
+              return <line key={`l${i}`} x1={lx} y1={ly} x2={lx - len} y2={ly} stroke="white" strokeWidth="0.5" opacity={op} />;
             })}
           </g>
         )}
         {[0.25, 0.5, 0.75].map(f => (
-          <line key={f} x1="0" y1={h * f} x2={w} y2={h * f} stroke="white" strokeOpacity={isCrashedOrAway ? 0.03 : Math.max(0.04 - altitude * 0.04, 0)} strokeDasharray="4 4" />
+          <line key={f} x1="0" y1={h * f} x2={w} y2={h * f} stroke="white" strokeOpacity={isCrashedOrAway ? 0.03 : Math.max(0.03 - altitude * 0.03, 0)} strokeDasharray="4 4" />
         ))}
         {!isCrashedOrAway && (
-          <g>
-            <polygon points={`0,${h} 0,${rY} ${rX},${rY} ${rX},${h}`} fill="url(#fillGrad)" />
-            <path d={`M 0 ${h} Q ${rX * 0.3} ${h - (h - rY) * 0.2} ${rX} ${rY}`} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
+          <g style={{ transform: `translateX(${-scrollOffset}px)` }}>
+            <polygon points={`0,${h} 0,${py} ${rawX},${py} ${rawX},${h}`} fill="url(#fillGrad)" />
+            <path d={`M 0 ${h} Q ${rawX * 0.3} ${h - (h - py) * 0.2} ${rawX} ${py}`} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
           </g>
         )}
         {!isCrashedOrAway && (
-          <g style={{ transform: `translate(${rX}px, ${rY - 16}px)` }}>
+          <g style={{ transform: `translate(${rocketX}px, ${py - 16}px)` }}>
             <text x="0" y="0" fontSize="28" textAnchor="middle" style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }}>🚀</text>
           </g>
         )}

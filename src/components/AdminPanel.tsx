@@ -186,12 +186,12 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
     setActionLoading(null);
   };
 
-  const handleChangeRole = async (targetDisplayId: number, newRole: number) => {
-    const target = admins.find((a) => a.display_id === targetDisplayId);
+  const handleChangeRole = async (newRole: number) => {
+    const target = admins.find((a) => actionLoading === null || a.id !== actionLoading);
     if (!target) return;
     setActionLoading(target.id);
     try {
-      await fetch(`${ADMIN_URL}?action=change_role`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ admin_id: String(adminDisplayId), display_id: targetDisplayId, role: newRole }) });
+      await fetch(`${ADMIN_URL}?action=change_role`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ admin_id: String(adminDisplayId), display_id: target.display_id, role: newRole }) });
       await fetchAdmins();
     } catch { /* */ }
     setActionLoading(null);

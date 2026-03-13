@@ -8,7 +8,7 @@ def get_db():
 
 
 def handler(event, context):
-    """Получение истории платежей пользователя с фильтрацией по типу (deposit/withdrawal/all)."""
+    """Получение истории платежей пользователя с фильтрацией по типу (deposit/withdrawal/all)"""
     if event.get("httpMethod") == "OPTIONS":
         return {
             "statusCode": 200,

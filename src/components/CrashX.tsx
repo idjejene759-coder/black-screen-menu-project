@@ -551,16 +551,17 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const tanLen = Math.sqrt(tanX * tanX + tanY * tanY) || 1;
     const nTx = tanX / tanLen;
     const nTy = tanY / tanLen;
-    let rocketAngle = Math.atan2(tanY, tanX) * (180 / Math.PI);
+
+    const curveAngleDeg = Math.atan2(tanY, tanX) * (180 / Math.PI);
+    let rocketAngle = curveAngleDeg - 45;
     if (isLocked && !isCrashedOrAway) {
-      rocketAngle = Math.atan2(tanY, tanX) * (180 / Math.PI) + Math.sin(elapsed * 2.5) * 5;
+      rocketAngle = curveAngleDeg - 45 + Math.sin(elapsed * 2.5) * 4;
     }
 
-    const rocketOffset = 14;
-    const drx = curveEndX + nTx * rocketOffset + sway;
-    const dry = curveEndY + nTy * rocketOffset + swayY;
-    const fireTailX = curveEndX - nTx * 2 + sway;
-    const fireTailY = curveEndY - nTy * 2 + swayY;
+    const drx = curveEndX + sway;
+    const dry = curveEndY + swayY;
+    const fireTailX = curveEndX - nTx * 10 + sway;
+    const fireTailY = curveEndY - nTy * 10 + swayY;
 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "visible" }}>
@@ -626,9 +627,9 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         {!isCrashedOrAway && (
           <g transform={`translate(${drx}, ${dry}) rotate(${rocketAngle})`}>
             <text
-              x="0"
-              y="0"
-              fontSize="28"
+              x="6"
+              y="-6"
+              fontSize="26"
               textAnchor="middle"
               dominantBaseline="central"
               style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }}

@@ -559,8 +559,13 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const rocketOffset = 14;
     const drx = curveEndX + nTx * rocketOffset + sway;
     const dry = curveEndY + nTy * rocketOffset + swayY;
-    const fireTailX = curveEndX - nTx * 2 + sway;
-    const fireTailY = curveEndY - nTy * 2 + swayY;
+
+    const rocketAngleRad = rocketAngle * Math.PI / 180;
+    const tailOffsetLen = 12;
+    const tailDirX = -Math.cos(rocketAngleRad);
+    const tailDirY = -Math.sin(rocketAngleRad);
+    const fireTailX = drx + tailDirX * tailOffsetLen;
+    const fireTailY = dry + tailDirY * tailOffsetLen;
 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "visible" }}>
@@ -636,16 +641,18 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           </g>
         )}
 
-        {!isCrashedOrAway && isLocked && (
+        {!isCrashedOrAway && (
           <g>
-            {[...Array(6)].map((_, i) => {
-              const dist = 4 + i * 5;
-              const spread = Math.sin(elapsed * 7 + i * 1.5) * 3;
-              const fx = fireTailX - nTx * dist + nTy * spread;
-              const fy = fireTailY - nTy * dist - nTx * spread;
-              const r = 2.2 - i * 0.25;
+            {[...Array(7)].map((_, i) => {
+              const dist = 3 + i * 4;
+              const spread = Math.sin(elapsed * 8 + i * 1.4) * 2;
+              const perpX = -tailDirY;
+              const perpY = tailDirX;
+              const fx = fireTailX + tailDirX * dist + perpX * spread;
+              const fy = fireTailY + tailDirY * dist + perpY * spread;
+              const r = 2.5 - i * 0.28;
               const color = i < 2 ? "#fbbf24" : i < 4 ? "#f97316" : "#ef4444";
-              return <circle key={`f${i}`} cx={fx} cy={fy} r={Math.max(r, 0.4)} fill={color} opacity={0.4 - i * 0.05} />;
+              return <circle key={`f${i}`} cx={fx} cy={fy} r={Math.max(r, 0.3)} fill={color} opacity={Math.max(0.45 - i * 0.05, 0.05)} />;
             })}
           </g>
         )}

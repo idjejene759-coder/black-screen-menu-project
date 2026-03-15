@@ -167,7 +167,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [bet1Placed, setBet1Placed] = useState(0);
   const [bet2Placed, setBet2Placed] = useState(0);
   const [roundProgress, setRoundProgress] = useState(0);
-  const [rocketPos, setRocketPos] = useState({ x: 55, y: 100 });
+  const [rocketPos, setRocketPos] = useState({ x: 50, y: 100 });
   const [flyAway, setFlyAway] = useState(false);
   const [currentWin1, setCurrentWin1] = useState(0);
   const [currentWin2, setCurrentWin2] = useState(0);
@@ -320,9 +320,14 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     stopLocalAnimation();
     localMultRef.current = 1.0;
     elapsedRef.current = 0;
-    const VERTICAL_PHASE = 1.2;
-    const CURVE_PHASE = 3.0;
+    const RISE_PHASE = 1.5;
+    const CURVE_RIGHT_PHASE = 2.0;
+    const CLIMB_PHASE = 2.0;
     const LOCK_Y = 25;
+    const START_X = 50;
+    const FIRST_LINE_Y = 75;
+    const CURVE_END_X = 80;
+    const CURVE_END_Y = 50;
 
     const tick = () => {
       const elapsed = Date.now() / 1000 - serverStartedAtRef.current + serverTimeOffsetRef.current;
@@ -352,20 +357,23 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       let xProg: number;
       let yProg: number;
 
-      if (elapsed <= VERTICAL_PHASE) {
-        const t = elapsed / VERTICAL_PHASE;
+      if (elapsed <= RISE_PHASE) {
+        const t = elapsed / RISE_PHASE;
         const ease = t * t * (3 - 2 * t);
-        xProg = 55;
-        yProg = 100 - ease * 30;
-      } else if (elapsed <= VERTICAL_PHASE + CURVE_PHASE) {
-        const t = (elapsed - VERTICAL_PHASE) / CURVE_PHASE;
+        xProg = START_X;
+        yProg = 100 - ease * (100 - FIRST_LINE_Y);
+      } else if (elapsed <= RISE_PHASE + CURVE_RIGHT_PHASE) {
+        const t = (elapsed - RISE_PHASE) / CURVE_RIGHT_PHASE;
         const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        xProg = 55 + ease * 5;
-        yProg = 70 - ease * (70 - LOCK_Y);
+        xProg = START_X + ease * (CURVE_END_X - START_X);
+        yProg = FIRST_LINE_Y - ease * (FIRST_LINE_Y - CURVE_END_Y);
+      } else if (elapsed <= RISE_PHASE + CURVE_RIGHT_PHASE + CLIMB_PHASE) {
+        const t = (elapsed - RISE_PHASE - CURVE_RIGHT_PHASE) / CLIMB_PHASE;
+        const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        xProg = CURVE_END_X + ease * 5;
+        yProg = CURVE_END_Y - ease * (CURVE_END_Y - LOCK_Y);
       } else {
-        const speed = m < 10 ? 2.5 : m < 100 ? 1.5 : 0.8;
-        const overTime = elapsed - VERTICAL_PHASE - CURVE_PHASE;
-        xProg = 60 + overTime * speed;
+        xProg = CURVE_END_X + 5;
         yProg = LOCK_Y;
       }
 
@@ -410,7 +418,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       setCashedOut1(false); setCashedOut2(false);
       cashedOut1Ref.current = false; cashedOut2Ref.current = false;
       setCurrentWin1(0); setCurrentWin2(0);
-      setRocketPos({ x: 55, y: 100 });
+      setRocketPos({ x: 50, y: 100 });
       setMultiplier(1.0);
       setFlyAway(false);
       crashRef.current = 0;
@@ -539,35 +547,44 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const w = 360;
     const h = 200;
     const elapsed = elapsedRef.current;
-    const VERTICAL_PHASE = 1.2;
-    const CURVE_PHASE = 3.0;
-    const LOCK_Y_PCT = 25;
+    const RISE_PHASE = 1.5;
+    const CURVE_RIGHT_PHASE = 2.0;
+    const CLIMB_PHASE = 2.0;
+    const TOTAL_ANIM = RISE_PHASE + CURVE_RIGHT_PHASE + CLIMB_PHASE;
     const isCrashedOrAway = phase === "crashed" || flyAway;
 
     const rawX = (rocketPos.x / 100) * w;
     const py = (rocketPos.y / 100) * h;
     const altitude = 1 - rocketPos.y / 100;
+    const isLocked = elapsed > TOTAL_ANIM;
 
-    const isLocked = elapsed > VERTICAL_PHASE + CURVE_PHASE;
-    const maxRocketX = w * 0.55;
-    const rocketX = Math.min(rawX, maxRocketX);
-    const scrollOffset = rawX > maxRocketX ? rawX - maxRocketX : 0;
+    const startX = w * 0.5;
+    const firstLineY = h * 0.75;
+    const curveEndX = w * 0.80;
+    const curveEndY = h * 0.50;
+    const lockY = h * 0.25;
+    const finalX = w * 0.85;
 
-    const sway = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 2.5) * 4 : 0;
-    const swayY = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 1.8 + 0.5) * 2 : 0;
+    const sway = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 2.5) * 5 : 0;
+    const swayY = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 1.8 + 0.7) * 3 : 0;
 
     let rocketAngle = -90;
-    if (elapsed <= VERTICAL_PHASE) {
+    if (elapsed <= RISE_PHASE) {
       rocketAngle = -90;
-    } else if (elapsed <= VERTICAL_PHASE + CURVE_PHASE) {
-      const t = (elapsed - VERTICAL_PHASE) / CURVE_PHASE;
-      rocketAngle = -90 + t * 55;
+    } else if (elapsed <= RISE_PHASE + CURVE_RIGHT_PHASE) {
+      const t = (elapsed - RISE_PHASE) / CURVE_RIGHT_PHASE;
+      rocketAngle = -90 + t * 50;
+    } else if (elapsed <= TOTAL_ANIM) {
+      const t = (elapsed - RISE_PHASE - CURVE_RIGHT_PHASE) / CLIMB_PHASE;
+      rocketAngle = -40 - t * 20;
     } else {
-      rocketAngle = -35 + Math.sin(elapsed * 2.5) * 5;
+      rocketAngle = -60 + Math.sin(elapsed * 2.5) * 6;
     }
 
-    const bgScrollY = isLocked ? (elapsed - VERTICAL_PHASE - CURVE_PHASE) * 15 : 0;
-    const bgScrollX = scrollOffset * 0.5;
+    const bgScrollTime = isLocked ? (elapsed - TOTAL_ANIM) : 0;
+    const bgAngle = Math.PI / 6;
+    const bgScrollX = bgScrollTime * 18 * Math.cos(bgAngle);
+    const bgScrollY = bgScrollTime * 18 * Math.sin(bgAngle);
 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "hidden" }}>
@@ -584,14 +601,14 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           <filter id="starGlow"><feGaussianBlur stdDeviation="1.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
         </defs>
 
-        {!isCrashedOrAway && altitude > 0.15 && (
+        {!isCrashedOrAway && altitude > 0.1 && (
           <g>
-            {[...Array(30)].map((_, i) => {
+            {[...Array(35)].map((_, i) => {
               const baseX = (i * 53 + 17) % w;
               const baseY = (i * 37 + 11) % h;
-              const speedMult = 0.3 + (i % 4) * 0.25;
-              const sx = ((baseX + w - bgScrollX * speedMult) % (w + 40)) - 20;
-              const sy = ((baseY + bgScrollY * (speedMult + 0.5)) % (h + 20)) - 10;
+              const speedMult = 0.3 + (i % 4) * 0.3;
+              const sx = ((baseX + w * 2 - bgScrollX * speedMult) % (w + 40)) - 20;
+              const sy = ((baseY + h * 2 + bgScrollY * speedMult) % (h + 20)) - 10;
               const size = 0.5 + (i % 4) * 0.4;
               const op = Math.min(altitude * 1.5, 1) * (0.15 + (i % 3) * 0.15);
               return <circle key={`s${i}`} cx={sx} cy={sy} r={size} fill="white" opacity={op} filter={size > 1 ? "url(#starGlow)" : undefined} />;
@@ -599,42 +616,46 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           </g>
         )}
 
-        {!isCrashedOrAway && altitude > 0.4 && (
+        {!isCrashedOrAway && isLocked && (
           <g>
-            {[...Array(10)].map((_, i) => {
+            {[...Array(12)].map((_, i) => {
               const baseX = (i * 89 + 30) % w;
               const baseY = (i * 43 + 20) % h;
-              const speedM = 1.5 + i * 0.3;
-              const lx = ((baseX + w - bgScrollX * speedM) % (w + 60)) - 30;
-              const ly = ((baseY + bgScrollY * (speedM + 1)) % (h + 20)) - 10;
-              const op = Math.min((altitude - 0.4) * 3, 1) * 0.15;
-              const len = 8 + i * 3;
-              return <line key={`l${i}`} x1={lx} y1={ly} x2={lx - len * 0.5} y2={ly + len} stroke="white" strokeWidth="0.5" opacity={op} />;
+              const speedM = 1.2 + i * 0.25;
+              const lx = ((baseX + w * 2 - bgScrollX * speedM) % (w + 60)) - 30;
+              const ly = ((baseY + h * 2 + bgScrollY * speedM) % (h + 20)) - 10;
+              const op = 0.15;
+              const len = 10 + i * 2;
+              const dx = -len * Math.cos(bgAngle);
+              const dy = len * Math.sin(bgAngle);
+              return <line key={`l${i}`} x1={lx} y1={ly} x2={lx + dx} y2={ly + dy} stroke="white" strokeWidth="0.5" opacity={op} />;
             })}
           </g>
         )}
 
         {[0.25, 0.5, 0.75].map(f => {
-          const lineY = isLocked ? ((h * f + bgScrollY * 2) % h) : h * f;
+          const baseLineY = h * f;
+          const lineY = isLocked ? ((baseLineY + bgScrollY * 3) % h) : baseLineY;
+          const lineShiftX = isLocked ? (-bgScrollX * 0.5) : 0;
           return (
-            <line key={f} x1="0" y1={lineY} x2={w} y2={lineY}
-              stroke="white" strokeOpacity={isCrashedOrAway ? 0.03 : Math.max(0.05 - altitude * 0.04, 0.01)}
+            <line key={f} x1={lineShiftX % w} y1={lineY} x2={w + (lineShiftX % w)} y2={lineY}
+              stroke="white" strokeOpacity={isCrashedOrAway ? 0.03 : Math.max(0.05 - altitude * 0.03, 0.01)}
               strokeDasharray="4 4" />
           );
         })}
 
         {!isCrashedOrAway && (
-          <g style={{ transform: `translateX(${-scrollOffset}px)` }}>
-            {elapsed <= VERTICAL_PHASE ? (
+          <g>
+            {elapsed <= RISE_PHASE ? (
               <>
-                <line x1={rawX} y1={h} x2={rawX} y2={py} stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
-                <rect x={rawX - 2} y={py} width={4} height={h - py} fill="url(#fillGrad)" />
+                <line x1={startX} y1={h} x2={startX} y2={py} stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
+                <rect x={startX - 30} y={py} width={60} height={h - py} fill="url(#fillGrad)" opacity="0.5" />
               </>
             ) : (
               <>
-                <path d={`M ${(55/100)*w} ${h} L ${(55/100)*w} ${(70/100)*h} Q ${rawX * 0.6} ${py + (h - py) * 0.1} ${rawX} ${py}`}
+                <path d={`M ${startX} ${h} L ${startX} ${firstLineY} Q ${startX + (curveEndX - startX) * 0.5} ${firstLineY} ${curveEndX} ${curveEndY} ${elapsed > RISE_PHASE + CURVE_RIGHT_PHASE ? `Q ${finalX} ${(curveEndY + lockY) / 2} ${rawX} ${py}` : ""}`}
                   fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
-                <path d={`M ${(55/100)*w} ${h} L ${(55/100)*w} ${(70/100)*h} Q ${rawX * 0.6} ${py + (h - py) * 0.1} ${rawX} ${py} L ${rawX} ${h} Z`}
+                <path d={`M ${startX} ${h} L ${startX} ${firstLineY} Q ${startX + (curveEndX - startX) * 0.5} ${firstLineY} ${curveEndX} ${curveEndY} ${elapsed > RISE_PHASE + CURVE_RIGHT_PHASE ? `Q ${finalX} ${(curveEndY + lockY) / 2} ${rawX} ${py} L ${rawX} ${h}` : `L ${curveEndX} ${h}`} Z`}
                   fill="url(#fillGrad)" />
               </>
             )}
@@ -643,7 +664,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
         {!isCrashedOrAway && (
           <g style={{
-            transform: `translate(${rocketX + sway}px, ${py - 14 + swayY}px) rotate(${rocketAngle}deg)`,
+            transform: `translate(${rawX + sway}px, ${py - 14 + swayY}px) rotate(${rocketAngle}deg)`,
             transformOrigin: "center center",
           }}>
             <text x="0" y="0" fontSize="28" textAnchor="middle" dominantBaseline="central"
@@ -653,11 +674,17 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
         {!isCrashedOrAway && isLocked && (
           <g>
-            {[...Array(6)].map((_, i) => {
-              const px = rocketX + sway - 5 + Math.random() * 10;
-              const fy = py + 10 + i * 4 + bgScrollY * 0.1;
-              const op = 0.3 - i * 0.04;
-              return <circle key={`f${i}`} cx={px} cy={fy % h} r={1.5 - i * 0.2} fill="#f97316" opacity={Math.max(op, 0.05)} />;
+            {[...Array(8)].map((_, i) => {
+              const baseFireX = rawX + sway;
+              const fireAngle = (rocketAngle + 180) * Math.PI / 180;
+              const dist = 12 + i * 5;
+              const spread = (Math.sin(elapsed * 8 + i * 1.3) * 3);
+              const fx = baseFireX + Math.cos(fireAngle) * dist + spread;
+              const fy = (py - 14 + swayY) + Math.sin(fireAngle) * dist + Math.abs(spread) * 0.5;
+              const op = 0.4 - i * 0.04;
+              const r = 2.0 - i * 0.2;
+              const color = i < 3 ? "#fbbf24" : i < 5 ? "#f97316" : "#ef4444";
+              return <circle key={`f${i}`} cx={fx} cy={fy} r={Math.max(r, 0.3)} fill={color} opacity={Math.max(op, 0.05)} />;
             })}
           </g>
         )}

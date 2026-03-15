@@ -167,7 +167,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [bet1Placed, setBet1Placed] = useState(0);
   const [bet2Placed, setBet2Placed] = useState(0);
   const [roundProgress, setRoundProgress] = useState(0);
-  const [rocketPos, setRocketPos] = useState({ x: 0, y: 100 });
+  const [rocketPos, setRocketPos] = useState({ x: 55, y: 100 });
   const [flyAway, setFlyAway] = useState(false);
   const [currentWin1, setCurrentWin1] = useState(0);
   const [currentWin2, setCurrentWin2] = useState(0);
@@ -212,6 +212,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const autoCashoutOn2Ref = useRef(autoCashoutOn2);
   const autoCashout1Ref = useRef(autoCashout1);
   const autoCashout2Ref = useRef(autoCashout2);
+  const elapsedRef = useRef(0);
 
   useEffect(() => { betInput1Ref.current = betInput1; }, [betInput1]);
   useEffect(() => { betInput2Ref.current = betInput2; }, [betInput2]);
@@ -318,12 +319,18 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const startLocalAnimation = useCallback(() => {
     stopLocalAnimation();
     localMultRef.current = 1.0;
+    elapsedRef.current = 0;
+    const VERTICAL_PHASE = 1.2;
+    const CURVE_PHASE = 3.0;
+    const LOCK_Y = 25;
+
     const tick = () => {
       const elapsed = Date.now() / 1000 - serverStartedAtRef.current + serverTimeOffsetRef.current;
       if (elapsed < 0) {
         animFrameRef.current = requestAnimationFrame(tick);
         return;
       }
+      elapsedRef.current = elapsed;
       const m = calcMultiplier(elapsed);
 
       if (crashRef.current > 0 && m >= crashRef.current) {
@@ -341,9 +348,27 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
       localMultRef.current = m;
       setMultiplier(+m.toFixed(2));
-      const speed = m < 10 ? 2.5 : m < 100 ? 1.5 : 0.8;
-      const xProg = Math.min(elapsed * speed, 100);
-      const yProg = Math.max(100 - elapsed * 6, 25);
+
+      let xProg: number;
+      let yProg: number;
+
+      if (elapsed <= VERTICAL_PHASE) {
+        const t = elapsed / VERTICAL_PHASE;
+        const ease = t * t * (3 - 2 * t);
+        xProg = 55;
+        yProg = 100 - ease * 30;
+      } else if (elapsed <= VERTICAL_PHASE + CURVE_PHASE) {
+        const t = (elapsed - VERTICAL_PHASE) / CURVE_PHASE;
+        const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        xProg = 55 + ease * 5;
+        yProg = 70 - ease * (70 - LOCK_Y);
+      } else {
+        const speed = m < 10 ? 2.5 : m < 100 ? 1.5 : 0.8;
+        const overTime = elapsed - VERTICAL_PHASE - CURVE_PHASE;
+        xProg = 60 + overTime * speed;
+        yProg = LOCK_Y;
+      }
+
       setRocketPos({ x: xProg, y: yProg });
       if (!cashedOut1Ref.current) setCurrentWin1(+(bet1Ref.current * m).toFixed(2));
       if (!cashedOut2Ref.current) setCurrentWin2(+(bet2Ref.current * m).toFixed(2));
@@ -385,7 +410,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       setCashedOut1(false); setCashedOut2(false);
       cashedOut1Ref.current = false; cashedOut2Ref.current = false;
       setCurrentWin1(0); setCurrentWin2(0);
-      setRocketPos({ x: 0, y: 100 });
+      setRocketPos({ x: 55, y: 100 });
       setMultiplier(1.0);
       setFlyAway(false);
       crashRef.current = 0;
@@ -513,16 +538,36 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const renderGraph = () => {
     const w = 360;
     const h = 200;
-    const rawX = (rocketPos.x / 100) * w;
-    const py = (rocketPos.y / 100) * h;
+    const elapsed = elapsedRef.current;
+    const VERTICAL_PHASE = 1.2;
+    const CURVE_PHASE = 3.0;
+    const LOCK_Y_PCT = 25;
     const isCrashedOrAway = phase === "crashed" || flyAway;
 
-    const maxRocketX = w * 0.45;
+    const rawX = (rocketPos.x / 100) * w;
+    const py = (rocketPos.y / 100) * h;
+    const altitude = 1 - rocketPos.y / 100;
+
+    const isLocked = elapsed > VERTICAL_PHASE + CURVE_PHASE;
+    const maxRocketX = w * 0.55;
     const rocketX = Math.min(rawX, maxRocketX);
     const scrollOffset = rawX > maxRocketX ? rawX - maxRocketX : 0;
 
-    const altitude = 1 - rocketPos.y / 100;
-    const starSpeed = scrollOffset * 0.8;
+    const sway = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 2.5) * 4 : 0;
+    const swayY = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 1.8 + 0.5) * 2 : 0;
+
+    let rocketAngle = -90;
+    if (elapsed <= VERTICAL_PHASE) {
+      rocketAngle = -90;
+    } else if (elapsed <= VERTICAL_PHASE + CURVE_PHASE) {
+      const t = (elapsed - VERTICAL_PHASE) / CURVE_PHASE;
+      rocketAngle = -90 + t * 55;
+    } else {
+      rocketAngle = -35 + Math.sin(elapsed * 2.5) * 5;
+    }
+
+    const bgScrollY = isLocked ? (elapsed - VERTICAL_PHASE - CURVE_PHASE) * 15 : 0;
+    const bgScrollX = scrollOffset * 0.5;
 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "hidden" }}>
@@ -538,40 +583,82 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           <filter id="glow"><feGaussianBlur stdDeviation="3" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           <filter id="starGlow"><feGaussianBlur stdDeviation="1.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
         </defs>
-        {!isCrashedOrAway && altitude > 0.3 && (
+
+        {!isCrashedOrAway && altitude > 0.15 && (
           <g>
-            {[...Array(20)].map((_, i) => {
-              const sx = ((i * 53 + 17) % w + w - starSpeed * (0.3 + (i % 3) * 0.3)) % (w + 40) - 20;
-              const sy = (i * 37 + 11) % h;
+            {[...Array(30)].map((_, i) => {
+              const baseX = (i * 53 + 17) % w;
+              const baseY = (i * 37 + 11) % h;
+              const speedMult = 0.3 + (i % 4) * 0.25;
+              const sx = ((baseX + w - bgScrollX * speedMult) % (w + 40)) - 20;
+              const sy = ((baseY + bgScrollY * (speedMult + 0.5)) % (h + 20)) - 10;
               const size = 0.5 + (i % 4) * 0.4;
-              const op = Math.min((altitude - 0.3) * 2, 1) * (0.2 + (i % 3) * 0.15);
+              const op = Math.min(altitude * 1.5, 1) * (0.15 + (i % 3) * 0.15);
               return <circle key={`s${i}`} cx={sx} cy={sy} r={size} fill="white" opacity={op} filter={size > 1 ? "url(#starGlow)" : undefined} />;
             })}
           </g>
         )}
-        {!isCrashedOrAway && altitude > 0.5 && (
+
+        {!isCrashedOrAway && altitude > 0.4 && (
           <g>
-            {[...Array(8)].map((_, i) => {
-              const lx = ((i * 89 + 30) % w + w - starSpeed * (1.5 + i * 0.4)) % (w + 60) - 30;
-              const ly = (i * 43 + 20) % h;
-              const op = Math.min((altitude - 0.5) * 3, 1) * 0.12;
+            {[...Array(10)].map((_, i) => {
+              const baseX = (i * 89 + 30) % w;
+              const baseY = (i * 43 + 20) % h;
+              const speedM = 1.5 + i * 0.3;
+              const lx = ((baseX + w - bgScrollX * speedM) % (w + 60)) - 30;
+              const ly = ((baseY + bgScrollY * (speedM + 1)) % (h + 20)) - 10;
+              const op = Math.min((altitude - 0.4) * 3, 1) * 0.15;
               const len = 8 + i * 3;
-              return <line key={`l${i}`} x1={lx} y1={ly} x2={lx - len} y2={ly} stroke="white" strokeWidth="0.5" opacity={op} />;
+              return <line key={`l${i}`} x1={lx} y1={ly} x2={lx - len * 0.5} y2={ly + len} stroke="white" strokeWidth="0.5" opacity={op} />;
             })}
           </g>
         )}
-        {[0.25, 0.5, 0.75].map(f => (
-          <line key={f} x1="0" y1={h * f} x2={w} y2={h * f} stroke="white" strokeOpacity={isCrashedOrAway ? 0.03 : Math.max(0.03 - altitude * 0.03, 0)} strokeDasharray="4 4" />
-        ))}
+
+        {[0.25, 0.5, 0.75].map(f => {
+          const lineY = isLocked ? ((h * f + bgScrollY * 2) % h) : h * f;
+          return (
+            <line key={f} x1="0" y1={lineY} x2={w} y2={lineY}
+              stroke="white" strokeOpacity={isCrashedOrAway ? 0.03 : Math.max(0.05 - altitude * 0.04, 0.01)}
+              strokeDasharray="4 4" />
+          );
+        })}
+
         {!isCrashedOrAway && (
           <g style={{ transform: `translateX(${-scrollOffset}px)` }}>
-            <polygon points={`0,${h} 0,${py} ${rawX},${py} ${rawX},${h}`} fill="url(#fillGrad)" />
-            <path d={`M 0 ${h} Q ${rawX * 0.3} ${h - (h - py) * 0.2} ${rawX} ${py}`} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
+            {elapsed <= VERTICAL_PHASE ? (
+              <>
+                <line x1={rawX} y1={h} x2={rawX} y2={py} stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
+                <rect x={rawX - 2} y={py} width={4} height={h - py} fill="url(#fillGrad)" />
+              </>
+            ) : (
+              <>
+                <path d={`M ${(55/100)*w} ${h} L ${(55/100)*w} ${(70/100)*h} Q ${rawX * 0.6} ${py + (h - py) * 0.1} ${rawX} ${py}`}
+                  fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
+                <path d={`M ${(55/100)*w} ${h} L ${(55/100)*w} ${(70/100)*h} Q ${rawX * 0.6} ${py + (h - py) * 0.1} ${rawX} ${py} L ${rawX} ${h} Z`}
+                  fill="url(#fillGrad)" />
+              </>
+            )}
           </g>
         )}
+
         {!isCrashedOrAway && (
-          <g style={{ transform: `translate(${rocketX}px, ${py - 16}px)` }}>
-            <text x="0" y="0" fontSize="28" textAnchor="middle" style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }}>🚀</text>
+          <g style={{
+            transform: `translate(${rocketX + sway}px, ${py - 14 + swayY}px) rotate(${rocketAngle}deg)`,
+            transformOrigin: "center center",
+          }}>
+            <text x="0" y="0" fontSize="28" textAnchor="middle" dominantBaseline="central"
+              style={{ filter: "drop-shadow(0 0 10px rgba(34,197,94,0.7))" }}>🚀</text>
+          </g>
+        )}
+
+        {!isCrashedOrAway && isLocked && (
+          <g>
+            {[...Array(6)].map((_, i) => {
+              const px = rocketX + sway - 5 + Math.random() * 10;
+              const fy = py + 10 + i * 4 + bgScrollY * 0.1;
+              const op = 0.3 - i * 0.04;
+              return <circle key={`f${i}`} cx={px} cy={fy % h} r={1.5 - i * 0.2} fill="#f97316" opacity={Math.max(op, 0.05)} />;
+            })}
           </g>
         )}
       </svg>
@@ -645,12 +732,9 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         </div>
       </div>
 
-      <div className="mx-3 mt-1 rounded-2xl border border-[#1a3a1a] relative overflow-hidden shrink-0 transition-colors duration-700" style={{ height: "30vh", minHeight: 180, maxHeight: 260, background: isFlying ? `linear-gradient(180deg, #020808 0%, #0a140a ${Math.max(100 - (1 - rocketPos.y / 100) * 80, 30)}%)` : "#0a140a" }}>
+      <div className="mx-3 mt-1 rounded-2xl border border-[#1a3a1a] relative overflow-hidden shrink-0 transition-colors duration-700" style={{ height: "30vh", minHeight: 180, maxHeight: 260, background: isFlying ? `linear-gradient(180deg, #010505 0%, #040d04 ${Math.max(100 - (1 - rocketPos.y / 100) * 90, 20)}%, #0a140a 100%)` : "#0a140a" }}>
         <div className="absolute inset-0 opacity-30">
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#0a140a] to-transparent" />
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="absolute w-0.5 h-0.5 bg-white/20 rounded-full animate-pulse" style={{ left: `${15 + i * 20}%`, top: `${10 + i * 12}%`, animationDelay: `${i * 0.5}s` }} />
-          ))}
         </div>
 
         {isWaiting && (
@@ -668,7 +752,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         {isFlying && (
           <div className="absolute inset-0 z-10">
             {renderGraph()}
-            <div className="absolute top-4 left-4">
+            <div className="absolute top-4 left-3">
               <div className="text-white font-extrabold text-4xl leading-none" style={{ textShadow: "0 0 20px rgba(34,197,94,0.5)" }}>
                 x{multiplier.toFixed(2)}
               </div>

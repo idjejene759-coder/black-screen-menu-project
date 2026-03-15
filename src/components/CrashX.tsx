@@ -553,15 +553,13 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const nTy = tanY / tanLen;
 
     const curveAngleDeg = Math.atan2(tanY, tanX) * (180 / Math.PI);
-    let rocketAngle = curveAngleDeg - 45;
-    if (isLocked && !isCrashedOrAway) {
-      rocketAngle = curveAngleDeg - 45 + Math.sin(elapsed * 2.5) * 4;
-    }
+    const swayAngle = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 2.5) * 4 : 0;
+    const rocketAngle = curveAngleDeg - 45 + swayAngle;
 
     const drx = curveEndX + sway;
     const dry = curveEndY + swayY;
-    const fireTailX = curveEndX - nTx * 10 + sway;
-    const fireTailY = curveEndY - nTy * 10 + swayY;
+    const fireTailX = drx - nTx * 12;
+    const fireTailY = dry - nTy * 12;
 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "visible" }}>
@@ -627,8 +625,8 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         {!isCrashedOrAway && (
           <g transform={`translate(${drx}, ${dry}) rotate(${rocketAngle})`}>
             <text
-              x="6"
-              y="-6"
+              x="0"
+              y="0"
               fontSize="26"
               textAnchor="middle"
               dominantBaseline="central"

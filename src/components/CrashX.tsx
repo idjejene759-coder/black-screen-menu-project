@@ -167,7 +167,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [bet1Placed, setBet1Placed] = useState(0);
   const [bet2Placed, setBet2Placed] = useState(0);
   const [roundProgress, setRoundProgress] = useState(0);
-  const [rocketPos, setRocketPos] = useState({ x: 50, y: 100 });
+  const [rocketPos, setRocketPos] = useState({ x: 0, y: 100 });
   const [flyAway, setFlyAway] = useState(false);
   const [currentWin1, setCurrentWin1] = useState(0);
   const [currentWin2, setCurrentWin2] = useState(0);
@@ -320,14 +320,10 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     stopLocalAnimation();
     localMultRef.current = 1.0;
     elapsedRef.current = 0;
-    const RISE_PHASE = 1.5;
-    const CURVE_RIGHT_PHASE = 2.0;
-    const CLIMB_PHASE = 2.0;
+    const PHASE1 = 2.0;
+    const PHASE2 = 2.5;
+    const PHASE3 = 1.5;
     const LOCK_Y = 25;
-    const START_X = 50;
-    const FIRST_LINE_Y = 75;
-    const CURVE_END_X = 80;
-    const CURVE_END_Y = 50;
 
     const tick = () => {
       const elapsed = Date.now() / 1000 - serverStartedAtRef.current + serverTimeOffsetRef.current;
@@ -357,23 +353,23 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       let xProg: number;
       let yProg: number;
 
-      if (elapsed <= RISE_PHASE) {
-        const t = elapsed / RISE_PHASE;
+      if (elapsed <= PHASE1) {
+        const t = elapsed / PHASE1;
         const ease = t * t * (3 - 2 * t);
-        xProg = START_X;
-        yProg = 100 - ease * (100 - FIRST_LINE_Y);
-      } else if (elapsed <= RISE_PHASE + CURVE_RIGHT_PHASE) {
-        const t = (elapsed - RISE_PHASE) / CURVE_RIGHT_PHASE;
-        const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        xProg = START_X + ease * (CURVE_END_X - START_X);
-        yProg = FIRST_LINE_Y - ease * (FIRST_LINE_Y - CURVE_END_Y);
-      } else if (elapsed <= RISE_PHASE + CURVE_RIGHT_PHASE + CLIMB_PHASE) {
-        const t = (elapsed - RISE_PHASE - CURVE_RIGHT_PHASE) / CLIMB_PHASE;
-        const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        xProg = CURVE_END_X + ease * 5;
-        yProg = CURVE_END_Y - ease * (CURVE_END_Y - LOCK_Y);
+        xProg = ease * 50;
+        yProg = 100 - ease * 25;
+      } else if (elapsed <= PHASE1 + PHASE2) {
+        const t = (elapsed - PHASE1) / PHASE2;
+        const ease = t * t * (3 - 2 * t);
+        xProg = 50 + ease * 25;
+        yProg = 75 - ease * 25;
+      } else if (elapsed <= PHASE1 + PHASE2 + PHASE3) {
+        const t = (elapsed - PHASE1 - PHASE2) / PHASE3;
+        const ease = t * t * (3 - 2 * t);
+        xProg = 75 + ease * 5;
+        yProg = 50 - ease * (50 - LOCK_Y);
       } else {
-        xProg = CURVE_END_X + 5;
+        xProg = 80;
         yProg = LOCK_Y;
       }
 
@@ -418,7 +414,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       setCashedOut1(false); setCashedOut2(false);
       cashedOut1Ref.current = false; cashedOut2Ref.current = false;
       setCurrentWin1(0); setCurrentWin2(0);
-      setRocketPos({ x: 50, y: 100 });
+      setRocketPos({ x: 0, y: 100 });
       setMultiplier(1.0);
       setFlyAway(false);
       crashRef.current = 0;
@@ -547,10 +543,10 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const w = 360;
     const h = 200;
     const elapsed = elapsedRef.current;
-    const RISE_PHASE = 1.5;
-    const CURVE_RIGHT_PHASE = 2.0;
-    const CLIMB_PHASE = 2.0;
-    const TOTAL_ANIM = RISE_PHASE + CURVE_RIGHT_PHASE + CLIMB_PHASE;
+    const PHASE1 = 2.0;
+    const PHASE2 = 2.5;
+    const PHASE3 = 1.5;
+    const TOTAL_ANIM = PHASE1 + PHASE2 + PHASE3;
     const isCrashedOrAway = phase === "crashed" || flyAway;
 
     const rX = (rocketPos.x / 100) * w;
@@ -558,52 +554,34 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const altitude = 1 - rocketPos.y / 100;
     const isLocked = elapsed > TOTAL_ANIM;
 
-    const cx = w * 0.5;
-
     const sway = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 2.5) * 5 : 0;
     const swayY = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 1.8 + 0.7) * 3 : 0;
 
-    let rocketAngle = -90;
-    if (elapsed <= RISE_PHASE) {
-      rocketAngle = -90;
-    } else if (elapsed <= RISE_PHASE + CURVE_RIGHT_PHASE) {
-      const t = (elapsed - RISE_PHASE) / CURVE_RIGHT_PHASE;
-      rocketAngle = -90 + t * 50;
+    let rocketAngle = -45;
+    if (elapsed <= PHASE1) {
+      const t = elapsed / PHASE1;
+      rocketAngle = -45 + t * 5;
+    } else if (elapsed <= PHASE1 + PHASE2) {
+      const t = (elapsed - PHASE1) / PHASE2;
+      rocketAngle = -40 - t * 30;
     } else if (elapsed <= TOTAL_ANIM) {
-      const t = (elapsed - RISE_PHASE - CURVE_RIGHT_PHASE) / CLIMB_PHASE;
-      rocketAngle = -40 - t * 25;
+      const t = (elapsed - PHASE1 - PHASE2) / PHASE3;
+      rocketAngle = -70 + t * 5;
     } else {
       rocketAngle = -65 + Math.sin(elapsed * 2.5) * 6;
     }
 
-    const bgScrollTime = isLocked ? (elapsed - TOTAL_ANIM) : 0;
-    const bgAngleRad = Math.PI / 5;
-    const bgSpd = 22;
-    const bgDx = bgScrollTime * bgSpd * Math.cos(bgAngleRad);
-    const bgDy = bgScrollTime * bgSpd * Math.sin(bgAngleRad);
+    const bgT = isLocked ? (elapsed - TOTAL_ANIM) : 0;
+    const bgAngle = Math.PI / 5;
+    const bgSpeed = 22;
+    const bgDx = bgT * bgSpeed * Math.cos(bgAngle);
+    const bgDy = bgT * bgSpeed * Math.sin(bgAngle);
 
-    let trailPath = "";
-    let fillPath = "";
-    if (elapsed <= RISE_PHASE) {
-      trailPath = `M ${cx} ${h} L ${cx} ${rY}`;
-      fillPath = `M ${cx-1} ${h} L ${cx-1} ${rY} L ${cx+1} ${rY} L ${cx+1} ${h} Z`;
-    } else if (elapsed <= RISE_PHASE + CURVE_RIGHT_PHASE) {
-      const firstY = h * 0.75;
-      const cpx = cx + (rX - cx) * 0.15;
-      const cpy = firstY;
-      trailPath = `M ${cx} ${h} L ${cx} ${firstY} Q ${cpx} ${cpy} ${rX} ${rY}`;
-      fillPath = `${trailPath} L ${rX} ${h} Z`;
-    } else {
-      const firstY = h * 0.75;
-      const turnX = w * 0.80;
-      const turnY = h * 0.50;
-      const cpx1 = cx + (turnX - cx) * 0.15;
-      const cpy1 = firstY;
-      const cpx2 = turnX + 5;
-      const cpy2 = turnY - (turnY - rY) * 0.3;
-      trailPath = `M ${cx} ${h} L ${cx} ${firstY} Q ${cpx1} ${cpy1} ${turnX} ${turnY} Q ${cpx2} ${cpy2} ${rX} ${rY}`;
-      fillPath = `${trailPath} L ${rX} ${h} Z`;
-    }
+    const trailPath = `M 0 ${h} C ${rX * 0.4} ${h} ${rX * 0.5} ${rY + (h - rY) * 0.3} ${rX} ${rY}`;
+    const fillPath = `${trailPath} L ${rX} ${h} Z`;
+
+    const displayRX = rX + sway;
+    const displayRY = rY + swayY;
 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "hidden" }}>
@@ -644,8 +622,8 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
               const lx = ((bx + w * 3 - bgDx * sp) % (w + 60)) - 30;
               const ly = ((by + h * 3 + bgDy * sp) % (h + 20)) - 10;
               const len = 10 + i * 2;
-              const dx2 = -len * Math.cos(bgAngleRad);
-              const dy2 = len * Math.sin(bgAngleRad);
+              const dx2 = -len * Math.cos(bgAngle);
+              const dy2 = len * Math.sin(bgAngle);
               return <line key={`l${i}`} x1={lx} y1={ly} x2={lx + dx2} y2={ly + dy2} stroke="white" strokeWidth="0.5" opacity={0.15} />;
             })}
           </g>
@@ -663,32 +641,31 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
         {!isCrashedOrAway && (
           <g>
-            <path d={trailPath} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
             <path d={fillPath} fill="url(#fillGrad)" />
+            <path d={trailPath} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
           </g>
         )}
 
         {!isCrashedOrAway && (
           <g style={{
-            transform: `translate(${rX + sway}px, ${rY - 14 + swayY}px) rotate(${rocketAngle}deg)`,
+            transform: `translate(${displayRX}px, ${displayRY - 16}px) rotate(${rocketAngle}deg)`,
             transformOrigin: "center center",
           }}>
-            <text x="0" y="0" fontSize="28" textAnchor="middle" dominantBaseline="central"
-              style={{ filter: "drop-shadow(0 0 10px rgba(34,197,94,0.7))" }}>🚀</text>
+            <text x="0" y="0" fontSize="30" textAnchor="middle" dominantBaseline="central"
+              style={{ filter: "drop-shadow(0 0 12px rgba(34,197,94,0.8))" }}>🚀</text>
           </g>
         )}
 
         {!isCrashedOrAway && isLocked && (
           <g>
             {[...Array(8)].map((_, i) => {
-              const bfx = rX + sway;
               const fa = (rocketAngle + 180) * Math.PI / 180;
-              const dist = 12 + i * 5;
+              const dist = 14 + i * 5;
               const spread = Math.sin(elapsed * 8 + i * 1.3) * 3;
-              const fx = bfx + Math.cos(fa) * dist + spread;
-              const fy = (rY - 14 + swayY) + Math.sin(fa) * dist + Math.abs(spread) * 0.5;
-              const op = 0.4 - i * 0.04;
-              const r = 2.0 - i * 0.2;
+              const fx = displayRX + Math.cos(fa) * dist + spread;
+              const fy = (displayRY - 16) + Math.sin(fa) * dist + Math.abs(spread) * 0.5;
+              const op = 0.45 - i * 0.05;
+              const r = 2.2 - i * 0.2;
               const color = i < 3 ? "#fbbf24" : i < 5 ? "#f97316" : "#ef4444";
               return <circle key={`f${i}`} cx={fx} cy={fy} r={Math.max(r, 0.3)} fill={color} opacity={Math.max(op, 0.05)} />;
             })}

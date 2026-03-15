@@ -348,7 +348,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       localMultRef.current = m;
       setMultiplier(+m.toFixed(2));
 
-      const normM = Math.min((m - 1) / 0.3, 1);
+      const normM = Math.min((m - 1) / 3, 1);
       const xProg = Math.min(normM * MAX_X, MAX_X);
       const yProg = Math.max(100 - normM * (100 - LOCK_Y), LOCK_Y);
 
@@ -548,13 +548,17 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
     const tanX = curveEndX - cp2x;
     const tanY = curveEndY - cp2y;
-    let rocketAngle = Math.atan2(tanY, tanX) * (180 / Math.PI);
+    let rocketAngle = Math.atan2(tanY, tanX) * (180 / Math.PI) - 45;
     if (isLocked && !isCrashedOrAway) {
-      rocketAngle = -55 + Math.sin(elapsed * 2.5) * 5;
+      rocketAngle = -75 + Math.sin(elapsed * 2.5) * 5;
     }
 
-    const drx = curveEndX + sway;
-    const dry = curveEndY + swayY;
+    const rocketSize = 16;
+    const tanLen = Math.sqrt(tanX * tanX + tanY * tanY) || 1;
+    const normTanX = tanX / tanLen;
+    const normTanY = tanY / tanLen;
+    const drx = curveEndX + normTanX * rocketSize + sway;
+    const dry = curveEndY + normTanY * rocketSize + swayY;
 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "visible" }}>
@@ -618,25 +622,26 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         )}
 
         {!isCrashedOrAway && (
-          <text
-            x={drx}
-            y={dry - 18}
-            fontSize="32"
-            textAnchor="middle"
-            dominantBaseline="auto"
-            transform={`rotate(${rocketAngle}, ${drx}, ${dry - 18})`}
-            style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }}
-          >🚀</text>
+          <g transform={`translate(${drx}, ${dry}) rotate(${rocketAngle})`}>
+            <text
+              x="0"
+              y="0"
+              fontSize="28"
+              textAnchor="middle"
+              dominantBaseline="central"
+              style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }}
+            >🚀</text>
+          </g>
         )}
 
         {!isCrashedOrAway && isLocked && (
           <g>
             {[...Array(6)].map((_, i) => {
-              const fa = (rocketAngle + 180) * Math.PI / 180;
-              const dist = 16 + i * 5;
+              const fa = (rocketAngle + 225) * Math.PI / 180;
+              const dist = 18 + i * 5;
               const spread = Math.sin(elapsed * 7 + i * 1.5) * 3;
               const fx = drx + Math.cos(fa) * dist + spread;
-              const fy = (dry - 18) + Math.sin(fa) * dist;
+              const fy = dry + Math.sin(fa) * dist;
               const r = 2 - i * 0.25;
               const color = i < 2 ? "#fbbf24" : i < 4 ? "#f97316" : "#ef4444";
               return <circle key={`f${i}`} cx={fx} cy={fy} r={Math.max(r, 0.4)} fill={color} opacity={0.4 - i * 0.05} />;

@@ -548,17 +548,19 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
     const tanX = curveEndX - cp2x;
     const tanY = curveEndY - cp2y;
-    let rocketAngle = Math.atan2(tanY, tanX) * (180 / Math.PI) - 45;
+    const tanLen = Math.sqrt(tanX * tanX + tanY * tanY) || 1;
+    const nTx = tanX / tanLen;
+    const nTy = tanY / tanLen;
+    let rocketAngle = Math.atan2(tanY, tanX) * (180 / Math.PI);
     if (isLocked && !isCrashedOrAway) {
-      rocketAngle = -75 + Math.sin(elapsed * 2.5) * 5;
+      rocketAngle = Math.atan2(tanY, tanX) * (180 / Math.PI) + Math.sin(elapsed * 2.5) * 5;
     }
 
-    const rocketSize = 16;
-    const tanLen = Math.sqrt(tanX * tanX + tanY * tanY) || 1;
-    const normTanX = tanX / tanLen;
-    const normTanY = tanY / tanLen;
-    const drx = curveEndX + normTanX * rocketSize + sway;
-    const dry = curveEndY + normTanY * rocketSize + swayY;
+    const rocketOffset = 14;
+    const drx = curveEndX + nTx * rocketOffset + sway;
+    const dry = curveEndY + nTy * rocketOffset + swayY;
+    const fireTailX = curveEndX - nTx * 2 + sway;
+    const fireTailY = curveEndY - nTy * 2 + swayY;
 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "visible" }}>
@@ -637,12 +639,11 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         {!isCrashedOrAway && isLocked && (
           <g>
             {[...Array(6)].map((_, i) => {
-              const fa = (rocketAngle + 225) * Math.PI / 180;
-              const dist = 18 + i * 5;
+              const dist = 4 + i * 5;
               const spread = Math.sin(elapsed * 7 + i * 1.5) * 3;
-              const fx = drx + Math.cos(fa) * dist + spread;
-              const fy = dry + Math.sin(fa) * dist;
-              const r = 2 - i * 0.25;
+              const fx = fireTailX - nTx * dist + nTy * spread;
+              const fy = fireTailY - nTy * dist - nTx * spread;
+              const r = 2.2 - i * 0.25;
               const color = i < 2 ? "#fbbf24" : i < 4 ? "#f97316" : "#ef4444";
               return <circle key={`f${i}`} cx={fx} cy={fy} r={Math.max(r, 0.4)} fill={color} opacity={0.4 - i * 0.05} />;
             })}

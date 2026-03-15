@@ -320,10 +320,8 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     stopLocalAnimation();
     localMultRef.current = 1.0;
     elapsedRef.current = 0;
-    const PHASE1 = 2.0;
-    const PHASE2 = 2.5;
-    const PHASE3 = 1.5;
     const LOCK_Y = 25;
+    const MAX_X = 80;
 
     const tick = () => {
       const elapsed = Date.now() / 1000 - serverStartedAtRef.current + serverTimeOffsetRef.current;
@@ -350,28 +348,9 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       localMultRef.current = m;
       setMultiplier(+m.toFixed(2));
 
-      let xProg: number;
-      let yProg: number;
-
-      if (elapsed <= PHASE1) {
-        const t = elapsed / PHASE1;
-        const ease = t * t * (3 - 2 * t);
-        xProg = ease * 50;
-        yProg = 100 - ease * 25;
-      } else if (elapsed <= PHASE1 + PHASE2) {
-        const t = (elapsed - PHASE1) / PHASE2;
-        const ease = t * t * (3 - 2 * t);
-        xProg = 50 + ease * 25;
-        yProg = 75 - ease * 25;
-      } else if (elapsed <= PHASE1 + PHASE2 + PHASE3) {
-        const t = (elapsed - PHASE1 - PHASE2) / PHASE3;
-        const ease = t * t * (3 - 2 * t);
-        xProg = 75 + ease * 5;
-        yProg = 50 - ease * (50 - LOCK_Y);
-      } else {
-        xProg = 80;
-        yProg = LOCK_Y;
-      }
+      const normM = Math.min((m - 1) / 9, 1);
+      const xProg = Math.min(normM * MAX_X, MAX_X);
+      const yProg = Math.max(100 - normM * (100 - LOCK_Y), LOCK_Y);
 
       setRocketPos({ x: xProg, y: yProg });
       if (!cashedOut1Ref.current) setCurrentWin1(+(bet1Ref.current * m).toFixed(2));
@@ -543,48 +522,41 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const w = 360;
     const h = 200;
     const elapsed = elapsedRef.current;
-    const PHASE1 = 2.0;
-    const PHASE2 = 2.5;
-    const PHASE3 = 1.5;
-    const TOTAL_ANIM = PHASE1 + PHASE2 + PHASE3;
     const isCrashedOrAway = phase === "crashed" || flyAway;
 
     const rX = (rocketPos.x / 100) * w;
     const rY = (rocketPos.y / 100) * h;
     const altitude = 1 - rocketPos.y / 100;
-    const isLocked = elapsed > TOTAL_ANIM;
+    const isLocked = rocketPos.y <= 25;
 
-    const sway = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 2.5) * 5 : 0;
-    const swayY = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 1.8 + 0.7) * 3 : 0;
+    const sway = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 2.5) * 4 : 0;
+    const swayY = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 1.8 + 0.7) * 2 : 0;
 
-    let rocketAngle = -45;
-    if (elapsed <= PHASE1) {
-      const t = elapsed / PHASE1;
-      rocketAngle = -45 + t * 5;
-    } else if (elapsed <= PHASE1 + PHASE2) {
-      const t = (elapsed - PHASE1) / PHASE2;
-      rocketAngle = -40 - t * 30;
-    } else if (elapsed <= TOTAL_ANIM) {
-      const t = (elapsed - PHASE1 - PHASE2) / PHASE3;
-      rocketAngle = -70 + t * 5;
-    } else {
-      rocketAngle = -65 + Math.sin(elapsed * 2.5) * 6;
+    const dx = rX > 1 ? (rY - h) / rX : -1;
+    let rocketAngle = Math.atan2(dx, 1) * (180 / Math.PI);
+    if (isLocked && !isCrashedOrAway) {
+      rocketAngle = -65 + Math.sin(elapsed * 2.5) * 5;
     }
 
-    const bgT = isLocked ? (elapsed - TOTAL_ANIM) : 0;
-    const bgAngle = Math.PI / 5;
-    const bgSpeed = 22;
-    const bgDx = bgT * bgSpeed * Math.cos(bgAngle);
-    const bgDy = bgT * bgSpeed * Math.sin(bgAngle);
+    const bgT = isLocked ? elapsed * 0.5 : 0;
+    const bgAng = Math.PI / 5;
+    const bgDx = bgT * 30 * Math.cos(bgAng);
+    const bgDy = bgT * 30 * Math.sin(bgAng);
 
-    const trailPath = `M 0 ${h} C ${rX * 0.4} ${h} ${rX * 0.5} ${rY + (h - rY) * 0.3} ${rX} ${rY}`;
-    const fillPath = `${trailPath} L ${rX} ${h} Z`;
+    const curveEndX = Math.max(rX, 1);
+    const curveEndY = rY;
+    const cp1x = curveEndX * 0.35;
+    const cp1y = h;
+    const cp2x = curveEndX * 0.65;
+    const cp2y = curveEndY + (h - curveEndY) * 0.15;
+    const trailPath = `M 0 ${h} C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${curveEndX} ${curveEndY}`;
+    const fillPath = `${trailPath} L ${curveEndX} ${h} Z`;
 
-    const displayRX = rX + sway;
-    const displayRY = rY + swayY;
+    const drx = curveEndX + sway;
+    const dry = curveEndY + swayY;
 
     return (
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "hidden" }}>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "visible" }}>
         <defs>
           <linearGradient id="lineGrad" x1="0" y1="1" x2="1" y2="0">
             <stop offset="0%" stopColor="#16a34a" />
@@ -594,47 +566,45 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
             <stop offset="0%" stopColor="#22c55e" stopOpacity="0.18" />
             <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
           </linearGradient>
-          <filter id="glow"><feGaussianBlur stdDeviation="3" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+          <filter id="glow"><feGaussianBlur stdDeviation="2" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           <filter id="starGlow"><feGaussianBlur stdDeviation="1.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
         </defs>
 
         {!isCrashedOrAway && altitude > 0.1 && (
           <g>
-            {[...Array(35)].map((_, i) => {
+            {[...Array(30)].map((_, i) => {
               const bx = (i * 53 + 17) % w;
               const by = (i * 37 + 11) % h;
               const sp = 0.3 + (i % 4) * 0.3;
               const sx = ((bx + w * 3 - bgDx * sp) % (w + 40)) - 20;
               const sy = ((by + h * 3 + bgDy * sp) % (h + 20)) - 10;
-              const size = 0.5 + (i % 4) * 0.4;
-              const op = Math.min(altitude * 1.5, 1) * (0.15 + (i % 3) * 0.15);
-              return <circle key={`s${i}`} cx={sx} cy={sy} r={size} fill="white" opacity={op} filter={size > 1 ? "url(#starGlow)" : undefined} />;
+              const sz = 0.5 + (i % 4) * 0.4;
+              const op = Math.min(altitude * 1.5, 1) * (0.15 + (i % 3) * 0.12);
+              return <circle key={`s${i}`} cx={sx} cy={sy} r={sz} fill="white" opacity={op} filter={sz > 1 ? "url(#starGlow)" : undefined} />;
             })}
           </g>
         )}
 
         {!isCrashedOrAway && isLocked && (
           <g>
-            {[...Array(12)].map((_, i) => {
+            {[...Array(10)].map((_, i) => {
               const bx = (i * 89 + 30) % w;
               const by = (i * 43 + 20) % h;
               const sp = 1.2 + i * 0.25;
               const lx = ((bx + w * 3 - bgDx * sp) % (w + 60)) - 30;
               const ly = ((by + h * 3 + bgDy * sp) % (h + 20)) - 10;
               const len = 10 + i * 2;
-              const dx2 = -len * Math.cos(bgAngle);
-              const dy2 = len * Math.sin(bgAngle);
-              return <line key={`l${i}`} x1={lx} y1={ly} x2={lx + dx2} y2={ly + dy2} stroke="white" strokeWidth="0.5" opacity={0.15} />;
+              return <line key={`l${i}`} x1={lx} y1={ly} x2={lx - len * Math.cos(bgAng)} y2={ly + len * Math.sin(bgAng)} stroke="white" strokeWidth="0.5" opacity={0.12} />;
             })}
           </g>
         )}
 
         {[0.25, 0.5, 0.75].map(f => {
           const bly = h * f;
-          const ly = isLocked ? ((bly + bgDy * 3) % h) : bly;
+          const ly = isLocked ? ((bly + bgDy * 2) % h) : bly;
           return (
             <line key={f} x1="0" y1={ly} x2={w} y2={ly}
-              stroke="white" strokeOpacity={isCrashedOrAway ? 0.03 : Math.max(0.05 - altitude * 0.03, 0.01)}
+              stroke="white" strokeOpacity={isCrashedOrAway ? 0.03 : 0.04}
               strokeDasharray="4 4" />
           );
         })}
@@ -642,32 +612,33 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         {!isCrashedOrAway && (
           <g>
             <path d={fillPath} fill="url(#fillGrad)" />
-            <path d={trailPath} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
+            <path d={trailPath} fill="none" stroke="url(#lineGrad)" strokeWidth="2.5" strokeLinecap="round" filter="url(#glow)" />
           </g>
         )}
 
         {!isCrashedOrAway && (
-          <g style={{
-            transform: `translate(${displayRX}px, ${displayRY - 16}px) rotate(${rocketAngle}deg)`,
-            transformOrigin: "center center",
-          }}>
-            <text x="0" y="0" fontSize="30" textAnchor="middle" dominantBaseline="central"
-              style={{ filter: "drop-shadow(0 0 12px rgba(34,197,94,0.8))" }}>🚀</text>
-          </g>
+          <text
+            x={drx}
+            y={dry - 18}
+            fontSize="32"
+            textAnchor="middle"
+            dominantBaseline="auto"
+            transform={`rotate(${rocketAngle}, ${drx}, ${dry - 18})`}
+            style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }}
+          >🚀</text>
         )}
 
         {!isCrashedOrAway && isLocked && (
           <g>
-            {[...Array(8)].map((_, i) => {
+            {[...Array(6)].map((_, i) => {
               const fa = (rocketAngle + 180) * Math.PI / 180;
-              const dist = 14 + i * 5;
-              const spread = Math.sin(elapsed * 8 + i * 1.3) * 3;
-              const fx = displayRX + Math.cos(fa) * dist + spread;
-              const fy = (displayRY - 16) + Math.sin(fa) * dist + Math.abs(spread) * 0.5;
-              const op = 0.45 - i * 0.05;
-              const r = 2.2 - i * 0.2;
-              const color = i < 3 ? "#fbbf24" : i < 5 ? "#f97316" : "#ef4444";
-              return <circle key={`f${i}`} cx={fx} cy={fy} r={Math.max(r, 0.3)} fill={color} opacity={Math.max(op, 0.05)} />;
+              const dist = 16 + i * 5;
+              const spread = Math.sin(elapsed * 7 + i * 1.5) * 3;
+              const fx = drx + Math.cos(fa) * dist + spread;
+              const fy = (dry - 18) + Math.sin(fa) * dist;
+              const r = 2 - i * 0.25;
+              const color = i < 2 ? "#fbbf24" : i < 4 ? "#f97316" : "#ef4444";
+              return <circle key={`f${i}`} cx={fx} cy={fy} r={Math.max(r, 0.4)} fill={color} opacity={0.4 - i * 0.05} />;
             })}
           </g>
         )}

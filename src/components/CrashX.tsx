@@ -348,7 +348,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       localMultRef.current = m;
       setMultiplier(+m.toFixed(2));
 
-      const normM = Math.min((m - 1) / 9, 1);
+      const normM = Math.min((m - 1) / 0.3, 1);
       const xProg = Math.min(normM * MAX_X, MAX_X);
       const yProg = Math.max(100 - normM * (100 - LOCK_Y), LOCK_Y);
 
@@ -532,12 +532,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const sway = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 2.5) * 4 : 0;
     const swayY = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 1.8 + 0.7) * 2 : 0;
 
-    const dx = rX > 1 ? (rY - h) / rX : -1;
-    let rocketAngle = Math.atan2(dx, 1) * (180 / Math.PI);
-    if (isLocked && !isCrashedOrAway) {
-      rocketAngle = -65 + Math.sin(elapsed * 2.5) * 5;
-    }
-
     const bgT = isLocked ? elapsed * 0.5 : 0;
     const bgAng = Math.PI / 5;
     const bgDx = bgT * 30 * Math.cos(bgAng);
@@ -551,6 +545,13 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const cp2y = curveEndY + (h - curveEndY) * 0.15;
     const trailPath = `M 0 ${h} C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${curveEndX} ${curveEndY}`;
     const fillPath = `${trailPath} L ${curveEndX} ${h} Z`;
+
+    const tanX = curveEndX - cp2x;
+    const tanY = curveEndY - cp2y;
+    let rocketAngle = Math.atan2(tanY, tanX) * (180 / Math.PI);
+    if (isLocked && !isCrashedOrAway) {
+      rocketAngle = -55 + Math.sin(elapsed * 2.5) * 5;
+    }
 
     const drx = curveEndX + sway;
     const dry = curveEndY + swayY;

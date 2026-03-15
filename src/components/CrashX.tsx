@@ -551,21 +551,15 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const tanLen = Math.sqrt(tanX * tanX + tanY * tanY) || 1;
     const nTx = tanX / tanLen;
     const nTy = tanY / tanLen;
-    let rocketAngle = Math.atan2(tanY, tanX) * (180 / Math.PI);
-    if (isLocked && !isCrashedOrAway) {
-      rocketAngle = Math.atan2(tanY, tanX) * (180 / Math.PI) + Math.sin(elapsed * 2.5) * 5;
-    }
 
-    const rocketOffset = 14;
-    const drx = curveEndX + nTx * rocketOffset + sway;
-    const dry = curveEndY + nTy * rocketOffset + swayY;
+    const curveAngleDeg = Math.atan2(tanY, tanX) * (180 / Math.PI);
+    const swayAngle = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 2.5) * 4 : 0;
+    const rocketAngle = curveAngleDeg - 45 + swayAngle;
 
-    const rocketAngleRad = rocketAngle * Math.PI / 180;
-    const tailOffsetLen = 12;
-    const tailDirX = -Math.cos(rocketAngleRad);
-    const tailDirY = -Math.sin(rocketAngleRad);
-    const fireTailX = drx + tailDirX * tailOffsetLen;
-    const fireTailY = dry + tailDirY * tailOffsetLen;
+    const drx = curveEndX + sway;
+    const dry = curveEndY + swayY;
+    const fireTailX = drx - nTx * 12;
+    const fireTailY = dry - nTy * 12;
 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "visible" }}>
@@ -633,7 +627,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
             <text
               x="0"
               y="0"
-              fontSize="28"
+              fontSize="26"
               textAnchor="middle"
               dominantBaseline="central"
               style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }}
@@ -641,18 +635,16 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           </g>
         )}
 
-        {!isCrashedOrAway && (
+        {!isCrashedOrAway && isLocked && (
           <g>
-            {[...Array(7)].map((_, i) => {
-              const dist = 3 + i * 4;
-              const spread = Math.sin(elapsed * 8 + i * 1.4) * 2;
-              const perpX = -tailDirY;
-              const perpY = tailDirX;
-              const fx = fireTailX + tailDirX * dist + perpX * spread;
-              const fy = fireTailY + tailDirY * dist + perpY * spread;
-              const r = 2.5 - i * 0.28;
+            {[...Array(6)].map((_, i) => {
+              const dist = 4 + i * 5;
+              const spread = Math.sin(elapsed * 7 + i * 1.5) * 3;
+              const fx = fireTailX - nTx * dist + nTy * spread;
+              const fy = fireTailY - nTy * dist - nTx * spread;
+              const r = 2.2 - i * 0.25;
               const color = i < 2 ? "#fbbf24" : i < 4 ? "#f97316" : "#ef4444";
-              return <circle key={`f${i}`} cx={fx} cy={fy} r={Math.max(r, 0.3)} fill={color} opacity={Math.max(0.45 - i * 0.05, 0.05)} />;
+              return <circle key={`f${i}`} cx={fx} cy={fy} r={Math.max(r, 0.4)} fill={color} opacity={0.4 - i * 0.05} />;
             })}
           </g>
         )}

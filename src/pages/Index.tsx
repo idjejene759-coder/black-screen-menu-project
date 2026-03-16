@@ -9,12 +9,11 @@ const copyId = (id: string | number) => {
 
 const bannerSlides = [
   {
-    image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/119e1251-5c5f-4c3d-9acd-794f1155e812.png",
+    image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/4827d818-b41a-46c1-9e99-fbf6235b2742.png",
   },
   {
-    image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/69dd2a08-18b8-4b2a-a6ed-c437a5509da5.png",
+    image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/31502929-c1b2-4737-8e2f-1461f4ee0298.jpg",
   },
-
 ];
 import Icon from "@/components/ui/icon";
 import AuthScreen from "@/components/AuthScreen";

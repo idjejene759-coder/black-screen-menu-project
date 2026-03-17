@@ -623,15 +623,25 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         )}
 
         {!isCrashedOrAway && (
-          <g transform={`translate(${drx}, ${dry}) rotate(${rocketAngle + 180})`}>
-            <image
-              href="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/94c42371-fdb0-429b-a965-b82d84e1cd9c.jpg"
-              x="-24"
-              y="-24"
-              width="48"
-              height="48"
-              style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }}
-            />
+          <g transform={`translate(${drx}, ${dry}) rotate(${rocketAngle - 90})`} style={{ filter: "drop-shadow(0 0 10px rgba(34,197,94,0.8))" }}>
+            {/* Корпус ракеты */}
+            <ellipse cx="0" cy="0" rx="9" ry="22" fill="#e8e8e8" />
+            {/* Нос */}
+            <ellipse cx="0" cy="-22" rx="9" ry="10" fill="#22c55e" />
+            <ellipse cx="0" cy="-26" rx="5" ry="6" fill="#16a34a" />
+            {/* Иллюминатор */}
+            <circle cx="0" cy="-8" r="6" fill="#0f172a" stroke="#22c55e" strokeWidth="1.5" />
+            <circle cx="0" cy="-8" r="4" fill="#1e3a2f" />
+            {/* Ягуар в иллюминаторе */}
+            <text x="0" y="-5" fontSize="7" textAnchor="middle" dominantBaseline="central">🐆</text>
+            {/* Крылья */}
+            <polygon points="-9,8 -20,22 -9,18" fill="#22c55e" opacity="0.9" />
+            <polygon points="9,8 20,22 9,18" fill="#22c55e" opacity="0.9" />
+            {/* Стабилизаторы */}
+            <polygon points="-9,14 -15,22 -9,22" fill="#16a34a" />
+            <polygon points="9,14 15,22 9,22" fill="#16a34a" />
+            {/* Сопло */}
+            <rect x="-5" y="18" width="10" height="5" rx="2" fill="#94a3b8" />
           </g>
         )}
 

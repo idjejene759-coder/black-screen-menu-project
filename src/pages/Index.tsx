@@ -9,7 +9,7 @@ const copyId = (id: string | number) => {
 
 const bannerSlides = [
   {
-    image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/9fc5fbe5-93e6-4928-9129-3b14a64bbae9.png",
+    image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/5a3d0f7f-7658-412e-8c85-50112928018f.png",
   },
   {
     image: "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/31502929-c1b2-4737-8e2f-1461f4ee0298.jpg",
@@ -1364,7 +1364,7 @@ const Index = () => {
       <div className="flex-1 overflow-y-auto">
         {active === 1 && (
           <div className="px-3 pt-3 pb-4 flex flex-col gap-4">
-            <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: "16/6" }}>
+            <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: "16/7" }}>
               {bannerSlides.map((slide, idx) => (
                 <img
                   key={idx}

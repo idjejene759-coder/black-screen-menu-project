@@ -623,15 +623,15 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         )}
 
         {!isCrashedOrAway && (
-          <g transform={`translate(${drx}, ${dry}) rotate(${rocketAngle})`}>
-            <text
-              x="0"
-              y="0"
-              fontSize="26"
-              textAnchor="middle"
-              dominantBaseline="central"
+          <g transform={`translate(${drx}, ${dry}) rotate(${rocketAngle + 180})`}>
+            <image
+              href="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/94c42371-fdb0-429b-a965-b82d84e1cd9c.jpg"
+              x="-24"
+              y="-24"
+              width="48"
+              height="48"
               style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }}
-            >🚀</text>
+            />
           </g>
         )}
 

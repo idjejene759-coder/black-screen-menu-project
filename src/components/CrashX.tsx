@@ -554,7 +554,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
     const curveAngleDeg = Math.atan2(tanY, tanX) * (180 / Math.PI);
     const swayAngle = isLocked && !isCrashedOrAway ? Math.sin(elapsed * 2.5) * 4 : 0;
-    const rocketAngle = curveAngleDeg - 45 + swayAngle;
+    const rocketAngle = curveAngleDeg - 45 + 180 + swayAngle;
 
     const drx = curveEndX + sway;
     const dry = curveEndY + swayY;

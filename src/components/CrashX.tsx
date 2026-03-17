@@ -623,7 +623,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         )}
 
         {!isCrashedOrAway && (
-          <g transform={`translate(${drx}, ${dry}) rotate(${rocketAngle - 90})`} style={{ filter: "drop-shadow(0 0 10px rgba(34,197,94,0.8))" }}>
+          <g transform={`translate(${drx}, ${dry}) rotate(${rocketAngle + 90})`} style={{ filter: "drop-shadow(0 0 10px rgba(34,197,94,0.8))" }}>
             {/* Корпус ракеты */}
             <ellipse cx="0" cy="0" rx="9" ry="22" fill="#e8e8e8" />
             {/* Нос */}

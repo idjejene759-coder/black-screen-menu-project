@@ -1364,26 +1364,6 @@ const Index = () => {
       <div className="flex-1 overflow-y-auto">
         {active === 1 && (
           <div className="px-3 pt-3 pb-4 flex flex-col gap-4">
-            <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: "16/7" }}>
-              {bannerSlides.map((slide, idx) => (
-                <img
-                  key={idx}
-                  src={slide.image}
-                  alt=""
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${idx === currentSlide ? "opacity-100" : "opacity-0"}`}
-                />
-              ))}
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {bannerSlides.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentSlide(idx)}
-                    className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentSlide ? "bg-[#4ade80] w-4" : "bg-white/30"}`}
-                  />
-                ))}
-              </div>
-            </div>
-
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Icon name="Zap" size={18} className="text-white" />

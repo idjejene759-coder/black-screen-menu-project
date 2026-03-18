@@ -59,7 +59,7 @@ export function AdminPlayersScreen({
 
       <div className="px-4 py-3">
         <div className="flex gap-2">
-          <div className="flex-1 flex items-center bg-white/[0.05] border border-white/[0.08] rounded-xl px-3 gap-2">
+          <div className="flex-1 flex items-center bg-white/[0.05] border border-white/[0.08] rounded-2xl px-3 gap-2">
             <Icon name="Search" size={15} className="text-white/25 shrink-0" />
             <input
               type="text"
@@ -110,7 +110,7 @@ export function AdminPlayersScreen({
                   </div>
                 </div>
                 {p.is_blocked && p.block_reason && (
-                  <div className="mt-2 bg-red-500/5 border border-red-500/10 rounded-xl px-3 py-2">
+                  <div className="mt-2 bg-red-500/5 border border-red-500/10 rounded-2xl px-3 py-2">
                     <span className="text-red-400/60 text-[11px]">Причина: </span>
                     <span className="text-red-400 text-[11px]">{p.block_reason}</span>
                   </div>
@@ -167,15 +167,15 @@ export function AdminPlayersScreen({
               onChange={(e) => { setBlockReason(e.target.value); setBlockError(""); }}
               placeholder="Причина блокировки..."
               rows={3}
-              className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-[14px] outline-none focus:border-red-500/40 mb-1 placeholder:text-white/20 resize-none"
+              className="w-full bg-white/[0.05] border border-white/[0.08] rounded-2xl px-4 py-3 text-white text-[14px] outline-none focus:border-red-500/40 mb-1 placeholder:text-white/20 resize-none"
             />
             {blockError && <p className="text-red-400 text-[12px] mb-3">{blockError}</p>}
             <div className="flex gap-2 mt-3">
-              <button onClick={handleCancelBlock} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-xl py-3">Отмена</button>
+              <button onClick={handleCancelBlock} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-2xl py-3">Отмена</button>
               <button
                 onClick={handleBlockSubmit}
                 disabled={actionLoading === blockingPlayer.id}
-                className="flex-1 bg-red-500 text-white font-bold text-[14px] rounded-xl py-3 disabled:opacity-50"
+                className="flex-1 bg-red-500 text-white font-bold text-[14px] rounded-2xl py-3 disabled:opacity-50"
               >
                 {actionLoading === blockingPlayer.id ? "..." : "Заблокировать"}
               </button>
@@ -195,11 +195,11 @@ export function AdminPlayersScreen({
               value={newBalance}
               onChange={(e) => onNewBalanceChange(e.target.value)}
               placeholder="Новый баланс USDT"
-              className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 mb-4 placeholder:text-white/20"
+              className="w-full bg-white/[0.05] border border-white/[0.08] rounded-2xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 mb-4 placeholder:text-white/20"
             />
             <div className="flex gap-2">
-              <button onClick={onCancelEdit} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-xl py-3">Отмена</button>
-              <button onClick={onSetBalance} disabled={actionLoading === editingPlayer.id} className="flex-1 bg-[#4ade80] text-black font-bold text-[14px] rounded-xl py-3 disabled:opacity-50">
+              <button onClick={onCancelEdit} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-2xl py-3">Отмена</button>
+              <button onClick={onSetBalance} disabled={actionLoading === editingPlayer.id} className="flex-1 bg-[#4ade80] text-black font-bold text-[14px] rounded-2xl py-3 disabled:opacity-50">
                 {actionLoading === editingPlayer.id ? "..." : "Сохранить"}
               </button>
             </div>

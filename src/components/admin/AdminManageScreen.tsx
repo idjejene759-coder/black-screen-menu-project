@@ -148,14 +148,14 @@ export function AdminsScreen({
               value={addId}
               onChange={(e) => setAddId(e.target.value)}
               placeholder="ID игрока"
-              className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 mb-3 placeholder:text-white/20"
+              className="w-full bg-white/[0.05] border border-white/[0.08] rounded-2xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 mb-3 placeholder:text-white/20"
             />
             <div className="flex flex-col gap-1.5 mb-4">
               {roleOptions.map((r) => {
                 if (!isOwner && r.role === ROLE_CHIEF) return null;
                 const rc = ROLE_COLORS[r.role];
                 return (
-                  <button key={r.role} onClick={() => setAddRole(r.role)} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors text-left ${addRole === r.role ? `${rc.border} ${rc.bg}` : "border-white/[0.05] bg-white/[0.02]"}`}>
+                  <button key={r.role} onClick={() => setAddRole(r.role)} className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors text-left ${addRole === r.role ? `${rc.border} ${rc.bg}` : "border-white/[0.05] bg-white/[0.02]"}`}>
                     <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${addRole === r.role ? rc.border : "border-white/20"}`}>
                       {addRole === r.role && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: roleDotColor(r.role) }} />}
                     </div>
@@ -166,8 +166,8 @@ export function AdminsScreen({
             </div>
             {addError && <div className="text-red-400 text-[12px] mb-3">{addError}</div>}
             <div className="flex gap-2">
-              <button onClick={() => { setAddOpen(false); setAddError(""); }} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-xl py-3">Отмена</button>
-              <button onClick={handleAdd} disabled={addLoading} className="flex-1 bg-[#4ade80] text-black font-bold text-[14px] rounded-xl py-3 disabled:opacity-50">
+              <button onClick={() => { setAddOpen(false); setAddError(""); }} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-2xl py-3">Отмена</button>
+              <button onClick={handleAdd} disabled={addLoading} className="flex-1 bg-[#4ade80] text-black font-bold text-[14px] rounded-2xl py-3 disabled:opacity-50">
                 {addLoading ? "..." : "Добавить"}
               </button>
             </div>
@@ -186,7 +186,7 @@ export function AdminsScreen({
               {roleOptions.map((r) => {
                 const rc = ROLE_COLORS[r.role];
                 return (
-                  <button key={r.role} onClick={() => setChangeRoleValue(r.role)} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors text-left ${changeRoleValue === r.role ? `${rc.border} ${rc.bg}` : "border-white/[0.05] bg-white/[0.02]"}`}>
+                  <button key={r.role} onClick={() => setChangeRoleValue(r.role)} className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors text-left ${changeRoleValue === r.role ? `${rc.border} ${rc.bg}` : "border-white/[0.05] bg-white/[0.02]"}`}>
                     <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${changeRoleValue === r.role ? rc.border : "border-white/20"}`}>
                       {changeRoleValue === r.role && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: roleDotColor(r.role) }} />}
                     </div>
@@ -196,11 +196,11 @@ export function AdminsScreen({
               })}
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setChangeRoleAdmin(null)} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-xl py-3">Отмена</button>
+              <button onClick={() => setChangeRoleAdmin(null)} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-2xl py-3">Отмена</button>
               <button
                 onClick={() => { onChangeRole(changeRoleValue); setChangeRoleAdmin(null); }}
                 disabled={actionLoading === changeRoleAdmin.id}
-                className="flex-1 bg-[#4ade80] text-black font-bold text-[14px] rounded-xl py-3 disabled:opacity-50"
+                className="flex-1 bg-[#4ade80] text-black font-bold text-[14px] rounded-2xl py-3 disabled:opacity-50"
               >
                 {actionLoading === changeRoleAdmin.id ? "..." : "Сохранить"}
               </button>
@@ -449,7 +449,7 @@ export function VouchersScreen({
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   placeholder="Авто-генерация"
                   maxLength={20}
-                  className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white font-mono text-[15px] tracking-widest outline-none focus:border-[#4ade80]/40 placeholder:font-sans placeholder:tracking-normal placeholder:text-white/15"
+                  className="w-full bg-white/[0.05] border border-white/[0.08] rounded-2xl px-4 py-3.5 text-white font-mono text-[15px] tracking-widest outline-none focus:border-[#4ade80]/40 placeholder:font-sans placeholder:tracking-normal placeholder:text-white/15"
                 />
               </div>
               <div>
@@ -461,7 +461,7 @@ export function VouchersScreen({
                   placeholder="Например: 100"
                   min="0.01"
                   step="0.01"
-                  className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 placeholder:text-white/15"
+                  className="w-full bg-white/[0.05] border border-white/[0.08] rounded-2xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 placeholder:text-white/15"
                 />
               </div>
               <div className="flex gap-3">
@@ -474,7 +474,7 @@ export function VouchersScreen({
                     placeholder="1"
                     min="1"
                     step="1"
-                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 placeholder:text-white/15"
+                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-2xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 placeholder:text-white/15"
                   />
                 </div>
                 <div className="flex-1">
@@ -486,15 +486,15 @@ export function VouchersScreen({
                     placeholder="∞ бессрочно"
                     min="1"
                     step="1"
-                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 placeholder:text-white/15"
+                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-2xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 placeholder:text-white/15"
                   />
                 </div>
               </div>
             </div>
             {error && <div className="text-red-400 text-[12px] mb-3">{error}</div>}
             <div className="flex gap-2">
-              <button onClick={() => setModalOpen(false)} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-xl py-3">Отмена</button>
-              <button onClick={handleCreate} disabled={creating} className="flex-1 bg-[#4ade80] text-black font-bold text-[14px] rounded-xl py-3 disabled:opacity-50">
+              <button onClick={() => setModalOpen(false)} className="flex-1 bg-white/[0.06] text-white/50 font-semibold text-[14px] rounded-2xl py-3">Отмена</button>
+              <button onClick={handleCreate} disabled={creating} className="flex-1 bg-[#4ade80] text-black font-bold text-[14px] rounded-2xl py-3 disabled:opacity-50">
                 {creating ? "Создаём..." : "Применить"}
               </button>
             </div>

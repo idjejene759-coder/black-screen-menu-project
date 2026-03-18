@@ -372,7 +372,7 @@ const Index = () => {
           </div>
 
           <div className="px-4 pb-3">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
               <span className="text-[12px] text-white/40">Счет</span>
               <div className="text-[22px] font-bold text-white mt-0.5 tracking-tight">
                 {currency === "usdt"
@@ -382,14 +382,14 @@ const Index = () => {
               <div className="flex gap-2.5 mt-3">
                 <button
                   onClick={() => { setProfileOpen(false); setDepositOpen(true); }}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#4ade80] text-black font-semibold text-[13px] rounded-lg py-2.5"
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#4ade80] text-black font-semibold text-[13px] rounded-2xl py-2.5"
                 >
                   <Icon name="Plus" size={15} />
                   Пополнить
                 </button>
                 <button
                   onClick={() => { setProfileOpen(false); setWithdrawOpen(true); setWithdrawStep(1); setWithdrawNetwork(""); setWithdrawAddress(""); setWithdrawAmount("15"); setWithdrawError(""); setWithdrawSuccess(false); setWithdrawSearch(""); }}
-                  className="flex-1 flex items-center justify-center bg-white/10 text-white font-semibold text-[13px] rounded-lg py-2.5"
+                  className="flex-1 flex items-center justify-center bg-white/10 text-white font-semibold text-[13px] rounded-2xl py-2.5"
                 >
                   Вывести
                 </button>
@@ -399,7 +399,7 @@ const Index = () => {
 
           {profileSections.map((section, sIdx) => (
             <div key={sIdx} className="px-4 pb-2">
-              <div className="bg-white/5 border border-[#4ade80]/20 rounded-xl overflow-hidden">
+              <div className="bg-white/5 border border-[#4ade80]/20 rounded-2xl overflow-hidden">
                 {section.items.map((item, iIdx) => (
                   <div key={item.label}>
                     <button
@@ -411,7 +411,7 @@ const Index = () => {
                         if (item.label === "Поддержка 24/7") { window.open("https://t.me/Jaguar_helpi_bot", "_blank"); }
                       }}
                     >
-                      <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center relative shrink-0">
                         <Icon
                           name={item.icon}
                           fallback={item.fallback || item.icon}
@@ -764,14 +764,14 @@ const Index = () => {
 
           <div className="px-5 pb-3">
             <h1 className="text-[22px] font-bold text-white mb-4">История платежей</h1>
-            <div className="flex bg-white/[0.05] rounded-xl p-1 gap-1">
+            <div className="flex bg-white/[0.05] rounded-2xl p-1 gap-1">
               {(["all", "deposits", "withdrawals"] as const).map((tab) => {
                 const labels = { all: "Все", deposits: "Депозиты", withdrawals: "Выводы" };
                 return (
                   <button
                     key={tab}
                     onClick={() => { setHistoryTab(tab); fetchPayments(tab === "withdrawals" ? "withdrawals" : tab === "deposits" ? "deposits" : "all"); }}
-                    className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-colors ${
+                    className={`flex-1 py-2 rounded-xl text-[13px] font-semibold transition-colors ${
                       historyTab === tab
                         ? "bg-[#4ade80] text-black"
                         : "text-white/50"
@@ -812,7 +812,7 @@ const Index = () => {
                   const activeBg = isRejected ? "bg-red-400/15" : isWithdrawal ? "bg-red-400/15" : "bg-[#4ade80]/15";
                   const statusLabel = isRejected ? "Отклонено" : isPaid ? (isWithdrawal ? "Выведено" : "Оплачен") : "Ожидание";
                   return (
-                    <div key={p.id} className="flex items-center justify-between bg-white/[0.05] rounded-xl px-4 py-3">
+                    <div key={p.id} className="flex items-center justify-between bg-white/[0.05] rounded-2xl px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-full flex items-center justify-center ${(isPaid || isRejected) ? activeBg : "bg-white/10"}`}>
                           <Icon name={isRejected ? "X" : iconName} size={18} className={(isPaid || isRejected) ? activeColor : "text-white/40"} />
@@ -882,7 +882,7 @@ const Index = () => {
                   placeholder="Введите код ваучера"
                   value={voucherCode}
                   onChange={(e) => { setVoucherCode(e.target.value.toUpperCase()); setVoucherError(""); }}
-                  className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 text-white font-mono text-[16px] tracking-widest placeholder:text-white/20 placeholder:font-sans placeholder:tracking-normal focus:outline-none focus:border-[#4ade80]/30 transition-colors mb-3"
+                  className="w-full bg-white/[0.05] border border-white/10 rounded-2xl px-4 py-3.5 text-white font-mono text-[16px] tracking-widest placeholder:text-white/20 placeholder:font-sans placeholder:tracking-normal focus:outline-none focus:border-[#4ade80]/30 transition-colors mb-3"
                 />
                 {voucherError && (
                   <div className="text-red-400 text-[13px] mb-3">{voucherError}</div>
@@ -905,7 +905,7 @@ const Index = () => {
                     } catch { setVoucherError("Ошибка соединения"); }
                     setVoucherLoading(false);
                   }}
-                  className="w-full bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#3ecb6e] transition-colors disabled:opacity-40"
+                  className="w-full bg-[#4ade80] text-black font-bold text-[15px] rounded-2xl py-3.5 active:bg-[#3ecb6e] transition-colors disabled:opacity-40"
                 >
                   {voucherLoading ? "Активируем..." : "Активировать"}
                 </button>
@@ -1009,7 +1009,7 @@ const Index = () => {
                   <h2 className="text-white font-bold text-[20px]">Криптовалюта</h2>
                 </div>
 
-                <div className="flex items-center bg-white/5 border border-white/10 rounded-xl px-3 gap-2 mb-4">
+                <div className="flex items-center bg-white/5 border border-white/10 rounded-2xl px-3 gap-2 mb-4">
                   <Icon name="Search" size={16} className="text-white/30" />
                   <input
                     type="text"
@@ -1076,10 +1076,10 @@ const Index = () => {
                   value={withdrawAddress}
                   onChange={(e) => setWithdrawAddress(e.target.value)}
                   placeholder="Адрес получателя USDT"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[14px] outline-none mb-3 placeholder:text-white/30"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-[14px] outline-none mb-3 placeholder:text-white/30"
                 />
 
-                <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 mb-1">
+                <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 mb-1">
                   <span className="text-white/40 text-[11px]">Сумма</span>
                   <div className="flex items-center">
                     <input
@@ -1140,7 +1140,7 @@ const Index = () => {
                       } catch { setWithdrawError("Ошибка соединения"); }
                       setWithdrawLoading(false);
                     }}
-                    className="w-full bg-[#3b82f6] text-white font-bold text-[15px] rounded-xl py-3.5 active:bg-[#2563eb] transition-colors disabled:opacity-50"
+                    className="w-full bg-[#3b82f6] text-white font-bold text-[15px] rounded-2xl py-3.5 active:bg-[#2563eb] transition-colors disabled:opacity-50"
                   >
                     {withdrawLoading ? "Отправка..." : "Вывести"}
                   </button>
@@ -1521,7 +1521,7 @@ const Index = () => {
                         </div>
 
                         <button
-                          className="w-full py-2.5 rounded-xl font-bold text-[13px] transition-all active:scale-[0.97]"
+                          className="w-full py-2.5 rounded-2xl font-bold text-[13px] transition-all active:scale-[0.97]"
                           style={{
                             background: c.rarity === "legendary"
                               ? `linear-gradient(135deg, #fbbf24, #f97316)`
@@ -1555,7 +1555,7 @@ const Index = () => {
               className="flex flex-col items-center gap-1.5 min-w-0 flex-1"
             >
               <div
-                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
+                className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-colors ${
                   active === index ? "bg-white text-black" : "bg-white/5 text-white/30"
                 }`}
               >

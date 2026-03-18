@@ -320,7 +320,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
 
         {phase !== "playing" && (
           <>
-            <div className="bg-black/30 border border-[#4ade80]/10 rounded-xl px-2.5 py-2 flex items-center gap-2">
+            <div className="bg-black/30 border border-[#4ade80]/10 rounded-2xl px-2.5 py-2 flex items-center gap-2">
               <button
                 onClick={() => setBetInput(Math.max(minBet, betVal - (cur === "stars" ? 10 : 0.5)).toFixed(2))}
                 className="w-8 h-8 rounded-lg bg-[#4ade80]/10 flex items-center justify-center text-[#4ade80] active:bg-[#4ade80]/20 text-base font-bold shrink-0"
@@ -362,7 +362,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
             <button
               onClick={start}
               disabled={betVal < minBet || betVal > bal}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-[#0a0e14] font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-25"
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-[#0a0e14] font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-25"
             >
               {betVal > bal ? "Недостаточно средств" : betVal < minBet ? `Мин. ${minBet} ${sym}` : "Играть"}
             </button>
@@ -373,7 +373,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
           <button
             onClick={cashOut}
             disabled={safe === 0}
-            className={`w-full py-3 rounded-xl font-bold text-sm active:scale-[0.98] transition-transform
+            className={`w-full py-3 rounded-2xl font-bold text-sm active:scale-[0.98] transition-transform
               ${safe > 0 ? "bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-[#0a0e14]" : "bg-black/30 border border-[#4ade80]/15 text-[#4ade80]/50"}`}
           >
             {safe > 0 ? `Забрать ${winAmount.toFixed(2)} ${sym} (x${mult.toFixed(1)})` : "Выберите ячейку..."}

@@ -73,7 +73,7 @@ function BetPanel({
           )}
           <span className={`text-xs font-medium ${autoCashoutOn ? "text-white" : "text-white/60"}`}>Автовывод</span>
         </label>
-        <div className="ml-auto flex items-center bg-[#1a3a1a] rounded-lg px-2.5 py-1.5">
+        <div className="ml-auto flex items-center bg-[#1a3a1a] rounded-xl px-2.5 py-1.5">
           <span className="text-white/40 text-xs mr-1">x</span>
           <input
             type="text"
@@ -86,7 +86,7 @@ function BetPanel({
 
       <div className="flex gap-2">
         <div className="flex-1 min-w-0 space-y-2">
-          <div className={`flex items-center bg-[#080e08] border border-[#1a3a1a] rounded-xl overflow-hidden h-12 ${blocked ? "opacity-40 pointer-events-none" : ""}`}>
+          <div className={`flex items-center bg-[#080e08] border border-[#1a3a1a] rounded-2xl overflow-hidden h-12 ${blocked ? "opacity-40 pointer-events-none" : ""}`}>
             <button
               onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))}
               className="w-12 h-full flex items-center justify-center text-white/50 active:text-white transition border-r border-[#1a3a1a]"
@@ -112,7 +112,7 @@ function BetPanel({
               <button
                 key={q}
                 onClick={() => setBetInput(String(q))}
-                className="flex-1 py-1.5 rounded-lg bg-[#1a3a1a] text-white/60 text-xs font-bold active:bg-[#2a4a2a] transition"
+                className="flex-1 py-1.5 rounded-xl bg-[#1a3a1a] text-white/60 text-xs font-bold active:bg-[#2a4a2a] transition"
               >
                 {q >= 1000 ? `${q / 1000}K` : q}
               </button>
@@ -123,30 +123,30 @@ function BetPanel({
           <button
             onClick={cashOut}
             disabled={cashoutLocked}
-            className={`w-[120px] shrink-0 rounded-xl bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-lg active:scale-[0.97] transition-all flex flex-col items-center justify-center shadow-lg shadow-green-500/20 ${cashoutLocked ? "opacity-50 pointer-events-none" : ""}`}
+            className={`w-[120px] shrink-0 rounded-2xl bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-lg active:scale-[0.97] transition-all flex flex-col items-center justify-center shadow-lg shadow-green-500/20 ${cashoutLocked ? "opacity-50 pointer-events-none" : ""}`}
           >
             <span>ЗАБРАТЬ</span>
             <span className="text-sm font-bold opacity-80">{currentWin.toFixed(2)} {sym}</span>
           </button>
         ) : isFlying && hasBet && isCashedOut ? (
-          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#0a1f0a] border border-green-500/30 text-green-400 font-extrabold text-sm flex flex-col items-center justify-center">
+          <button disabled className="w-[120px] shrink-0 rounded-2xl bg-[#0a1f0a] border border-green-500/30 text-green-400 font-extrabold text-sm flex flex-col items-center justify-center">
             <span>ЗАБРАНО</span>
             <span className="text-xs font-bold opacity-80">+{currentWin.toFixed(2)} {sym}</span>
           </button>
         ) : blocked ? (
-          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#1a3a1a] text-white/30 font-bold text-sm">
+          <button disabled className="w-[120px] shrink-0 rounded-2xl bg-[#1a3a1a] text-white/30 font-bold text-sm">
             ЖДИТЕ...
           </button>
         ) : !hasBet ? (
           <button
             onClick={placeBet}
             disabled={betVal < minBet || betVal > bal}
-            className="w-[120px] shrink-0 rounded-xl bg-gradient-to-r from-[#16a34a] to-[#22c55e] text-white font-extrabold text-lg active:scale-[0.97] transition-transform disabled:opacity-40 shadow-lg shadow-green-500/20"
+            className="w-[120px] shrink-0 rounded-2xl bg-gradient-to-r from-[#16a34a] to-[#22c55e] text-white font-extrabold text-lg active:scale-[0.97] transition-transform disabled:opacity-40 shadow-lg shadow-green-500/20"
           >
             СТАВКА
           </button>
         ) : (
-          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#1a3a1a] text-white/30 font-bold text-sm">
+          <button disabled className="w-[120px] shrink-0 rounded-2xl bg-[#1a3a1a] text-white/30 font-bold text-sm">
             ЖДИТЕ...
           </button>
         )}

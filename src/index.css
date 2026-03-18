@@ -103,10 +103,98 @@
     touch-action: manipulation;
     -webkit-text-size-adjust: 100%;
     overscroll-behavior: none;
+    line-height: 1.5;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* Все текстовые элементы не вылезают за блок */
+  * {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  /* Текст всегда обрезается внутри контейнера */
+  p,
+  span,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  label,
+  div {
+    max-width: 100%;
+  }
+
+  /* Кнопки: текст не вылезает, пробелы переносятся */
+  button {
+    white-space: normal;
+    word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Однострочный текст в кнопках — обрезать с ... */
+  button.truncate,
+  .truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Инпуты не масштабируются на iOS */
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
   }
 
   img {
     image-rendering: -webkit-optimize-contrast;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* SVG не выходит за контейнер */
+  svg {
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  /* Flex-дети всегда имеют min-width:0 — иначе текст вылезает */
+  .flex > * {
+    min-width: 0;
+  }
+
+  /* Табличные числа — чтобы не прыгали при обновлении */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Текст в nav не переносится, обрезается */
+  nav span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+  }
+
+  /* Длинные числа и адреса в блоках */
+  .break-all {
+    word-break: break-all;
+  }
+
+  /* Заголовки не вылезают */
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
   }
 }
 

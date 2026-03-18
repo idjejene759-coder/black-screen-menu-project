@@ -286,9 +286,9 @@ const Index = () => {
               <div className="w-12 h-12 rounded-full border border-[#4ade80]/30 bg-white/5 flex items-center justify-center">
                 <Icon name="User" size={24} className="text-[#4ade80]/70" />
               </div>
-              <div className="flex flex-col items-start">
-                <span className="text-white font-bold text-base">{currentUser?.name || currentUser?.email || "Игрок"}</span>
-                <span className="text-white/40 text-xs">ID {currentUser?.display_id || currentUser?.id || "—"}</span>
+              <div className="flex flex-col items-start min-w-0 flex-1">
+                <span className="text-white font-bold text-base truncate w-full">{currentUser?.name || currentUser?.email || "Игрок"}</span>
+                <span className="text-white/40 text-xs truncate w-full">ID {currentUser?.display_id || currentUser?.id || "—"}</span>
               </div>
               <Icon name="ChevronRight" size={18} className="text-white/30 ml-auto" />
             </button>
@@ -813,17 +813,17 @@ const Index = () => {
                   const statusLabel = isRejected ? "Отклонено" : isPaid ? (isWithdrawal ? "Выведено" : "Оплачен") : "Ожидание";
                   return (
                     <div key={p.id} className="flex items-center justify-between bg-white/[0.05] rounded-2xl px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${(isPaid || isRejected) ? activeBg : "bg-white/10"}`}>
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${(isPaid || isRejected) ? activeBg : "bg-white/10"}`}>
                           <Icon name={isRejected ? "X" : iconName} size={18} className={(isPaid || isRejected) ? activeColor : "text-white/40"} />
                         </div>
-                        <div>
-                          <div className="text-white text-[14px] font-semibold">{label}</div>
-                          <div className="text-white/40 text-[12px]">{dateStr}</div>
+                        <div className="min-w-0">
+                          <div className="text-white text-[14px] font-semibold truncate">{label}</div>
+                          <div className="text-white/40 text-[12px] truncate">{dateStr}</div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className={`text-[15px] font-bold ${(isPaid || isRejected) ? activeColor : "text-white/50"}`}>{amountPrefix}{p.amount} USDT</div>
+                      <div className="text-right shrink-0 ml-2">
+                        <div className={`text-[15px] font-bold tabular-nums ${(isPaid || isRejected) ? activeColor : "text-white/50"}`}>{amountPrefix}{p.amount} USDT</div>
                         <div className={`text-[11px] font-medium ${isRejected ? "text-red-400/70" : isPaid ? `${activeColor}/70` : "text-yellow-400/70"}`}>
                           {statusLabel}
                         </div>

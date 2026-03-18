@@ -18,8 +18,8 @@ const SEGMENT_COLORS = [
 ];
 
 const SEGMENT_LABELS = [
-  "?", "?", "?", "?", "?", "?",
-  "?", "?", "?", "?", "?", "?",
+  "", "", "", "", "", "",
+  "", "", "", "", "", "",
 ];
 
 const SEGMENT_ANGLE = 360 / SEGMENTS;
@@ -37,16 +37,12 @@ function segmentPath(cx: number, cy: number, r: number, startAngle: number, endA
 }
 
 export default function FortuneWheel() {
-  const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const rotationRef = useRef(0);
   const animRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number>(0);
-  const startRotRef = useRef<number>(0);
-  const targetRotRef = useRef<number>(0);
-  const durationRef = useRef<number>(4500);
 
-  // SVG viewBox константы
   const cx = 160;
   const cy = 160;
   const outerR = 138;
@@ -64,25 +60,27 @@ export default function FortuneWheel() {
 
     const extraSpins = (5 + Math.floor(Math.random() * 5)) * 360;
     const randomAngle = Math.floor(Math.random() * 360);
-    const target = rotation + extraSpins + randomAngle;
-
-    startTimeRef.current = performance.now();
-    startRotRef.current = rotation;
-    targetRotRef.current = target;
-    durationRef.current = 4000 + Math.random() * 1500;
+    const startRot = rotationRef.current;
+    const targetRot = startRot + extraSpins + randomAngle;
+    const duration = 4000 + Math.random() * 1500;
+    const startTime = performance.now();
 
     function animate(now: number) {
-      const elapsed = now - startTimeRef.current;
-      const progress = Math.min(elapsed / durationRef.current, 1);
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
       const eased = easeOut(progress);
-      const current = startRotRef.current + (targetRotRef.current - startRotRef.current) * eased;
-      setRotation(current);
+      const current = startRot + (targetRot - startRot) * eased;
+
+      // Напрямую меняем transform без setState — нет перерисовки React
+      if (svgRef.current) {
+        svgRef.current.style.transform = `rotate(${current}deg)`;
+      }
 
       if (progress < 1) {
         animRef.current = requestAnimationFrame(animate);
       } else {
-        setRotation(targetRotRef.current);
-        const finalAngle = ((360 - (targetRotRef.current % 360)) + 90) % 360;
+        rotationRef.current = targetRot;
+        const finalAngle = ((360 - (targetRot % 360)) + 90) % 360;
         const segIndex = Math.floor(finalAngle / SEGMENT_ANGLE) % SEGMENTS;
         setResult(segIndex);
         setSpinning(false);
@@ -107,15 +105,15 @@ export default function FortuneWheel() {
     <div className="flex flex-col items-center gap-4 py-4 px-3">
       <h2 className="text-white text-xl font-bold tracking-wide">Колесо Фортуны</h2>
 
-      {/* Контейнер колеса — адаптивный через max-width */}
       <div className="relative flex items-center justify-center w-full" style={{ maxWidth: 320 }}>
         <div className="w-full" style={{ paddingTop: "100%", position: "relative" }}>
+
           {/* Glow */}
           <div
-            className="absolute inset-0 rounded-full"
+            className="absolute inset-0 rounded-full pointer-events-none"
             style={{
-              background: "radial-gradient(circle, rgba(255,200,50,0.2) 0%, transparent 70%)",
-              filter: "blur(6px)",
+              background: "radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)",
+              filter: "blur(10px)",
             }}
           />
 
@@ -131,14 +129,15 @@ export default function FortuneWheel() {
                   <stop offset="100%" stopColor="#7c4dff" />
                 </linearGradient>
               </defs>
-              <polygon points="17,44 2,8 32,8" fill="url(#ptr)" stroke="#ffd700" strokeWidth="1.5" />
-              <ellipse cx="17" cy="8" rx="12" ry="10" fill="url(#ptr)" stroke="#ffd700" strokeWidth="1.5" />
+              <polygon points="17,44 2,8 32,8" fill="url(#ptr)" stroke="#22c55e" strokeWidth="1.5" />
+              <ellipse cx="17" cy="8" rx="12" ry="10" fill="url(#ptr)" stroke="#22c55e" strokeWidth="1.5" />
               <ellipse cx="17" cy="8" rx="6" ry="5" fill="#ede7f6" opacity="0.6" />
             </svg>
           </div>
 
-          {/* Wheel SVG — занимает 100% родителя */}
+          {/* Wheel SVG */}
           <svg
+            ref={svgRef}
             viewBox="0 0 320 320"
             style={{
               position: "absolute",
@@ -146,16 +145,16 @@ export default function FortuneWheel() {
               left: 0,
               width: "100%",
               height: "100%",
-              transform: `rotate(${rotation}deg)`,
-              transition: "none",
+              transformOrigin: "center center",
+              willChange: "transform",
             }}
           >
             <defs>
               <radialGradient id="rimGrad" cx="50%" cy="50%" r="50%">
-                <stop offset="70%" stopColor="#c8a800" />
-                <stop offset="85%" stopColor="#ffe066" />
-                <stop offset="95%" stopColor="#b8860b" />
-                <stop offset="100%" stopColor="#ffd700" />
+                <stop offset="0%" stopColor="#166534" />
+                <stop offset="50%" stopColor="#22c55e" />
+                <stop offset="80%" stopColor="#16a34a" />
+                <stop offset="100%" stopColor="#15803d" />
               </radialGradient>
               <radialGradient id="centerGem" cx="40%" cy="35%" r="60%">
                 <stop offset="0%" stopColor="#c3b1e1" />
@@ -163,28 +162,26 @@ export default function FortuneWheel() {
                 <stop offset="100%" stopColor="#311b92" />
               </radialGradient>
               <radialGradient id="innerRim" cx="50%" cy="50%" r="50%">
-                <stop offset="60%" stopColor="#b8860b" />
-                <stop offset="80%" stopColor="#ffd700" />
-                <stop offset="100%" stopColor="#c8a800" />
+                <stop offset="60%" stopColor="#166534" />
+                <stop offset="80%" stopColor="#22c55e" />
+                <stop offset="100%" stopColor="#15803d" />
               </radialGradient>
-              <filter id="segShadow" x="-5%" y="-5%" width="110%" height="110%">
-                <feDropShadow dx="0" dy="0" stdDeviation="1.5" floodColor="rgba(0,0,0,0.4)" />
-              </filter>
             </defs>
 
-            {/* Outer gold rim */}
-            <circle cx={cx} cy={cy} r={rimR + 8} fill="url(#rimGrad)" />
-            <circle cx={cx} cy={cy} r={rimR + 4} fill="#1a0a00" opacity="0.12" />
+            {/* Outer green rim */}
+            <circle cx={cx} cy={cy} r={rimR + 10} fill="url(#rimGrad)" />
+            {/* Inner rim border */}
+            <circle cx={cx} cy={cy} r={rimR + 1} fill="none" stroke="#4ade80" strokeWidth="1.5" opacity="0.6" />
 
-            {/* Rim dots */}
+            {/* Rim dots — зелёные */}
             {rimDots.map((pt, i) => (
               <circle
                 key={i}
                 cx={pt.x}
                 cy={pt.y}
                 r={i % 2 === 0 ? 4 : 2.8}
-                fill={i % 2 === 0 ? "#ffd700" : "#ffe066"}
-                stroke="#b8860b"
+                fill={i % 2 === 0 ? "#4ade80" : "#86efac"}
+                stroke="#166534"
                 strokeWidth="0.6"
               />
             ))}
@@ -195,7 +192,6 @@ export default function FortuneWheel() {
               const end = start + SEGMENT_ANGLE;
               const midAngle = start + SEGMENT_ANGLE / 2;
               const labelPt = polarToCartesian(cx, cy, outerR * 0.66, midAngle);
-              const iconPt = polarToCartesian(cx, cy, outerR * 0.87, midAngle);
               const textRot = midAngle - 90;
 
               return (
@@ -203,27 +199,24 @@ export default function FortuneWheel() {
                   <path
                     d={segmentPath(cx, cy, outerR, start, end)}
                     fill={color}
-                    stroke="#ffd700"
-                    strokeWidth="1.2"
-                    filter="url(#segShadow)"
+                    stroke="#22c55e"
+                    strokeWidth="1.5"
                   />
-                  <g transform={`translate(${labelPt.x}, ${labelPt.y}) rotate(${textRot})`}>
-                    <text
-                      x="0" y="0"
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                      fill="white"
-                      fontSize="12"
-                      fontWeight="bold"
-                      fontFamily="Arial, sans-serif"
-                    >
-                      {SEGMENT_LABELS[i]}
-                    </text>
-                  </g>
-                  <g transform={`translate(${iconPt.x}, ${iconPt.y}) rotate(${textRot})`}>
-                    <circle cx="0" cy="0" r="6" fill="#ffd700" opacity="0.85" />
-                    <text x="0" y="0" textAnchor="middle" dominantBaseline="central" fontSize="7" fill="#a0620a" fontWeight="bold">$</text>
-                  </g>
+                  {SEGMENT_LABELS[i] ? (
+                    <g transform={`translate(${labelPt.x}, ${labelPt.y}) rotate(${textRot})`}>
+                      <text
+                        x="0" y="0"
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fill="white"
+                        fontSize="12"
+                        fontWeight="bold"
+                        fontFamily="Arial, sans-serif"
+                      >
+                        {SEGMENT_LABELS[i]}
+                      </text>
+                    </g>
+                  ) : null}
                 </g>
               );
             })}
@@ -234,16 +227,16 @@ export default function FortuneWheel() {
               const inner = polarToCartesian(cx, cy, innerR + 2, angle);
               const outer2 = polarToCartesian(cx, cy, outerR, angle);
               return (
-                <line key={i} x1={inner.x} y1={inner.y} x2={outer2.x} y2={outer2.y} stroke="#ffd700" strokeWidth="1.2" opacity="0.6" />
+                <line key={i} x1={inner.x} y1={inner.y} x2={outer2.x} y2={outer2.y} stroke="#22c55e" strokeWidth="1.2" opacity="0.7" />
               );
             })}
 
             {/* Inner gold ring */}
             <circle cx={cx} cy={cy} r={innerR + 11} fill="url(#innerRim)" />
-            <circle cx={cx} cy={cy} r={innerR + 8} fill="#1a0533" />
+            <circle cx={cx} cy={cy} r={innerR + 8} fill="#0f0a1e" />
 
             {/* Center gem */}
-            <circle cx={cx} cy={cy} r={innerR} fill="url(#centerGem)" stroke="#ffd700" strokeWidth="2.5" />
+            <circle cx={cx} cy={cy} r={innerR} fill="url(#centerGem)" stroke="#22c55e" strokeWidth="2.5" />
             <polygon points={`${cx},${cy - 24} ${cx + 20},${cy + 12} ${cx - 20},${cy + 12}`} fill="rgba(255,255,255,0.08)" />
             <ellipse cx={cx - 8} cy={cy - 9} rx="8" ry="5" fill="rgba(255,255,255,0.18)" transform={`rotate(-30,${cx - 8},${cy - 9})`} />
           </svg>
@@ -263,7 +256,7 @@ export default function FortuneWheel() {
                 ? "radial-gradient(circle at 35% 35%, #9b59b6, #311b92)"
                 : "radial-gradient(circle at 35% 35%, #c3b1e1, #7c4dff, #311b92)",
               boxShadow: "0 0 16px rgba(124,77,255,0.7), 0 0 30px rgba(124,77,255,0.3)",
-              border: "2.5px solid #ffd700",
+              border: "2.5px solid #22c55e",
             }}
           >
             {spinning ? (
@@ -282,12 +275,12 @@ export default function FortuneWheel() {
         <div
           className="px-6 py-2.5 rounded-2xl text-white text-lg font-bold text-center"
           style={{
-            background: `linear-gradient(135deg, ${SEGMENT_COLORS[result]}, #1a0533)`,
+            background: `linear-gradient(135deg, ${SEGMENT_COLORS[result]}, #0f0a1e)`,
             boxShadow: `0 0 16px ${SEGMENT_COLORS[result]}88`,
-            border: "2px solid #ffd700",
+            border: "2px solid #22c55e",
           }}
         >
-          Результат: {SEGMENT_LABELS[result]}
+          {SEGMENT_LABELS[result] || "Результат получен!"}
         </div>
       )}
 

@@ -128,7 +128,7 @@ export default function FortuneWheel({ userId, onWin }: Props) {
         animRef.current = requestAnimationFrame(animate);
       } else {
         rotationRef.current = targetRot;
-        const finalAngle = ((360 - (targetRot % 360)) + 90) % 360;
+        const finalAngle = (360 - (targetRot % 360) + 360) % 360;
         const segIndex = Math.floor(finalAngle / SEGMENT_ANGLE) % SEGMENTS;
         setResult(segIndex);
         setSpinning(false);

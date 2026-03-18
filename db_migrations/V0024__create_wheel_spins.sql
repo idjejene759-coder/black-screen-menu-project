@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS wheel_spins (
+  user_id TEXT PRIMARY KEY,
+  last_free_spin TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

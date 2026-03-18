@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
 const GAME_BALANCE_URL = "https://functions.poehali.dev/64bf4a3e-c7fb-44f5-a1a9-b70cae660400";
+const WHEEL_SPIN_URL = "https://functions.poehali.dev/bb728db8-6b3f-4150-ad06-b922870c3644";
 
 const SEGMENTS = 12;
 const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 часа
@@ -78,31 +79,36 @@ export default function FortuneWheel({ userId, userBalance, starsBalance, curren
 
   const cx = 160, cy = 160, outerR = 138, innerR = 38, rimR = 144;
 
-  const lsKey = `wheel_last_spin_${userId}`;
+  // Загрузка таймера с сервера
+  const fetchTimer = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const res = await fetch(`${WHEEL_SPIN_URL}?user_id=${encodeURIComponent(userId)}`);
+      const data = await res.json();
+      const secsLeft = data.seconds_left || 0;
+      const msLeft = secsLeft * 1000;
+      setCountdown(msLeft);
+      setFreeUsed(secsLeft > 0);
+    } catch {/* ignore */}
+  }, [userId]);
 
-  const getTimeLeft = useCallback(() => {
-    const last = localStorage.getItem(lsKey);
-    if (!last) return 0;
-    const diff = COOLDOWN_MS - (Date.now() - Number(last));
-    return diff > 0 ? diff : 0;
-  }, [lsKey]);
-
-  // Инициализация таймера
+  // Инициализация + тикер каждую секунду
   useEffect(() => {
-    const left = getTimeLeft();
-    setFreeUsed(left > 0);
-    setCountdown(left);
+    if (!userId) return;
+    fetchTimer();
 
     timerRef.current = setInterval(() => {
-      const left = getTimeLeft();
-      setCountdown(left);
-      if (left <= 0) setFreeUsed(false);
+      setCountdown((prev) => {
+        const next = Math.max(0, prev - 1000);
+        if (next <= 0) setFreeUsed(false);
+        return next;
+      });
     }, 1000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [getTimeLeft]);
+  }, [userId, fetchTimer]);
 
   function easeInOut(t: number) {
     if (t < 0.3) return (t / 0.3) ** 3 * 0.3;
@@ -186,9 +192,23 @@ export default function FortuneWheel({ userId, userBalance, starsBalance, curren
     animRef.current = requestAnimationFrame(animate);
   }
 
-  function spinFree() {
+  async function spinFree() {
     if (spinning || freeUsed) return;
-    localStorage.setItem(lsKey, String(Date.now()));
+    // Фиксируем кручение на сервере
+    try {
+      const res = await fetch(WHEEL_SPIN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      if (res.status === 429) {
+        // Cooldown ещё не прошёл — обновляем таймер
+        const data = await res.json();
+        setCountdown((data.seconds_left || 0) * 1000);
+        setFreeUsed(true);
+        return;
+      }
+    } catch {/* ignore */}
     setFreeUsed(true);
     setCountdown(COOLDOWN_MS);
     doSpin();

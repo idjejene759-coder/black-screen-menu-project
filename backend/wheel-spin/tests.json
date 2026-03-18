@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "GET timer for unknown user",
+      "method": "GET",
+      "path": "/?user_id=test_wheel_user_999",
+      "expectedStatus": 200,
+      "expectedBody": {"can_spin": true, "seconds_left": 0},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

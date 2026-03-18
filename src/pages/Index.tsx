@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import JaguarGems from "@/components/JaguarGems";
 import CrashX from "@/components/CrashX";
 import CaseRoulette from "@/components/CaseRoulette";
+import FortuneWheel from "@/components/FortuneWheel";
 
 const copyId = (id: string | number) => {
   navigator.clipboard.writeText(String(id));
@@ -1441,7 +1442,8 @@ const Index = () => {
         )}
 
         {active === 3 && (
-          <div className="flex flex-col items-center justify-center flex-1 py-20 gap-3 text-white/20">
+          <div className="flex flex-col flex-1 overflow-y-auto">
+            <FortuneWheel />
           </div>
         )}
 

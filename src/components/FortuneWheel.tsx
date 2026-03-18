@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 
+const GAME_BALANCE_URL = "https://functions.poehali.dev/64bf4a3e-c7fb-44f5-a1a9-b70cae660400";
+
 const SEGMENTS = 12;
 
 const SEGMENT_COLORS = [
@@ -17,12 +19,37 @@ const SEGMENT_COLORS = [
   "#c0392b",
 ];
 
+// Яркие версии цветов для теней
+const SEGMENT_GLOWS = [
+  "#ff6b6b",
+  "#ffaa44",
+  "#ffcc44",
+  "#ffe844",
+  "#55ff88",
+  "#44ffdd",
+  "#44ff88",
+  "#44aaff",
+  "#44aaff",
+  "#cc66ff",
+  "#cc66ff",
+  "#ff5555",
+];
+
 const SEGMENT_LABELS = [
   "1$", "15$", "50✦", "30$", "50$", "100✦",
   "70$", "200✦", "350$", "500✦", "1000$", "2000✦",
 ];
 
+// Суммы для начисления (✦ = Stars, $ = USDT)
+const SEGMENT_VALUES = [1, 15, 50, 30, 50, 100, 70, 200, 350, 500, 1000, 2000];
+const SEGMENT_IS_STARS = [false, false, true, false, false, true, false, true, false, true, false, true];
+
 const SEGMENT_ANGLE = 360 / SEGMENTS;
+
+interface Props {
+  userId: string;
+  onWin: () => void;
+}
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -36,9 +63,10 @@ function segmentPath(cx: number, cy: number, r: number, startAngle: number, endA
   return `M ${cx} ${cy} L ${s.x} ${s.y} A ${r} ${r} 0 ${largeArc} 1 ${e.x} ${e.y} Z`;
 }
 
-export default function FortuneWheel() {
+export default function FortuneWheel({ userId, onWin }: Props) {
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<number | null>(null);
+  const [crediting, setCrediting] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const rotationRef = useRef(0);
   const animRef = useRef<number | null>(null);
@@ -53,6 +81,27 @@ export default function FortuneWheel() {
     return 1 - Math.pow(1 - t, 4);
   }
 
+  async function creditWin(segIndex: number) {
+    if (!userId) return;
+    setCrediting(true);
+    const amount = SEGMENT_VALUES[segIndex];
+    const isStars = SEGMENT_IS_STARS[segIndex];
+    try {
+      await fetch(GAME_BALANCE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          action: "win",
+          amount,
+          currency: isStars ? "stars" : "usdt",
+        }),
+      });
+      onWin();
+    } catch {/* ignore */}
+    setCrediting(false);
+  }
+
   function spin() {
     if (spinning) return;
     setResult(null);
@@ -62,7 +111,7 @@ export default function FortuneWheel() {
     const randomAngle = Math.floor(Math.random() * 360);
     const startRot = rotationRef.current;
     const targetRot = startRot + extraSpins + randomAngle;
-    const duration = 4000 + Math.random() * 1500;
+    const duration = 4500 + Math.random() * 1000;
     const startTime = performance.now();
 
     function animate(now: number) {
@@ -71,7 +120,6 @@ export default function FortuneWheel() {
       const eased = easeOut(progress);
       const current = startRot + (targetRot - startRot) * eased;
 
-      // Напрямую меняем transform без setState — нет перерисовки React
       if (svgRef.current) {
         svgRef.current.style.transform = `rotate(${current}deg)`;
       }
@@ -84,6 +132,7 @@ export default function FortuneWheel() {
         const segIndex = Math.floor(finalAngle / SEGMENT_ANGLE) % SEGMENTS;
         setResult(segIndex);
         setSpinning(false);
+        creditWin(segIndex);
       }
     }
 
@@ -101,6 +150,9 @@ export default function FortuneWheel() {
     return polarToCartesian(cx, cy, rimR, angle);
   });
 
+  const winColor = result !== null ? SEGMENT_COLORS[result] : "#22c55e";
+  const winGlow = result !== null ? SEGMENT_GLOWS[result] : "#4ade80";
+
   return (
     <div className="flex flex-col items-center gap-4 py-4 px-3">
       <h2 className="text-white text-xl font-bold tracking-wide">Колесо Фортуны</h2>
@@ -108,20 +160,17 @@ export default function FortuneWheel() {
       <div className="relative flex items-center justify-center w-full" style={{ maxWidth: 320 }}>
         <div className="w-full" style={{ paddingTop: "100%", position: "relative" }}>
 
-          {/* Glow */}
+          {/* Glow background */}
           <div
             className="absolute inset-0 rounded-full pointer-events-none"
             style={{
-              background: "radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)",
-              filter: "blur(10px)",
+              background: "radial-gradient(circle, rgba(34,197,94,0.18) 0%, transparent 70%)",
+              filter: "blur(12px)",
             }}
           />
 
           {/* Pointer */}
-          <div
-            className="absolute left-1/2 z-20"
-            style={{ top: -2, transform: "translateX(-50%)" }}
-          >
+          <div className="absolute left-1/2 z-20" style={{ top: -2, transform: "translateX(-50%)" }}>
             <svg width="26" height="34" viewBox="0 0 34 44">
               <defs>
                 <linearGradient id="ptr" x1="0" y1="0" x2="0" y2="1">
@@ -141,10 +190,8 @@ export default function FortuneWheel() {
             viewBox="0 0 320 320"
             style={{
               position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
+              top: 0, left: 0,
+              width: "100%", height: "100%",
               transformOrigin: "center center",
               willChange: "transform",
             }}
@@ -166,28 +213,34 @@ export default function FortuneWheel() {
                 <stop offset="80%" stopColor="#22c55e" />
                 <stop offset="100%" stopColor="#15803d" />
               </radialGradient>
+              {SEGMENT_COLORS.map((color, i) => (
+                <radialGradient key={i} id={`seg${i}`} cx="50%" cy="30%" r="80%">
+                  <stop offset="0%" stopColor={SEGMENT_GLOWS[i]} />
+                  <stop offset="100%" stopColor={color} />
+                </radialGradient>
+              ))}
+              <filter id="segGlow" x="-10%" y="-10%" width="120%" height="120%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
             </defs>
 
             {/* Outer green rim */}
-            <circle cx={cx} cy={cy} r={rimR + 10} fill="url(#rimGrad)" />
-            {/* Inner rim border */}
+            <circle cx={cx} cy={cy} r={rimR + 10} fill="url(#rimGrad)"
+              style={{ filter: "drop-shadow(0 0 8px rgba(34,197,94,0.6))" }} />
             <circle cx={cx} cy={cy} r={rimR + 1} fill="none" stroke="#4ade80" strokeWidth="1.5" opacity="0.6" />
 
-            {/* Rim dots — зелёные */}
+            {/* Rim dots */}
             {rimDots.map((pt, i) => (
-              <circle
-                key={i}
-                cx={pt.x}
-                cy={pt.y}
+              <circle key={i} cx={pt.x} cy={pt.y}
                 r={i % 2 === 0 ? 4 : 2.8}
                 fill={i % 2 === 0 ? "#4ade80" : "#86efac"}
-                stroke="#166534"
-                strokeWidth="0.6"
+                stroke="#166534" strokeWidth="0.6"
               />
             ))}
 
-            {/* Segments */}
-            {SEGMENT_COLORS.map((color, i) => {
+            {/* Segments с яркими градиентами и тенями */}
+            {SEGMENT_COLORS.map((_, i) => {
               const start = i * SEGMENT_ANGLE;
               const end = start + SEGMENT_ANGLE;
               const midAngle = start + SEGMENT_ANGLE / 2;
@@ -198,25 +251,25 @@ export default function FortuneWheel() {
                 <g key={i}>
                   <path
                     d={segmentPath(cx, cy, outerR, start, end)}
-                    fill={color}
+                    fill={`url(#seg${i})`}
                     stroke="#22c55e"
                     strokeWidth="1.5"
+                    style={{ filter: `drop-shadow(0 0 6px ${SEGMENT_GLOWS[i]}88)` }}
                   />
-                  {SEGMENT_LABELS[i] ? (
-                    <g transform={`translate(${labelPt.x}, ${labelPt.y}) rotate(${textRot})`}>
-                      <text
-                        x="0" y="0"
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                        fill="white"
-                        fontSize="12"
-                        fontWeight="bold"
-                        fontFamily="Arial, sans-serif"
-                      >
-                        {SEGMENT_LABELS[i]}
-                      </text>
-                    </g>
-                  ) : null}
+                  <g transform={`translate(${labelPt.x}, ${labelPt.y}) rotate(${textRot})`}>
+                    <text
+                      x="0" y="1"
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fill="white"
+                      fontSize="11"
+                      fontWeight="bold"
+                      fontFamily="Arial, sans-serif"
+                      style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.9))" }}
+                    >
+                      {SEGMENT_LABELS[i]}
+                    </text>
+                  </g>
                 </g>
               );
             })}
@@ -227,35 +280,36 @@ export default function FortuneWheel() {
               const inner = polarToCartesian(cx, cy, innerR + 2, angle);
               const outer2 = polarToCartesian(cx, cy, outerR, angle);
               return (
-                <line key={i} x1={inner.x} y1={inner.y} x2={outer2.x} y2={outer2.y} stroke="#22c55e" strokeWidth="1.2" opacity="0.7" />
+                <line key={i} x1={inner.x} y1={inner.y} x2={outer2.x} y2={outer2.y}
+                  stroke="#22c55e" strokeWidth="1.2" opacity="0.7" />
               );
             })}
 
-            {/* Inner gold ring */}
+            {/* Inner ring */}
             <circle cx={cx} cy={cy} r={innerR + 11} fill="url(#innerRim)" />
             <circle cx={cx} cy={cy} r={innerR + 8} fill="#0f0a1e" />
 
             {/* Center gem */}
-            <circle cx={cx} cy={cy} r={innerR} fill="url(#centerGem)" stroke="#22c55e" strokeWidth="2.5" />
+            <circle cx={cx} cy={cy} r={innerR} fill="url(#centerGem)" stroke="#22c55e" strokeWidth="2.5"
+              style={{ filter: "drop-shadow(0 0 10px rgba(124,77,255,0.8))" }} />
             <polygon points={`${cx},${cy - 24} ${cx + 20},${cy + 12} ${cx - 20},${cy + 12}`} fill="rgba(255,255,255,0.08)" />
-            <ellipse cx={cx - 8} cy={cy - 9} rx="8" ry="5" fill="rgba(255,255,255,0.18)" transform={`rotate(-30,${cx - 8},${cy - 9})`} />
+            <ellipse cx={cx - 8} cy={cy - 9} rx="8" ry="5" fill="rgba(255,255,255,0.2)"
+              transform={`rotate(-30,${cx - 8},${cy - 9})`} />
           </svg>
 
-          {/* Play button — не вращается */}
+          {/* Play button */}
           <button
             onClick={spin}
-            disabled={spinning}
+            disabled={spinning || crediting}
             className="absolute z-10 flex items-center justify-center rounded-full transition-transform active:scale-95"
             style={{
-              width: 46,
-              height: 46,
-              top: "50%",
-              left: "50%",
+              width: 46, height: 46,
+              top: "50%", left: "50%",
               transform: "translate(-50%, -50%)",
               background: spinning
                 ? "radial-gradient(circle at 35% 35%, #9b59b6, #311b92)"
                 : "radial-gradient(circle at 35% 35%, #c3b1e1, #7c4dff, #311b92)",
-              boxShadow: "0 0 16px rgba(124,77,255,0.7), 0 0 30px rgba(124,77,255,0.3)",
+              boxShadow: "0 0 20px rgba(124,77,255,0.8), 0 0 40px rgba(124,77,255,0.4)",
               border: "2.5px solid #22c55e",
             }}
           >
@@ -270,21 +324,28 @@ export default function FortuneWheel() {
         </div>
       </div>
 
-      {/* Result */}
-      {result !== null && !spinning && (
+      {/* Result card */}
+      {result !== null && (
         <div
-          className="px-6 py-2.5 rounded-2xl text-white text-lg font-bold text-center"
+          className="w-full px-6 py-3 rounded-2xl text-white text-2xl font-bold text-center transition-all"
           style={{
-            background: `linear-gradient(135deg, ${SEGMENT_COLORS[result]}, #0f0a1e)`,
-            boxShadow: `0 0 16px ${SEGMENT_COLORS[result]}88`,
-            border: "2px solid #22c55e",
+            maxWidth: 320,
+            background: `linear-gradient(135deg, ${winColor}cc, #0f0a1edd)`,
+            boxShadow: `0 0 24px ${winGlow}99, 0 0 48px ${winGlow}44`,
+            border: `2px solid ${winGlow}`,
           }}
         >
-          {SEGMENT_LABELS[result] || "Результат получен!"}
+          {crediting ? (
+            <span className="text-base opacity-70">Начисляем...</span>
+          ) : (
+            <>+{SEGMENT_LABELS[result]}</>
+          )}
         </div>
       )}
 
-      <p className="text-white/40 text-xs text-center">Нажми ▶ чтобы крутить</p>
+      {!spinning && result === null && (
+        <p className="text-white/40 text-xs text-center">Нажми ▶ чтобы крутить</p>
+      )}
     </div>
   );
 }

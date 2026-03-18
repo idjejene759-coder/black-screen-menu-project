@@ -1443,7 +1443,7 @@ const Index = () => {
 
         {active === 3 && (
           <div className="flex flex-col flex-1 overflow-y-auto">
-            <FortuneWheel userId={userId} onWin={fetchBalance} />
+            <FortuneWheel userId={userId} userBalance={userBalance} starsBalance={starsBalance} currency={currency} onWin={fetchBalance} />
           </div>
         )}
 

@@ -46,13 +46,13 @@ const WITHDRAW_NETWORKS = [
 const navItems = [
   { icon: "Menu", label: "Меню" },
   { icon: "Home", label: "Главная" },
-  { icon: "Spade", label: "Казино", fallback: "Clover" },
+  { icon: "Spade", label: "Игры", fallback: "Clover" },
   { icon: "BadgeDollarSign", label: "Free money" },
   { icon: "Briefcase", label: "Кейсы" },
 ];
 
 const menuItems = [
-  { icon: "Spade", label: "Казино", fallback: "Clover", desc: "Слоты и игры", color: "#4ade80" },
+  { icon: "Spade", label: "Игры", fallback: "Clover", desc: "Слоты и игры", color: "#4ade80" },
   { icon: "Briefcase", label: "Кейсы", desc: "Открывай и выигрывай", color: "#3b82f6" },
   { icon: "Gift", label: "Бонусы", desc: "Фриспины и акции", color: "#f5a623" },
   { icon: "Headphones", label: "Поддержка 24/7", desc: "Быстрая помощь", color: "#a78bfa" },

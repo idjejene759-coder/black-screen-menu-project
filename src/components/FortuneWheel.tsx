@@ -44,6 +44,19 @@ const SEGMENT_LABELS = [
 const SEGMENT_VALUES = [1, 15, 50, 30, 50, 100, 70, 200, 350, 500, 1000, 2000];
 const SEGMENT_IS_STARS = [false, false, true, false, false, true, false, true, false, true, false, true];
 
+// Шансы выпадения (в процентах, сумма не обязана = 100, используем взвешенный рандом)
+const SEGMENT_WEIGHTS = [90, 20, 80, 15, 10, 40, 4, 3, 1, 1, 0, 0];
+
+function pickWeightedSegment(): number {
+  const total = SEGMENT_WEIGHTS.reduce((a, b) => a + b, 0);
+  let rand = Math.random() * total;
+  for (let i = 0; i < SEGMENT_WEIGHTS.length; i++) {
+    rand -= SEGMENT_WEIGHTS[i];
+    if (rand <= 0) return i;
+  }
+  return 0;
+}
+
 const SEGMENT_ANGLE = 360 / SEGMENTS;
 
 interface Props {
@@ -77,8 +90,19 @@ export default function FortuneWheel({ userId, onWin }: Props) {
   const innerR = 38;
   const rimR = 144;
 
-  function easeOut(t: number) {
-    return 1 - Math.pow(1 - t, 4);
+  // Плавный старт, разгон, плавное торможение
+  function easeInOut(t: number) {
+    if (t < 0.3) {
+      // Разгон — кубическая
+      return (t / 0.3) * (t / 0.3) * (t / 0.3) * 0.3;
+    } else if (t < 0.7) {
+      // Равномерно быстро
+      return 0.3 + (t - 0.3) / 0.4 * 0.5;
+    } else {
+      // Торможение — кватрик
+      const s = (t - 0.7) / 0.3;
+      return 0.8 + (1 - Math.pow(1 - s, 4)) * 0.2;
+    }
   }
 
   async function creditWin(segIndex: number) {
@@ -107,17 +131,31 @@ export default function FortuneWheel({ userId, onWin }: Props) {
     setResult(null);
     setSpinning(true);
 
-    const extraSpins = (5 + Math.floor(Math.random() * 5)) * 360;
-    const randomAngle = Math.floor(Math.random() * 360);
+    // Выбираем победный сектор по весам
+    const winSeg = pickWeightedSegment();
+
+    // Вычисляем угол поворота так, чтобы середина winSeg оказалась под стрелкой (0°)
+    // Середина сектора winSeg находится на угле: winSeg * SEGMENT_ANGLE + SEGMENT_ANGLE / 2
+    // Стрелка сверху = 0°. Колесо крутится по часовой.
+    // Чтобы сектор winSeg оказался под стрелкой, нужно повернуть колесо на -(midAngle)
+    // то есть targetRot = extraSpins + (360 - midAngle) + небольшой рандом внутри сектора
+    const midAngle = winSeg * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
+    const jitter = (Math.random() - 0.5) * (SEGMENT_ANGLE * 0.6); // случайно внутри сектора
+    const extraSpins = (6 + Math.floor(Math.random() * 4)) * 360;
     const startRot = rotationRef.current;
-    const targetRot = startRot + extraSpins + randomAngle;
-    const duration = 4500 + Math.random() * 1000;
+    // Текущий "остаток" поворота
+    const currentMod = startRot % 360;
+    const neededAngle = (360 - midAngle + jitter + 360) % 360;
+    const delta = (neededAngle - currentMod + 360) % 360;
+    const targetRot = startRot + extraSpins + delta;
+
+    const duration = 5000 + Math.random() * 1000;
     const startTime = performance.now();
 
     function animate(now: number) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const eased = easeOut(progress);
+      const eased = easeInOut(progress);
       const current = startRot + (targetRot - startRot) * eased;
 
       if (svgRef.current) {
@@ -128,11 +166,9 @@ export default function FortuneWheel({ userId, onWin }: Props) {
         animRef.current = requestAnimationFrame(animate);
       } else {
         rotationRef.current = targetRot;
-        const finalAngle = (360 - (targetRot % 360) + 360) % 360;
-        const segIndex = Math.floor(finalAngle / SEGMENT_ANGLE) % SEGMENTS;
-        setResult(segIndex);
+        setResult(winSeg);
         setSpinning(false);
-        creditWin(segIndex);
+        creditWin(winSeg);
       }
     }
 

@@ -98,7 +98,7 @@ const Index = () => {
   const [depositLoading, setDepositLoading] = useState(false);
   const [userBalance, setUserBalance] = useState(0);
   const [starsBalance, setStarsBalance] = useState(0);
-  const [currency, setCurrency] = useState<"usdt" | "stars">("usdt");
+  const [currency, setCurrency] = useState<"usdt" | "stars">("stars");
   const [currencyPickerOpen, setCurrencyPickerOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);

@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from "react";
 import JaguarGems from "@/components/JaguarGems";
 import CrashX from "@/components/CrashX";
 import CaseRoulette from "@/components/CaseRoulette";
-import FortuneWheel from "@/components/FortuneWheel";
 
 const copyId = (id: string | number) => {
   navigator.clipboard.writeText(String(id));
